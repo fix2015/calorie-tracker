@@ -50,6 +50,7 @@ router.post('/register', authLimiter, async (req, res, next) => {
         gender: data.gender,
         heightCm: data.heightCm,
         weightKg: data.weightKg,
+        targetWeightKg: data.targetWeightKg,
         weightUpdatedAt: data.weightKg ? new Date() : null,
         activityLevel: data.activityLevel,
         goal: data.goal,
@@ -123,7 +124,7 @@ router.get('/me', authenticate, async (req, res, next) => {
       where: { id: req.userId },
       select: {
         id: true, email: true, name: true, age: true, gender: true,
-        heightCm: true, weightKg: true, weightUpdatedAt: true,
+        heightCm: true, weightKg: true, targetWeightKg: true, weightUpdatedAt: true,
         activityLevel: true, goal: true, dailyCalorieTarget: true,
       },
     });

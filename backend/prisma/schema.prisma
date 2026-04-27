@@ -41,6 +41,7 @@ model User {
   gender              Gender?
   heightCm            Float?         @map("height_cm")
   weightKg            Float?         @map("weight_kg")
+  targetWeightKg      Float?         @map("target_weight_kg")
   weightUpdatedAt     DateTime?      @map("weight_updated_at")
   activityLevel       ActivityLevel? @map("activity_level")
   goal                Goal?

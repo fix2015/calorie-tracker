@@ -25,7 +25,7 @@ router.patch('/me', authenticate, async (req, res, next) => {
       data: updateData,
       select: {
         id: true, email: true, name: true, age: true, gender: true,
-        heightCm: true, weightKg: true, weightUpdatedAt: true,
+        heightCm: true, weightKg: true, targetWeightKg: true, weightUpdatedAt: true,
         activityLevel: true, goal: true, dailyCalorieTarget: true,
       },
     });

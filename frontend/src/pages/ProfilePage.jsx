@@ -7,7 +7,7 @@ const ACTIVITY_LEVELS = [
   { value: 'light', label: 'Lightly active' },
   { value: 'moderate', label: 'Moderately active' },
   { value: 'active', label: 'Very active' },
-  { value: 'extra', label: 'Extra active' },
+  { value: 'very_active', label: 'Extra active' },
 ];
 
 const GOALS = [
@@ -26,8 +26,9 @@ export default function ProfilePage() {
     name: '',
     age: '',
     gender: 'male',
-    height: '',
-    weight: '',
+    heightCm: '',
+    weightKg: '',
+    targetWeightKg: '',
     activityLevel: 'moderate',
     goal: 'maintain',
   });
@@ -38,8 +39,9 @@ export default function ProfilePage() {
         name: user.name || '',
         age: user.age || '',
         gender: user.gender || 'male',
-        height: user.height || '',
-        weight: user.weight || '',
+        heightCm: user.heightCm || '',
+        weightKg: user.weightKg || '',
+        targetWeightKg: user.targetWeightKg || '',
         activityLevel: user.activityLevel || 'moderate',
         goal: user.goal || 'maintain',
       });
@@ -58,19 +60,27 @@ export default function ProfilePage() {
     setSaving(true);
     try {
       await users.updateProfile({
-        ...form,
+        name: form.name,
         age: Number(form.age),
-        height: Number(form.height),
-        weight: Number(form.weight),
+        gender: form.gender,
+        heightCm: Number(form.heightCm),
+        weightKg: Number(form.weightKg),
+        targetWeightKg: form.targetWeightKg ? Number(form.targetWeightKg) : undefined,
+        activityLevel: form.activityLevel,
+        goal: form.goal,
       });
       await refreshUser();
-      setSuccess('Profile updated successfully');
+      setSuccess('Profile updated! Calorie target recalculated.');
     } catch (err) {
       setError(err.message || 'Update failed');
     } finally {
       setSaving(false);
     }
   };
+
+  const weightDiff = form.weightKg && form.targetWeightKg
+    ? (Number(form.weightKg) - Number(form.targetWeightKg)).toFixed(1)
+    : null;
 
   return (
     <div className="page">
@@ -79,9 +89,9 @@ export default function ProfilePage() {
       <div className="card" style={{ maxWidth: 560 }}>
         {user?.dailyCalorieTarget && (
           <div style={{
-            background: 'var(--color-bg)',
+            background: 'linear-gradient(135deg, #EEF2FF, #E0E7FF)',
             borderRadius: 'var(--radius-md)',
-            padding: 'var(--space-md)',
+            padding: 'var(--space-lg)',
             marginBottom: 'var(--space-lg)',
             textAlign: 'center',
           }}>
@@ -91,6 +101,11 @@ export default function ProfilePage() {
             <div style={{ fontSize: 'var(--font-size-2xl)', fontWeight: 700, color: 'var(--color-primary)' }}>
               {user.dailyCalorieTarget} kcal
             </div>
+            {user.weightKg && user.targetWeightKg && user.goal !== 'maintain' && (
+              <p style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-text-secondary)', marginTop: 'var(--space-xs)' }}>
+                {user.weightKg} kg → {user.targetWeightKg} kg ({Math.abs(user.weightKg - user.targetWeightKg).toFixed(1)} kg to {user.goal === 'lose' ? 'lose' : 'gain'})
+              </p>
+            )}
           </div>
         )}
 
@@ -121,21 +136,12 @@ export default function ProfilePage() {
           <div className="grid-2">
             <div className="form-group">
               <label htmlFor="prof-height">Height (cm)</label>
-              <input id="prof-height" type="number" value={form.height} onChange={set('height')} required min="100" max="250" />
+              <input id="prof-height" type="number" value={form.heightCm} onChange={set('heightCm')} required min="100" max="250" />
             </div>
             <div className="form-group">
-              <label htmlFor="prof-weight">Weight (kg)</label>
-              <input id="prof-weight" type="number" value={form.weight} onChange={set('weight')} required min="30" max="300" />
+              <label htmlFor="prof-weight">Current Weight (kg)</label>
+              <input id="prof-weight" type="number" step="0.1" value={form.weightKg} onChange={set('weightKg')} required min="30" max="300" />
             </div>
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="prof-activity">Activity Level</label>
-            <select id="prof-activity" value={form.activityLevel} onChange={set('activityLevel')}>
-              {ACTIVITY_LEVELS.map((a) => (
-                <option key={a.value} value={a.value}>{a.label}</option>
-              ))}
-            </select>
           </div>
 
           <div className="form-group">
@@ -147,8 +153,29 @@ export default function ProfilePage() {
             </select>
           </div>
 
+          {form.goal !== 'maintain' && (
+            <div className="form-group">
+              <label htmlFor="prof-target-weight">Target Weight (kg)</label>
+              <input id="prof-target-weight" type="number" step="0.1" value={form.targetWeightKg} onChange={set('targetWeightKg')} min="30" max="300" />
+              {weightDiff && (
+                <span style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-text-secondary)' }}>
+                  {Math.abs(Number(weightDiff))} kg to {Number(weightDiff) > 0 ? 'lose' : 'gain'}
+                </span>
+              )}
+            </div>
+          )}
+
+          <div className="form-group">
+            <label htmlFor="prof-activity">Activity Level</label>
+            <select id="prof-activity" value={form.activityLevel} onChange={set('activityLevel')}>
+              {ACTIVITY_LEVELS.map((a) => (
+                <option key={a.value} value={a.value}>{a.label}</option>
+              ))}
+            </select>
+          </div>
+
           <button type="submit" className="btn btn-primary btn-block" disabled={saving}>
-            {saving ? 'Saving...' : 'Save Changes'}
+            {saving ? 'Saving...' : 'Save & Recalculate'}
           </button>
         </form>
       </div>

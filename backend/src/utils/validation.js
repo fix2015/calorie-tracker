@@ -8,6 +8,7 @@ const registerSchema = z.object({
   gender: z.enum(['male', 'female', 'other']).optional(),
   heightCm: z.number().min(50).max(300).optional(),
   weightKg: z.number().min(20).max(500).optional(),
+  targetWeightKg: z.number().min(20).max(500).optional(),
   activityLevel: z.enum(['sedentary', 'light', 'moderate', 'active', 'very_active']).optional(),
   goal: z.enum(['lose', 'maintain', 'gain']).optional(),
 });
@@ -23,6 +24,7 @@ const updateProfileSchema = z.object({
   gender: z.enum(['male', 'female', 'other']).optional(),
   heightCm: z.number().min(50).max(300).optional(),
   weightKg: z.number().min(20).max(500).optional(),
+  targetWeightKg: z.number().min(20).max(500).optional(),
   activityLevel: z.enum(['sedentary', 'light', 'moderate', 'active', 'very_active']).optional(),
   goal: z.enum(['lose', 'maintain', 'gain']).optional(),
 });

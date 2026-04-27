@@ -1,19 +1,22 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../services/AuthContext';
-import { meals, reports } from '../services/api';
+import { meals, reports, users } from '../services/api';
 import AddMealModal from '../components/AddMealModal';
 import MealDetailModal from '../components/MealDetailModal';
 
 const UPLOAD_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:3001';
 
 export default function DashboardPage() {
-  const { user } = useAuth();
+  const { user, refreshUser } = useAuth();
   const navigate = useNavigate();
   const [daily, setDaily] = useState(null);
   const [loading, setLoading] = useState(true);
   const [showAddMeal, setShowAddMeal] = useState(false);
   const [selectedMeal, setSelectedMeal] = useState(null);
+  const [showWeighIn, setShowWeighIn] = useState(false);
+  const [weighInValue, setWeighInValue] = useState('');
+  const [weighInLoading, setWeighInLoading] = useState(false);
 
   const target = user?.dailyCalorieTarget || 2000;
 
@@ -36,6 +39,27 @@ export default function DashboardPage() {
     fetchData();
   };
 
+  // Check if weigh-in is needed (>7 days since last update)
+  const needsWeighIn = user?.weightUpdatedAt
+    ? (Date.now() - new Date(user.weightUpdatedAt).getTime()) > 7 * 24 * 60 * 60 * 1000
+    : true;
+
+  const handleWeighIn = async (e) => {
+    e.preventDefault();
+    if (!weighInValue) return;
+    setWeighInLoading(true);
+    try {
+      await users.updateProfile({ weightKg: Number(weighInValue) });
+      await refreshUser();
+      setShowWeighIn(false);
+      setWeighInValue('');
+    } catch (err) {
+      console.error('Weigh-in failed:', err);
+    } finally {
+      setWeighInLoading(false);
+    }
+  };
+
   const totals = daily?.totals || { calories: 0, proteinG: 0, carbsG: 0, fatG: 0 };
   const todayMeals = daily?.meals || [];
   const consumed = totals.calories;
@@ -51,6 +75,54 @@ export default function DashboardPage() {
   return (
     <div className="page">
       <h1 className="page-title">Dashboard</h1>
+
+      {/* Weigh-in prompt */}
+      {needsWeighIn && !showWeighIn && (
+        <div style={{
+          background: 'linear-gradient(135deg, #FEF3C7, #FDE68A)',
+          borderRadius: 'var(--radius-md)',
+          padding: 'var(--space-md)',
+          marginBottom: 'var(--space-md)',
+          display: 'flex',
+          alignItems: 'center',
+          gap: 'var(--space-md)',
+        }}>
+          <span style={{ fontSize: 24 }}>⚖️</span>
+          <div style={{ flex: 1 }}>
+            <strong style={{ fontSize: 'var(--font-size-sm)' }}>Time for a weigh-in!</strong>
+            <p style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)' }}>
+              Update your weight to keep your calorie target accurate.
+            </p>
+          </div>
+          <button className="btn btn-primary" style={{ fontSize: 'var(--font-size-sm)', padding: '6px 12px', minHeight: 36 }} onClick={() => { setShowWeighIn(true); setWeighInValue(user?.weightKg?.toString() || ''); }}>
+            Update
+          </button>
+        </div>
+      )}
+
+      {showWeighIn && (
+        <div className="card" style={{ marginBottom: 'var(--space-md)' }}>
+          <h3 style={{ marginBottom: 'var(--space-sm)' }}>⚖️ Weekly Weigh-in</h3>
+          <p style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-text-secondary)', marginBottom: 'var(--space-md)' }}>
+            {user?.targetWeightKg && user?.goal !== 'maintain'
+              ? `Current: ${user.weightKg} kg → Target: ${user.targetWeightKg} kg`
+              : `Last recorded: ${user?.weightKg || '—'} kg`
+            }
+          </p>
+          <form onSubmit={handleWeighIn} style={{ display: 'flex', gap: 'var(--space-sm)', alignItems: 'flex-end' }}>
+            <div className="form-group" style={{ flex: 1 }}>
+              <label htmlFor="weigh-in">New weight (kg)</label>
+              <input id="weigh-in" type="number" step="0.1" min="20" max="500" value={weighInValue} onChange={e => setWeighInValue(e.target.value)} required />
+            </div>
+            <button type="submit" className="btn btn-primary" disabled={weighInLoading} style={{ marginBottom: 1 }}>
+              {weighInLoading ? '...' : 'Save'}
+            </button>
+            <button type="button" className="btn btn-secondary" onClick={() => setShowWeighIn(false)} style={{ marginBottom: 1 }}>
+              Skip
+            </button>
+          </form>
+        </div>
+      )}
 
       {/* Calorie ring */}
       <div className="card" style={{ textAlign: 'center', marginBottom: 'var(--space-md)' }}>
