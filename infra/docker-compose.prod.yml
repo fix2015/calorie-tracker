@@ -22,7 +22,7 @@ services:
     image: ghcr.io/fix2015/calorie-tracker/backend:latest
     restart: unless-stopped
     ports:
-      - "127.0.0.1:3001:3001"
+      - "127.0.0.1:3010:3001"
     env_file:
       - backend.env
     environment:
@@ -41,7 +41,7 @@ services:
     image: ghcr.io/fix2015/calorie-tracker/frontend:latest
     restart: unless-stopped
     ports:
-      - "127.0.0.1:3002:80"
+      - "127.0.0.1:3011:80"
     networks:
       - calorie_net
 
