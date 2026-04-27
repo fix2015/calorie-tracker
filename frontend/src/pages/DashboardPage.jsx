@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../services/AuthContext';
 import { meals, reports } from '../services/api';
 import AddMealModal from '../components/AddMealModal';
+import MealDetailModal from '../components/MealDetailModal';
 
 const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:3001';
 
@@ -12,6 +13,7 @@ export default function DashboardPage() {
   const [daily, setDaily] = useState(null);
   const [loading, setLoading] = useState(true);
   const [showAddMeal, setShowAddMeal] = useState(false);
+  const [selectedMeal, setSelectedMeal] = useState(null);
 
   const target = user?.dailyCalorieTarget || 2000;
 
@@ -29,13 +31,9 @@ export default function DashboardPage() {
 
   useEffect(() => { fetchData(); }, []);
 
-  const handleDelete = async (id) => {
-    try {
-      await meals.remove(id);
-      fetchData();
-    } catch (err) {
-      console.error('Delete failed:', err);
-    }
+  const handleMealUpdated = () => {
+    setSelectedMeal(null);
+    fetchData();
   };
 
   const totals = daily?.totals || { calories: 0, proteinG: 0, carbsG: 0, fatG: 0 };
@@ -104,7 +102,7 @@ export default function DashboardPage() {
           </p>
         )}
         {todayMeals.map((m) => (
-          <div className="meal-item" key={m.id}>
+          <div className="meal-item" key={m.id} onClick={() => setSelectedMeal(m)} style={{ cursor: 'pointer' }}>
             {m.photoUrl && (
               <img
                 src={`${API_BASE}${m.photoUrl}`}
@@ -132,9 +130,7 @@ export default function DashboardPage() {
               </div>
             </div>
             <span className="meal-cals">{m.calories} kcal</span>
-            <button className="meal-delete" onClick={() => handleDelete(m.id)} title="Delete meal">
-              ×
-            </button>
+            <span style={{ color: 'var(--color-text-secondary)', fontSize: 14, marginLeft: 4 }}>›</span>
           </div>
         ))}
       </div>
@@ -143,6 +139,14 @@ export default function DashboardPage() {
         <AddMealModal
           onClose={() => setShowAddMeal(false)}
           onSaved={() => { setShowAddMeal(false); fetchData(); }}
+        />
+      )}
+
+      {selectedMeal && (
+        <MealDetailModal
+          meal={selectedMeal}
+          onClose={() => setSelectedMeal(null)}
+          onUpdated={handleMealUpdated}
         />
       )}
     </div>

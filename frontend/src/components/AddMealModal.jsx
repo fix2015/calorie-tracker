@@ -5,9 +5,9 @@ export default function AddMealModal({ onClose, onSaved }) {
   const [form, setForm] = useState({
     name: '',
     calories: '',
-    protein: '',
-    carbs: '',
-    fat: '',
+    proteinG: '',
+    carbsG: '',
+    fatG: '',
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -28,12 +28,11 @@ export default function AddMealModal({ onClose, onSaved }) {
       await meals.manual({
         name: form.name,
         calories: Number(form.calories),
-        protein: Number(form.protein) || 0,
-        carbs: Number(form.carbs) || 0,
-        fat: Number(form.fat) || 0,
+        proteinG: Number(form.proteinG) || 0,
+        carbsG: Number(form.carbsG) || 0,
+        fatG: Number(form.fatG) || 0,
       });
       onSaved();
-      onClose();
     } catch (err) {
       setError(err.message || 'Failed to add meal');
     } finally {
@@ -77,15 +76,15 @@ export default function AddMealModal({ onClose, onSaved }) {
           <div className="grid-3">
             <div className="form-group">
               <label htmlFor="meal-protein">Protein (g)</label>
-              <input id="meal-protein" type="number" value={form.protein} onChange={set('protein')} min="0" />
+              <input id="meal-protein" type="number" value={form.proteinG} onChange={set('proteinG')} min="0" />
             </div>
             <div className="form-group">
               <label htmlFor="meal-carbs">Carbs (g)</label>
-              <input id="meal-carbs" type="number" value={form.carbs} onChange={set('carbs')} min="0" />
+              <input id="meal-carbs" type="number" value={form.carbsG} onChange={set('carbsG')} min="0" />
             </div>
             <div className="form-group">
               <label htmlFor="meal-fat">Fat (g)</label>
-              <input id="meal-fat" type="number" value={form.fat} onChange={set('fat')} min="0" />
+              <input id="meal-fat" type="number" value={form.fatG} onChange={set('fatG')} min="0" />
             </div>
           </div>
 

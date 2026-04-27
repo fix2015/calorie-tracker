@@ -76,6 +76,7 @@ export const meals = {
     if (to) params.set('to', to);
     return request(`/meals?${params}`);
   },
+  update: (id, data) => request(`/meals/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
   remove: (id) => request(`/meals/${id}`, { method: 'DELETE' }),
 };
 

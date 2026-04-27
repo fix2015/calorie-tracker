@@ -110,6 +110,31 @@ router.get('/', authenticate, async (req, res, next) => {
   }
 });
 
+router.patch('/:id', authenticate, async (req, res, next) => {
+  try {
+    const meal = await prisma.meal.findFirst({
+      where: { id: req.params.id, userId: req.userId },
+    });
+    if (!meal) return res.status(404).json({ error: 'Meal not found' });
+
+    const data = manualMealSchema.parse(req.body);
+    const updated = await prisma.meal.update({
+      where: { id: req.params.id },
+      data: {
+        name: data.name,
+        calories: data.calories,
+        proteinG: data.proteinG,
+        carbsG: data.carbsG,
+        fatG: data.fatG,
+        consumedAt: data.consumedAt ? new Date(data.consumedAt) : meal.consumedAt,
+      },
+    });
+    res.json(updated);
+  } catch (err) {
+    next(err);
+  }
+});
+
 router.delete('/:id', authenticate, async (req, res, next) => {
   try {
     const meal = await prisma.meal.findFirst({

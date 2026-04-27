@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { reports } from '../services/api';
+import MealDetailModal from '../components/MealDetailModal';
 
 const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:3001';
 
@@ -10,6 +11,7 @@ export default function ReportsPage() {
   const [weekly, setWeekly] = useState([]);
   const [suggestion, setSuggestion] = useState('');
   const [loading, setLoading] = useState(true);
+  const [selectedMeal, setSelectedMeal] = useState(null);
 
   const fetchDaily = async (d) => {
     try {
@@ -100,7 +102,7 @@ export default function ReportsPage() {
           <div>
             <h3 style={{ fontSize: 'var(--font-size-base)', marginBottom: 'var(--space-sm)' }}>Meals</h3>
             {dayMeals.map((m) => (
-              <div className="meal-item" key={m.id}>
+              <div className="meal-item" key={m.id} onClick={() => setSelectedMeal(m)} style={{ cursor: 'pointer' }}>
                 {m.photoUrl && (
                   <img
                     src={`${API_BASE}${m.photoUrl}`}
@@ -165,6 +167,14 @@ export default function ReportsPage() {
           <h3 style={{ marginBottom: 'var(--space-sm)' }}>💡 AI Suggestion</h3>
           <p className="suggestion-text">{suggestion}</p>
         </div>
+      )}
+
+      {selectedMeal && (
+        <MealDetailModal
+          meal={selectedMeal}
+          onClose={() => setSelectedMeal(null)}
+          onUpdated={() => { setSelectedMeal(null); fetchDaily(date); }}
+        />
       )}
     </div>
   );
