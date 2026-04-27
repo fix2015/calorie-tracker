@@ -3,7 +3,7 @@ import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recha
 import { reports } from '../services/api';
 import MealDetailModal from '../components/MealDetailModal';
 
-const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:3001';
+const UPLOAD_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:3001';
 
 export default function ReportsPage() {
   const [date, setDate] = useState(() => new Date().toISOString().split('T')[0]);
@@ -105,7 +105,7 @@ export default function ReportsPage() {
               <div className="meal-item" key={m.id} onClick={() => setSelectedMeal(m)} style={{ cursor: 'pointer' }}>
                 {m.photoUrl && (
                   <img
-                    src={`${API_BASE}${m.photoUrl}`}
+                    src={`${UPLOAD_BASE}${m.photoUrl}`}
                     alt={m.name}
                     style={{
                       width: 44,

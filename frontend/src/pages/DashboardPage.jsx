@@ -5,7 +5,7 @@ import { meals, reports } from '../services/api';
 import AddMealModal from '../components/AddMealModal';
 import MealDetailModal from '../components/MealDetailModal';
 
-const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:3001';
+const UPLOAD_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:3001';
 
 export default function DashboardPage() {
   const { user } = useAuth();
@@ -105,7 +105,7 @@ export default function DashboardPage() {
           <div className="meal-item" key={m.id} onClick={() => setSelectedMeal(m)} style={{ cursor: 'pointer' }}>
             {m.photoUrl && (
               <img
-                src={`${API_BASE}${m.photoUrl}`}
+                src={`${UPLOAD_BASE}${m.photoUrl}`}
                 alt={m.name}
                 style={{
                   width: 52,
