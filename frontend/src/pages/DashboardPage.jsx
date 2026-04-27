@@ -4,10 +4,11 @@ import { useAuth } from '../services/AuthContext';
 import { meals, reports } from '../services/api';
 import AddMealModal from '../components/AddMealModal';
 
+const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:3001';
+
 export default function DashboardPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [todayMeals, setTodayMeals] = useState([]);
   const [daily, setDaily] = useState(null);
   const [loading, setLoading] = useState(true);
   const [showAddMeal, setShowAddMeal] = useState(false);
@@ -17,11 +18,7 @@ export default function DashboardPage() {
   const fetchData = async () => {
     try {
       const today = new Date().toISOString().split('T')[0];
-      const [mealList, report] = await Promise.all([
-        meals.list(today, today),
-        reports.daily(today),
-      ]);
-      setTodayMeals(mealList.meals || mealList);
+      const report = await reports.daily(today);
       setDaily(report);
     } catch (err) {
       console.error('Failed to load dashboard:', err);
@@ -30,9 +27,7 @@ export default function DashboardPage() {
     }
   };
 
-  useEffect(() => {
-    fetchData();
-  }, []);
+  useEffect(() => { fetchData(); }, []);
 
   const handleDelete = async (id) => {
     try {
@@ -43,43 +38,29 @@ export default function DashboardPage() {
     }
   };
 
-  const consumed = daily?.totalCalories || 0;
-  const protein = daily?.totalProtein || 0;
-  const carbs = daily?.totalCarbs || 0;
-  const fat = daily?.totalFat || 0;
+  const totals = daily?.totals || { calories: 0, proteinG: 0, carbsG: 0, fatG: 0 };
+  const todayMeals = daily?.meals || [];
+  const consumed = totals.calories;
 
   const ratio = target > 0 ? consumed / target : 0;
   const ringColor = ratio > 1 ? 'var(--color-danger)' : ratio > 0.9 ? 'var(--color-warning)' : 'var(--color-success)';
-
   const radius = 70;
   const circumference = 2 * Math.PI * radius;
   const offset = circumference - Math.min(ratio, 1) * circumference;
 
-  if (loading) {
-    return <div className="page"><div className="spinner" /></div>;
-  }
+  if (loading) return <div className="page"><div className="spinner" /></div>;
 
   return (
     <div className="page">
       <h1 className="page-title">Dashboard</h1>
 
+      {/* Calorie ring */}
       <div className="card" style={{ textAlign: 'center', marginBottom: 'var(--space-md)' }}>
         <div className="calorie-ring">
           <svg viewBox="0 0 160 160">
-            <circle
-              cx="80" cy="80" r={radius}
-              fill="none"
-              stroke="var(--color-border)"
-              strokeWidth="12"
-            />
-            <circle
-              cx="80" cy="80" r={radius}
-              fill="none"
-              stroke={ringColor}
-              strokeWidth="12"
-              strokeLinecap="round"
-              strokeDasharray={circumference}
-              strokeDashoffset={offset}
+            <circle cx="80" cy="80" r={radius} fill="none" stroke="var(--color-border)" strokeWidth="12" />
+            <circle cx="80" cy="80" r={radius} fill="none" stroke={ringColor} strokeWidth="12"
+              strokeLinecap="round" strokeDasharray={circumference} strokeDashoffset={offset}
             />
           </svg>
           <div className="calorie-ring-center">
@@ -90,29 +71,31 @@ export default function DashboardPage() {
 
         <div className="macro-bar" style={{ marginTop: 'var(--space-md)' }}>
           <div className="macro-item">
-            <span className="macro-value">{protein}g</span>
+            <span className="macro-value">{Math.round(totals.proteinG)}g</span>
             <span className="macro-label">Protein</span>
           </div>
           <div className="macro-item">
-            <span className="macro-value">{carbs}g</span>
+            <span className="macro-value">{Math.round(totals.carbsG)}g</span>
             <span className="macro-label">Carbs</span>
           </div>
           <div className="macro-item">
-            <span className="macro-value">{fat}g</span>
+            <span className="macro-value">{Math.round(totals.fatG)}g</span>
             <span className="macro-label">Fat</span>
           </div>
         </div>
       </div>
 
+      {/* Actions */}
       <div style={{ display: 'flex', gap: 'var(--space-sm)', marginBottom: 'var(--space-md)' }}>
         <button className="btn btn-primary" style={{ flex: 1 }} onClick={() => setShowAddMeal(true)}>
           + Add Meal
         </button>
         <button className="btn btn-secondary" style={{ flex: 1 }} onClick={() => navigate('/scan')}>
-          Scan Photo
+          📷 Scan Photo
         </button>
       </div>
 
+      {/* Today's meals */}
       <div className="card">
         <h2 style={{ marginBottom: 'var(--space-sm)' }}>Today's Meals</h2>
         {todayMeals.length === 0 && (
@@ -121,16 +104,36 @@ export default function DashboardPage() {
           </p>
         )}
         {todayMeals.map((m) => (
-          <div className="meal-item" key={m._id || m.id}>
+          <div className="meal-item" key={m.id}>
+            {m.photoUrl && (
+              <img
+                src={`${API_BASE}${m.photoUrl}`}
+                alt={m.name}
+                style={{
+                  width: 52,
+                  height: 52,
+                  borderRadius: 'var(--radius-md)',
+                  objectFit: 'cover',
+                  flexShrink: 0,
+                }}
+              />
+            )}
             <div className="meal-info">
-              <div className="meal-name">{m.name}</div>
+              <div className="meal-name">
+                {m.name}
+                {m.source === 'photo_ai' && (
+                  <span style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-primary-light)', marginLeft: 4 }}>AI</span>
+                )}
+              </div>
               <div className="meal-meta">
-                P {m.protein || 0}g &middot; C {m.carbs || 0}g &middot; F {m.fat || 0}g
+                P {Math.round(m.proteinG)}g · C {Math.round(m.carbsG)}g · F {Math.round(m.fatG)}g
+                {' · '}
+                {new Date(m.consumedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
               </div>
             </div>
             <span className="meal-cals">{m.calories} kcal</span>
-            <button className="meal-delete" onClick={() => handleDelete(m._id || m.id)} title="Delete meal">
-              &times;
+            <button className="meal-delete" onClick={() => handleDelete(m.id)} title="Delete meal">
+              ×
             </button>
           </div>
         ))}
@@ -139,7 +142,7 @@ export default function DashboardPage() {
       {showAddMeal && (
         <AddMealModal
           onClose={() => setShowAddMeal(false)}
-          onSaved={fetchData}
+          onSaved={() => { setShowAddMeal(false); fetchData(); }}
         />
       )}
     </div>

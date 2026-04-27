@@ -1,6 +1,9 @@
 import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { meals } from '../services/api';
+import { resizeImage } from '../services/imageResize';
+
+const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:3001';
 
 export default function ScanPage() {
   const fileRef = useRef(null);
@@ -11,13 +14,13 @@ export default function ScanPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  // Weight prompt modal state
   const [showWeightPrompt, setShowWeightPrompt] = useState(false);
   const [weight, setWeight] = useState('');
-  const [pendingFormData, setPendingFormData] = useState(null);
+  const [pendingBlob, setPendingBlob] = useState(null);
 
-  // AI result preview (edit-before-save) state
+  // Result screen — shown for both high and low confidence
   const [result, setResult] = useState(null);
+  const [editing, setEditing] = useState(false);
 
   const handleFileChange = (e) => {
     const f = e.target.files[0];
@@ -25,35 +28,40 @@ export default function ScanPage() {
     setFile(f);
     setPreview(URL.createObjectURL(f));
     setResult(null);
+    setEditing(false);
     setError('');
   };
 
-  const submitPhoto = async (formData) => {
+  const submitPhoto = async (blob, extraWeight) => {
     setLoading(true);
     setError('');
     try {
+      const formData = new FormData();
+      formData.append('photo', blob, 'meal.jpg');
+      if (extraWeight) formData.append('weight', extraWeight);
+
       const res = await meals.photo(formData);
 
       if (res.needs_weight) {
-        setPendingFormData(formData);
+        setPendingBlob(blob);
         setShowWeightPrompt(true);
         setLoading(false);
         return;
       }
 
-      if (res.low_confidence) {
-        const m = res.meal;
-        setResult({
-          name: m.name || '',
-          calories: m.calories || 0,
-          proteinG: m.proteinG || 0,
-          carbsG: m.carbsG || 0,
-          fatG: m.fatG || 0,
-          saved: false,
-        });
-      } else {
-        navigate('/');
-      }
+      const m = res.meal;
+      setResult({
+        id: m.id,
+        name: m.name,
+        calories: m.calories,
+        proteinG: m.proteinG,
+        carbsG: m.carbsG,
+        fatG: m.fatG,
+        photoUrl: m.photoUrl,
+        confidence: m.aiConfidence,
+        lowConfidence: res.low_confidence,
+      });
+      if (res.low_confidence) setEditing(true);
     } catch (err) {
       setError(err.message || 'Scan failed');
     } finally {
@@ -61,26 +69,27 @@ export default function ScanPage() {
     }
   };
 
-  const handleScan = () => {
+  const handleScan = async () => {
     if (!file) return;
-    const formData = new FormData();
-    formData.append('photo', file);
-    submitPhoto(formData);
+    setLoading(true);
+    const blob = await resizeImage(file);
+    submitPhoto(blob);
   };
 
   const handleWeightSubmit = (e) => {
     e.preventDefault();
-    if (!pendingFormData || !weight) return;
-    pendingFormData.append('weight', weight);
+    if (!pendingBlob || !weight) return;
     setShowWeightPrompt(false);
+    submitPhoto(pendingBlob, weight);
     setWeight('');
-    submitPhoto(pendingFormData);
   };
 
-  const handleResultSave = async () => {
+  const handleSaveEdited = async () => {
     setLoading(true);
     setError('');
     try {
+      // Delete the AI-created meal and save the edited version
+      if (result.id) await meals.remove(result.id);
       await meals.manual({
         name: result.name,
         calories: Number(result.calories),
@@ -96,95 +105,150 @@ export default function ScanPage() {
     }
   };
 
-  const updateResult = (field) => (e) => setResult({ ...result, [field]: e.target.value });
+  const updateField = (field) => (e) => setResult({ ...result, [field]: e.target.value });
 
   return (
     <div className="page">
       <h1 className="page-title">Scan Food Photo</h1>
 
-      <div className="card">
-        <div className="scan-area">
-          <input
-            type="file"
-            accept="image/*"
-            capture="environment"
-            ref={fileRef}
-            onChange={handleFileChange}
-            style={{ display: 'none' }}
-          />
+      {/* Camera / file selection */}
+      {!result && (
+        <div className="card">
+          <div className="scan-area">
+            <input
+              type="file"
+              accept="image/*"
+              capture="environment"
+              ref={fileRef}
+              onChange={handleFileChange}
+              style={{ display: 'none' }}
+            />
 
-          {preview ? (
-            <div className="photo-preview">
-              <img src={preview} alt="Food preview" />
-            </div>
-          ) : (
-            <p style={{ color: 'var(--color-text-secondary)' }}>
-              Take a photo or select an image of your meal
-            </p>
-          )}
+            {preview ? (
+              <div className="photo-preview">
+                <img src={preview} alt="Food preview" />
+              </div>
+            ) : (
+              <p style={{ color: 'var(--color-text-secondary)' }}>
+                Take a photo or select an image of your meal
+              </p>
+            )}
 
-          <button
-            className="camera-btn"
-            onClick={() => fileRef.current?.click()}
-            title="Choose photo"
-          >
-            📷
-          </button>
-
-          {preview && !result && (
             <button
-              className="btn btn-primary btn-block"
-              onClick={handleScan}
-              disabled={loading}
+              className="camera-btn"
+              onClick={() => fileRef.current?.click()}
+              title="Choose photo"
             >
-              {loading ? 'Analyzing...' : 'Analyze Photo'}
+              📷
             </button>
+
+            {preview && (
+              <button
+                className="btn btn-primary btn-block"
+                onClick={handleScan}
+                disabled={loading}
+              >
+                {loading ? 'Analyzing...' : 'Analyze Photo'}
+              </button>
+            )}
+
+            {loading && <div className="spinner" />}
+            {error && <p className="error-text">{error}</p>}
+          </div>
+        </div>
+      )}
+
+      {/* Result screen */}
+      {result && (
+        <div className="card">
+          {result.photoUrl && (
+            <div className="photo-preview" style={{ marginBottom: 'var(--space-md)' }}>
+              <img src={`${API_BASE}${result.photoUrl}`} alt={result.name} />
+            </div>
           )}
 
-          {loading && <div className="spinner" />}
-          {error && <p className="error-text">{error}</p>}
-        </div>
-      </div>
-
-      {/* AI result preview - edit before save */}
-      {result && !result.saved && (
-        <div className="card" style={{ marginTop: 'var(--space-md)' }}>
-          <h2 style={{ marginBottom: 'var(--space-md)' }}>Review Result</h2>
-          <p style={{ color: 'var(--color-text-secondary)', marginBottom: 'var(--space-md)' }}>
-            Low confidence detection. Please review and edit before saving.
-          </p>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-md)' }}>
-            <div className="form-group">
-              <label>Name</label>
-              <input type="text" value={result.name} onChange={updateResult('name')} />
-            </div>
-            <div className="grid-2">
-              <div className="form-group">
-                <label>Calories</label>
-                <input type="number" value={result.calories} onChange={updateResult('calories')} />
+          {!editing ? (
+            <>
+              <h2 style={{ marginBottom: 'var(--space-sm)' }}>{result.name}</h2>
+              {result.confidence && (
+                <p style={{
+                  color: result.confidence > 0.7 ? 'var(--color-success)' : 'var(--color-warning)',
+                  fontSize: 'var(--font-size-sm)',
+                  marginBottom: 'var(--space-md)',
+                }}>
+                  Confidence: {Math.round(result.confidence * 100)}%
+                </p>
+              )}
+              <div className="macro-bar" style={{ marginBottom: 'var(--space-lg)' }}>
+                <div className="macro-item">
+                  <span className="macro-value">{result.calories}</span>
+                  <span className="macro-label">kcal</span>
+                </div>
+                <div className="macro-item">
+                  <span className="macro-value">{result.proteinG}g</span>
+                  <span className="macro-label">Protein</span>
+                </div>
+                <div className="macro-item">
+                  <span className="macro-value">{result.carbsG}g</span>
+                  <span className="macro-label">Carbs</span>
+                </div>
+                <div className="macro-item">
+                  <span className="macro-value">{result.fatG}g</span>
+                  <span className="macro-label">Fat</span>
+                </div>
               </div>
-              <div className="form-group">
-                <label>Protein (g)</label>
-                <input type="number" value={result.proteinG} onChange={updateResult('proteinG')} />
+              <div style={{ display: 'flex', gap: 'var(--space-sm)' }}>
+                <button className="btn btn-secondary" style={{ flex: 1 }} onClick={() => setEditing(true)}>
+                  Edit
+                </button>
+                <button className="btn btn-primary" style={{ flex: 1 }} onClick={() => navigate('/')}>
+                  Done ✓
+                </button>
               </div>
-              <div className="form-group">
-                <label>Carbs (g)</label>
-                <input type="number" value={result.carbsG} onChange={updateResult('carbsG')} />
+            </>
+          ) : (
+            <>
+              <h2 style={{ marginBottom: 'var(--space-md)' }}>Review & Edit</h2>
+              {result.lowConfidence && (
+                <p style={{ color: 'var(--color-warning)', fontSize: 'var(--font-size-sm)', marginBottom: 'var(--space-md)' }}>
+                  Low confidence — please review before saving.
+                </p>
+              )}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-md)' }}>
+                <div className="form-group">
+                  <label>Name</label>
+                  <input type="text" value={result.name} onChange={updateField('name')} />
+                </div>
+                <div className="grid-2">
+                  <div className="form-group">
+                    <label>Calories</label>
+                    <input type="number" value={result.calories} onChange={updateField('calories')} />
+                  </div>
+                  <div className="form-group">
+                    <label>Protein (g)</label>
+                    <input type="number" value={result.proteinG} onChange={updateField('proteinG')} />
+                  </div>
+                  <div className="form-group">
+                    <label>Carbs (g)</label>
+                    <input type="number" value={result.carbsG} onChange={updateField('carbsG')} />
+                  </div>
+                  <div className="form-group">
+                    <label>Fat (g)</label>
+                    <input type="number" value={result.fatG} onChange={updateField('fatG')} />
+                  </div>
+                </div>
+                <div style={{ display: 'flex', gap: 'var(--space-sm)' }}>
+                  <button className="btn btn-secondary" style={{ flex: 1 }} onClick={() => setEditing(false)}>
+                    Cancel
+                  </button>
+                  <button className="btn btn-primary" style={{ flex: 1 }} onClick={handleSaveEdited} disabled={loading}>
+                    {loading ? 'Saving...' : 'Save Changes'}
+                  </button>
+                </div>
               </div>
-              <div className="form-group">
-                <label>Fat (g)</label>
-                <input type="number" value={result.fatG} onChange={updateResult('fatG')} />
-              </div>
-            </div>
-            <div style={{ display: 'flex', gap: 'var(--space-sm)' }}>
-              <button className="btn btn-secondary" style={{ flex: 1 }} onClick={() => setResult(null)}>
-                Discard
-              </button>
-              <button className="btn btn-primary" style={{ flex: 1 }} onClick={handleResultSave} disabled={loading}>
-                {loading ? 'Saving...' : 'Save Meal'}
-              </button>
-            </div>
-          </div>
+              {error && <p className="error-text" style={{ marginTop: 'var(--space-sm)' }}>{error}</p>}
+            </>
+          )}
         </div>
       )}
 

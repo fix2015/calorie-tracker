@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { reports } from '../services/api';
 
+const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:3001';
+
 export default function ReportsPage() {
   const [date, setDate] = useState(() => new Date().toISOString().split('T')[0]);
   const [daily, setDaily] = useState(null);
@@ -25,8 +27,8 @@ export default function ReportsPage() {
         reports.weekly(),
         reports.suggestion(),
       ]);
-      setWeekly(w.days || w);
-      setSuggestion(s.suggestion || s.text || '');
+      setWeekly(w.days || []);
+      setSuggestion(s.suggestion || '');
     } catch (err) {
       console.error('Failed to load weekly/suggestion:', err);
     }
@@ -42,15 +44,16 @@ export default function ReportsPage() {
     fetchDaily(d);
   };
 
-  if (loading) {
-    return <div className="page"><div className="spinner" /></div>;
-  }
+  if (loading) return <div className="page"><div className="spinner" /></div>;
+
+  const totals = daily?.totals || { calories: 0, proteinG: 0, carbsG: 0, fatG: 0 };
+  const dayMeals = daily?.meals || [];
 
   return (
     <div className="page">
       <h1 className="page-title">Reports</h1>
 
-      {/* Daily report */}
+      {/* Daily summary */}
       <div className="card" style={{ marginBottom: 'var(--space-md)' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-md)' }}>
           <h2>Daily Summary</h2>
@@ -67,27 +70,66 @@ export default function ReportsPage() {
           />
         </div>
 
-        {daily ? (
-          <div className="macro-bar">
-            <div className="macro-item">
-              <span className="macro-value">{daily.totalCalories || 0}</span>
-              <span className="macro-label">Calories</span>
-            </div>
-            <div className="macro-item">
-              <span className="macro-value">{daily.totalProtein || 0}g</span>
-              <span className="macro-label">Protein</span>
-            </div>
-            <div className="macro-item">
-              <span className="macro-value">{daily.totalCarbs || 0}g</span>
-              <span className="macro-label">Carbs</span>
-            </div>
-            <div className="macro-item">
-              <span className="macro-value">{daily.totalFat || 0}g</span>
-              <span className="macro-label">Fat</span>
-            </div>
+        <div className="macro-bar" style={{ marginBottom: 'var(--space-lg)' }}>
+          <div className="macro-item">
+            <span className="macro-value">{totals.calories}</span>
+            <span className="macro-label">Calories</span>
           </div>
-        ) : (
-          <p style={{ color: 'var(--color-text-secondary)' }}>No data for this date.</p>
+          <div className="macro-item">
+            <span className="macro-value">{Math.round(totals.proteinG)}g</span>
+            <span className="macro-label">Protein</span>
+          </div>
+          <div className="macro-item">
+            <span className="macro-value">{Math.round(totals.carbsG)}g</span>
+            <span className="macro-label">Carbs</span>
+          </div>
+          <div className="macro-item">
+            <span className="macro-value">{Math.round(totals.fatG)}g</span>
+            <span className="macro-label">Fat</span>
+          </div>
+        </div>
+
+        {daily?.target && (
+          <p style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-text-secondary)', marginBottom: 'var(--space-md)' }}>
+            Target: {daily.target} kcal — {totals.calories > daily.target ? `Over by ${totals.calories - daily.target}` : `${daily.target - totals.calories} remaining`}
+          </p>
+        )}
+
+        {/* Meals for selected day */}
+        {dayMeals.length > 0 && (
+          <div>
+            <h3 style={{ fontSize: 'var(--font-size-base)', marginBottom: 'var(--space-sm)' }}>Meals</h3>
+            {dayMeals.map((m) => (
+              <div className="meal-item" key={m.id}>
+                {m.photoUrl && (
+                  <img
+                    src={`${API_BASE}${m.photoUrl}`}
+                    alt={m.name}
+                    style={{
+                      width: 44,
+                      height: 44,
+                      borderRadius: 'var(--radius-sm)',
+                      objectFit: 'cover',
+                      flexShrink: 0,
+                    }}
+                  />
+                )}
+                <div className="meal-info">
+                  <div className="meal-name">{m.name}</div>
+                  <div className="meal-meta">
+                    P {Math.round(m.proteinG)}g · C {Math.round(m.carbsG)}g · F {Math.round(m.fatG)}g
+                    {' · '}
+                    {new Date(m.consumedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  </div>
+                </div>
+                <span className="meal-cals">{m.calories}</span>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {dayMeals.length === 0 && (
+          <p style={{ color: 'var(--color-text-secondary)' }}>No meals logged for this date.</p>
         )}
       </div>
 
@@ -120,7 +162,7 @@ export default function ReportsPage() {
       {/* AI suggestion */}
       {suggestion && (
         <div className="suggestion-card">
-          <h3 style={{ marginBottom: 'var(--space-sm)' }}>AI Suggestion</h3>
+          <h3 style={{ marginBottom: 'var(--space-sm)' }}>💡 AI Suggestion</h3>
           <p className="suggestion-text">{suggestion}</p>
         </div>
       )}
