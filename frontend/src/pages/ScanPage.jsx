@@ -41,13 +41,14 @@ export default function ScanPage() {
         return;
       }
 
-      if (res.confidence && res.confidence < 0.7) {
+      if (res.low_confidence) {
+        const m = res.meal;
         setResult({
-          name: res.name || '',
-          calories: res.calories || 0,
-          protein: res.protein || 0,
-          carbs: res.carbs || 0,
-          fat: res.fat || 0,
+          name: m.name || '',
+          calories: m.calories || 0,
+          proteinG: m.proteinG || 0,
+          carbsG: m.carbsG || 0,
+          fatG: m.fatG || 0,
           saved: false,
         });
       } else {
@@ -83,9 +84,9 @@ export default function ScanPage() {
       await meals.manual({
         name: result.name,
         calories: Number(result.calories),
-        protein: Number(result.protein),
-        carbs: Number(result.carbs),
-        fat: Number(result.fat),
+        proteinG: Number(result.proteinG),
+        carbsG: Number(result.carbsG),
+        fatG: Number(result.fatG),
       });
       navigate('/');
     } catch (err) {
@@ -164,15 +165,15 @@ export default function ScanPage() {
               </div>
               <div className="form-group">
                 <label>Protein (g)</label>
-                <input type="number" value={result.protein} onChange={updateResult('protein')} />
+                <input type="number" value={result.proteinG} onChange={updateResult('proteinG')} />
               </div>
               <div className="form-group">
                 <label>Carbs (g)</label>
-                <input type="number" value={result.carbs} onChange={updateResult('carbs')} />
+                <input type="number" value={result.carbsG} onChange={updateResult('carbsG')} />
               </div>
               <div className="form-group">
                 <label>Fat (g)</label>
-                <input type="number" value={result.fat} onChange={updateResult('fat')} />
+                <input type="number" value={result.fatG} onChange={updateResult('fatG')} />
               </div>
             </div>
             <div style={{ display: 'flex', gap: 'var(--space-sm)' }}>
@@ -191,21 +192,23 @@ export default function ScanPage() {
       {showWeightPrompt && (
         <div className="modal-overlay" onClick={() => setShowWeightPrompt(false)}>
           <div className="modal" onClick={(e) => e.stopPropagation()}>
-            <h2>Enter Weight</h2>
+            <h2>Update Your Weight</h2>
             <p style={{ color: 'var(--color-text-secondary)', marginBottom: 'var(--space-md)' }}>
-              We need the weight (in grams) to calculate nutrition.
+              Your body weight helps estimate portion sizes more accurately.
             </p>
             <form onSubmit={handleWeightSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-md)' }}>
               <div className="form-group">
-                <label htmlFor="weight-input">Weight (g)</label>
+                <label htmlFor="weight-input">Your weight (kg)</label>
                 <input
                   id="weight-input"
                   type="number"
+                  step="0.1"
                   value={weight}
                   onChange={(e) => setWeight(e.target.value)}
                   required
-                  min="1"
-                  placeholder="e.g. 200"
+                  min="20"
+                  max="500"
+                  placeholder="e.g. 75"
                 />
               </div>
               <div style={{ display: 'flex', gap: 'var(--space-sm)' }}>

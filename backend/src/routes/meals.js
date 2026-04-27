@@ -40,10 +40,19 @@ router.post('/photo', authenticate, aiLimiter, upload.single('photo'), async (re
   try {
     if (!req.file) return res.status(400).json({ error: 'Photo is required' });
 
-    const user = await prisma.user.findUnique({ where: { id: req.userId } });
+    let user = await prisma.user.findUnique({ where: { id: req.userId } });
     if (!user) return res.status(404).json({ error: 'User not found' });
 
-    // Check if weight was updated within last 7 days
+    // Accept weight from form body to update profile
+    const bodyWeight = req.body.weight ? parseFloat(req.body.weight) : null;
+    if (bodyWeight && bodyWeight >= 20 && bodyWeight <= 500) {
+      user = await prisma.user.update({
+        where: { id: req.userId },
+        data: { weightKg: bodyWeight, weightUpdatedAt: new Date() },
+      });
+    }
+
+    // Check if weight is available (either from profile or just submitted)
     const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
     if (!user.weightKg || !user.weightUpdatedAt || user.weightUpdatedAt < sevenDaysAgo) {
       return res.status(200).json({
