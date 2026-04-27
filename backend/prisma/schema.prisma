@@ -1,0 +1,100 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Gender {
+  male
+  female
+  other
+}
+
+enum ActivityLevel {
+  sedentary
+  light
+  moderate
+  active
+  very_active
+}
+
+enum Goal {
+  lose
+  maintain
+  gain
+}
+
+enum MealSource {
+  manual
+  photo_ai
+}
+
+model User {
+  id                  String         @id @default(cuid())
+  email               String         @unique
+  passwordHash        String         @map("password_hash")
+  name                String
+  age                 Int?
+  gender              Gender?
+  heightCm            Float?         @map("height_cm")
+  weightKg            Float?         @map("weight_kg")
+  weightUpdatedAt     DateTime?      @map("weight_updated_at")
+  activityLevel       ActivityLevel? @map("activity_level")
+  goal                Goal?
+  dailyCalorieTarget  Int?           @map("daily_calorie_target")
+  createdAt           DateTime       @default(now()) @map("created_at")
+  updatedAt           DateTime       @updatedAt @map("updated_at")
+
+  meals               Meal[]
+  refreshTokens       RefreshToken[]
+  suggestions         SuggestionCache[]
+
+  @@map("users")
+}
+
+model Meal {
+  id            String     @id @default(cuid())
+  userId        String     @map("user_id")
+  name          String
+  calories      Int
+  proteinG      Float      @map("protein_g")
+  carbsG        Float      @map("carbs_g")
+  fatG          Float      @map("fat_g")
+  source        MealSource @default(manual)
+  photoUrl      String?    @map("photo_url")
+  aiConfidence  Float?     @map("ai_confidence")
+  consumedAt    DateTime   @map("consumed_at")
+  createdAt     DateTime   @default(now()) @map("created_at")
+
+  user          User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, consumedAt])
+  @@map("meals")
+}
+
+model RefreshToken {
+  id        String   @id @default(cuid())
+  userId    String   @map("user_id")
+  tokenHash String   @map("token_hash")
+  expiresAt DateTime @map("expires_at")
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([tokenHash])
+  @@map("refresh_tokens")
+}
+
+model SuggestionCache {
+  id        String   @id @default(cuid())
+  userId    String   @map("user_id")
+  message   String
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@map("suggestion_cache")
+}
