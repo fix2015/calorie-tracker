@@ -17,10 +17,23 @@ const GOALS = [
 ];
 
 export default function ProfilePage() {
-  const { user, refreshUser } = useAuth();
+  const { user, refreshUser, logout, deleteAccount } = useAuth();
   const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+
+  const handleDeleteAccount = async () => {
+    if (!window.confirm('Are you sure you want to delete your account? This cannot be undone.')) return;
+    if (!window.confirm('This will permanently delete all your data. Continue?')) return;
+    setDeleting(true);
+    try {
+      await deleteAccount();
+    } catch (err) {
+      setError(err.message || 'Failed to delete account');
+      setDeleting(false);
+    }
+  };
 
   const [form, setForm] = useState({
     name: '',
@@ -178,6 +191,22 @@ export default function ProfilePage() {
             {saving ? 'Saving...' : 'Save & Recalculate'}
           </button>
         </form>
+
+        <hr style={{ margin: 'var(--space-xl) 0', border: 'none', borderTop: '1px solid var(--color-border)' }} />
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-sm)' }}>
+          <button className="btn btn-secondary btn-block" onClick={logout}>
+            Logout
+          </button>
+          <button
+            className="btn btn-block"
+            style={{ background: 'var(--color-danger, #EF4444)', color: '#fff' }}
+            onClick={handleDeleteAccount}
+            disabled={deleting}
+          >
+            {deleting ? 'Deleting...' : 'Delete Account'}
+          </button>
+        </div>
       </div>
     </div>
   );

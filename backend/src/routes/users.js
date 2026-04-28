@@ -36,4 +36,13 @@ router.patch('/me', authenticate, async (req, res, next) => {
   }
 });
 
+router.delete('/me', authenticate, async (req, res, next) => {
+  try {
+    await prisma.user.delete({ where: { id: req.userId } });
+    res.json({ message: 'Account deleted' });
+  } catch (err) {
+    next(err);
+  }
+});
+
 module.exports = router;

@@ -65,6 +65,7 @@ export const auth = {
 
 export const users = {
   updateProfile: (data) => request('/users/me', { method: 'PATCH', body: JSON.stringify(data) }),
+  deleteAccount: () => request('/users/me', { method: 'DELETE' }),
 };
 
 export const meals = {

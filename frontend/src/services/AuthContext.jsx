@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { auth, setTokens, clearTokens, setAuthErrorHandler } from './api';
+import { auth, users, setTokens, clearTokens, setAuthErrorHandler } from './api';
 
 const AuthContext = createContext(null);
 
@@ -42,8 +42,14 @@ export function AuthProvider({ children }) {
     setUser(u);
   };
 
+  const deleteAccount = async () => {
+    await users.deleteAccount();
+    clearTokens();
+    setUser(null);
+  };
+
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout, refreshUser }}>
+    <AuthContext.Provider value={{ user, loading, login, register, logout, deleteAccount, refreshUser }}>
       {children}
     </AuthContext.Provider>
   );
