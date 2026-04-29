@@ -5,6 +5,7 @@ import { reports, users } from '../services/api';
 import { calcMacroTargets, MOTIVATION_QUOTES } from '../services/macroCalc';
 import { buildDailySummaryShareText, shareText } from '../services/share';
 import { photoSrc } from '../services/photoUrl';
+import { requestNotificationPermission, startNotificationScheduler } from '../services/notifications';
 import AddMealModal from '../components/AddMealModal';
 import MealDetailModal from '../components/MealDetailModal';
 
@@ -29,6 +30,13 @@ export default function DashboardPage() {
   useEffect(() => {
     const timer = setTimeout(() => setMotivation(null), 10000);
     return () => clearTimeout(timer);
+  }, []);
+
+  // Request notification permission and start scheduler
+  useEffect(() => {
+    requestNotificationPermission().then((granted) => {
+      if (granted) startNotificationScheduler();
+    });
   }, []);
 
   const fetchData = async () => {
