@@ -29,7 +29,7 @@ export default function LoginPage() {
       <div className="card" style={{ width: '100%', maxWidth: 420 }}>
         <h1 className="page-title" style={{ textAlign: 'center' }}>Sign In</h1>
 
-        {error && <p className="error-text">{error}</p>}
+        <p className={`error-text${error ? ' visible' : ''}`} style={{ marginBottom: error ? 'var(--space-md)' : 0 }}><span>{error}</span></p>
 
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-md)' }}>
           <div className="form-group">

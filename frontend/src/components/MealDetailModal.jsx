@@ -137,7 +137,7 @@ export default function MealDetailModal({ meal, onClose, onUpdated }) {
           <>
             {/* Edit form */}
             <h2 style={{ marginBottom: 'var(--space-md)' }}>Edit Meal</h2>
-            {error && <p className="error-text" style={{ marginBottom: 'var(--space-sm)' }}>{error}</p>}
+            <p className={`error-text${error ? ' visible' : ''}`} style={{ marginBottom: error ? 'var(--space-sm)' : 0 }}><span>{error}</span></p>
             <form onSubmit={handleUpdate} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-md)' }}>
               <div className="form-group">
                 <label>Name</label>

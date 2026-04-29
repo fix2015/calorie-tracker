@@ -153,7 +153,7 @@ export default function ScanPage() {
             )}
 
             {loading && <div className="spinner" />}
-            {error && <p className="error-text">{error}</p>}
+            <p className={`error-text${error ? ' visible' : ''}`}><span>{error}</span></p>
           </div>
         </div>
       )}
@@ -246,7 +246,7 @@ export default function ScanPage() {
                   </button>
                 </div>
               </div>
-              {error && <p className="error-text" style={{ marginTop: 'var(--space-sm)' }}>{error}</p>}
+              <p className={`error-text${error ? ' visible' : ''}`} style={{ marginTop: error ? 'var(--space-sm)' : 0 }}><span>{error}</span></p>
             </>
           )}
         </div>

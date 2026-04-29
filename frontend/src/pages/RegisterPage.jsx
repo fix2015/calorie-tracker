@@ -115,7 +115,7 @@ export default function RegisterPage() {
           <div className={`step ${step >= 4 ? 'active' : ''}`} />
         </div>
 
-        {error && <p className="error-text" style={{ marginBottom: 'var(--space-md)' }}>{error}</p>}
+        <p className={`error-text${error ? ' visible' : ''}`} style={{ marginBottom: error ? 'var(--space-md)' : 0 }}><span>{error}</span></p>
 
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-md)' }}>
           {step === 1 && (

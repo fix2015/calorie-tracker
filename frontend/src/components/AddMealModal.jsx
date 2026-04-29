@@ -45,7 +45,7 @@ export default function AddMealModal({ onClose, onSaved }) {
       <div className="modal" onClick={(e) => e.stopPropagation()}>
         <h2>Add Meal</h2>
 
-        {error && <p className="error-text" style={{ marginBottom: 'var(--space-md)' }}>{error}</p>}
+        <p className={`error-text${error ? ' visible' : ''}`} style={{ marginBottom: error ? 'var(--space-md)' : 0 }}><span>{error}</span></p>
 
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-md)' }}>
           <div className="form-group">

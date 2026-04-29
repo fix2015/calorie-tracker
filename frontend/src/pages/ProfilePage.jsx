@@ -123,8 +123,8 @@ export default function ProfilePage() {
           </div>
         )}
 
-        {error && <p className="error-text" style={{ marginBottom: 'var(--space-md)' }}>{error}</p>}
-        {success && <p style={{ color: 'var(--color-success)', fontSize: 'var(--font-size-sm)', marginBottom: 'var(--space-md)' }}>{success}</p>}
+        <p className={`error-text${error ? ' visible' : ''}`} style={{ marginBottom: error ? 'var(--space-md)' : 0 }}><span>{error}</span></p>
+        <p className={`success-text${success ? ' visible' : ''}`} style={{ marginBottom: success ? 'var(--space-md)' : 0 }}><span>{success}</span></p>
 
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-md)' }}>
           <div className="form-group">
