@@ -41,9 +41,9 @@ jobs:
           file: ./frontend/Dockerfile.prod
           push: true
           build-args: |
-            VITE_API_URL=/calories/api
-            VITE_BASE_PATH=/calories
-            VITE_API_BASE=/calories
+            VITE_API_URL=/api
+            VITE_BASE_PATH=/
+            VITE_API_BASE=
           tags: |
             ghcr.io/${{ github.repository }}/frontend:latest
             ghcr.io/${{ github.repository }}/frontend:${{ github.sha }}
