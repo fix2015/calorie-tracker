@@ -2,8 +2,7 @@ import { useState, useEffect } from 'react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { reports } from '../services/api';
 import MealDetailModal from '../components/MealDetailModal';
-
-const UPLOAD_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:3001';
+import { photoSrc } from '../services/photoUrl';
 
 export default function ReportsPage() {
   const [date, setDate] = useState(() => new Date().toISOString().split('T')[0]);
@@ -105,7 +104,7 @@ export default function ReportsPage() {
               <div className="meal-item" key={m.id} onClick={() => setSelectedMeal(m)} style={{ cursor: 'pointer' }}>
                 {m.photoUrl && (
                   <img
-                    src={`${UPLOAD_BASE}${m.photoUrl}`}
+                    src={photoSrc(m.photoUrl)}
                     alt={m.name}
                     style={{
                       width: 44,

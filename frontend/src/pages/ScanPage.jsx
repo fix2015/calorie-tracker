@@ -2,8 +2,7 @@ import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { meals } from '../services/api';
 import { resizeImage } from '../services/imageResize';
-
-const UPLOAD_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:3001';
+import { photoSrc } from '../services/photoUrl';
 
 export default function ScanPage() {
   const fileRef = useRef(null);
@@ -163,7 +162,7 @@ export default function ScanPage() {
         <div className="card">
           {result.photoUrl && (
             <div className="photo-preview" style={{ marginBottom: 'var(--space-md)' }}>
-              <img src={`${UPLOAD_BASE}${result.photoUrl}`} alt={result.name} />
+              <img src={photoSrc(result.photoUrl)} alt={result.name} />
             </div>
           )}
 

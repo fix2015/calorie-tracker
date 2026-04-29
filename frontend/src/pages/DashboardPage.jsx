@@ -4,10 +4,9 @@ import { useAuth } from '../services/AuthContext';
 import { reports, users } from '../services/api';
 import { calcMacroTargets, MOTIVATION_QUOTES } from '../services/macroCalc';
 import { buildDailySummaryShareText, shareText } from '../services/share';
+import { photoSrc } from '../services/photoUrl';
 import AddMealModal from '../components/AddMealModal';
 import MealDetailModal from '../components/MealDetailModal';
-
-const UPLOAD_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:3001';
 
 export default function DashboardPage() {
   const { user, refreshUser } = useAuth();
@@ -227,7 +226,7 @@ export default function DashboardPage() {
           <div className="meal-item" key={m.id} onClick={() => setSelectedMeal(m)} style={{ cursor: 'pointer' }}>
             {m.photoUrl && (
               <img
-                src={`${UPLOAD_BASE}${m.photoUrl}`}
+                src={photoSrc(m.photoUrl)}
                 alt={m.name}
                 style={{
                   width: 52,

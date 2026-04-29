@@ -5,6 +5,7 @@ const { authenticate } = require('../middleware/auth');
 const { upload } = require('../middleware/upload');
 const { manualMealSchema } = require('../utils/validation');
 const { analyzePhoto } = require('../services/vision');
+const { uploadImage } = require('../services/s3');
 
 const router = Router();
 
@@ -55,15 +56,21 @@ router.post('/photo', authenticate, aiLimiter, upload.single('photo'), async (re
     // Check if weight is available (either from profile or just submitted)
     const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
     if (!user.weightKg || !user.weightUpdatedAt || user.weightUpdatedAt < sevenDaysAgo) {
+      const s3Url = await uploadImage(req.file.path);
       return res.status(200).json({
         needs_weight: true,
         message: 'Please update your weight for accurate portion estimation',
-        photoUrl: `/uploads/${req.file.filename}`,
+        photoUrl: s3Url || `/uploads/${req.file.filename}`,
       });
     }
 
+    // Analyze photo with AI first (needs original file)
     const result = await analyzePhoto(req.file.path, user.weightKg);
     const lowConfidence = result.confidence < 0.4;
+
+    // Then resize + upload to S3 (deletes local file if S3 configured)
+    const s3Url = await uploadImage(req.file.path);
+    const photoUrl = s3Url || `/uploads/${req.file.filename}`;
 
     const meal = await prisma.meal.create({
       data: {
@@ -74,7 +81,7 @@ router.post('/photo', authenticate, aiLimiter, upload.single('photo'), async (re
         carbsG: result.carbsG,
         fatG: result.fatG,
         source: 'photo_ai',
-        photoUrl: `/uploads/${req.file.filename}`,
+        photoUrl,
         aiConfidence: result.confidence,
         consumedAt: new Date(),
       },

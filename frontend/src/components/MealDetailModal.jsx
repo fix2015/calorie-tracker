@@ -1,8 +1,7 @@
 import { useState } from 'react';
 import { meals } from '../services/api';
 import { buildMealShareText, shareText } from '../services/share';
-
-const UPLOAD_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:3001';
+import { photoSrc } from '../services/photoUrl';
 
 export default function MealDetailModal({ meal, onClose, onUpdated }) {
   const [editing, setEditing] = useState(false);
@@ -67,7 +66,7 @@ export default function MealDetailModal({ meal, onClose, onUpdated }) {
             maxHeight: 260,
           }}>
             <img
-              src={`${UPLOAD_BASE}${meal.photoUrl}`}
+              src={photoSrc(meal.photoUrl)}
               alt={meal.name}
               style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
             />
