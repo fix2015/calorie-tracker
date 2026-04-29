@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../services/AuthContext';
-import { meals, reports, users } from '../services/api';
+import { reports, users } from '../services/api';
+import { calcMacroTargets, MOTIVATION_QUOTES } from '../services/macroCalc';
+import { buildDailySummaryShareText, shareText } from '../services/share';
 import AddMealModal from '../components/AddMealModal';
 import MealDetailModal from '../components/MealDetailModal';
 
@@ -17,8 +19,18 @@ export default function DashboardPage() {
   const [showWeighIn, setShowWeighIn] = useState(false);
   const [weighInValue, setWeighInValue] = useState('');
   const [weighInLoading, setWeighInLoading] = useState(false);
+  const [motivation, setMotivation] = useState(
+    () => MOTIVATION_QUOTES[Math.floor(Math.random() * MOTIVATION_QUOTES.length)]
+  );
 
   const target = user?.dailyCalorieTarget || 2000;
+  const macroTargets = calcMacroTargets(user);
+
+  // Motivation banner — auto-dismiss after 10s
+  useEffect(() => {
+    const timer = setTimeout(() => setMotivation(null), 10000);
+    return () => clearTimeout(timer);
+  }, []);
 
   const fetchData = async () => {
     try {
@@ -74,6 +86,16 @@ export default function DashboardPage() {
 
   return (
     <div className="page">
+      {/* Motivation banner */}
+      {motivation && (
+        <div className="motivation-banner">
+          <span className="motivation-text">{motivation}</span>
+          <button className="motivation-close" onClick={() => setMotivation(null)} aria-label="Close">
+            &times;
+          </button>
+        </div>
+      )}
+
       <h1 className="page-title">Dashboard</h1>
 
       {/* Weigh-in prompt */}
@@ -139,20 +161,41 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        <div className="macro-bar" style={{ marginTop: 'var(--space-md)' }}>
-          <div className="macro-item">
-            <span className="macro-value">{Math.round(totals.proteinG)}g</span>
-            <span className="macro-label">Protein</span>
-          </div>
-          <div className="macro-item">
-            <span className="macro-value">{Math.round(totals.carbsG)}g</span>
-            <span className="macro-label">Carbs</span>
-          </div>
-          <div className="macro-item">
-            <span className="macro-value">{Math.round(totals.fatG)}g</span>
-            <span className="macro-label">Fat</span>
-          </div>
-        </div>
+      </div>
+
+      {/* Macro target cards */}
+      <div className="macro-cards">
+        {[
+          { label: 'Protein', eaten: Math.round(totals.proteinG), target: macroTargets?.proteinG, color: '#8B5CF6', unit: 'g' },
+          { label: 'Carbs', eaten: Math.round(totals.carbsG), target: macroTargets?.carbsG, color: '#F59E0B', unit: 'g' },
+          { label: 'Fat', eaten: Math.round(totals.fatG), target: macroTargets?.fatG, color: '#10B981', unit: 'g' },
+        ].map(({ label, eaten, target: t, color, unit }) => {
+          const goal = t || 0;
+          const remaining = Math.max(0, goal - eaten);
+          const ratio = goal > 0 ? Math.min(eaten / goal, 1) : 0;
+          const r = 28;
+          const circ = 2 * Math.PI * r;
+          const off = circ - ratio * circ;
+          return (
+            <div className="macro-card" key={label}>
+              <div className="macro-card-ring">
+                <svg viewBox="0 0 64 64">
+                  <circle cx="32" cy="32" r={r} fill="none" stroke="var(--color-border)" strokeWidth="5" />
+                  <circle cx="32" cy="32" r={r} fill="none" stroke={color} strokeWidth="5"
+                    strokeLinecap="round" strokeDasharray={circ} strokeDashoffset={off}
+                    style={{ transform: 'rotate(-90deg)', transformOrigin: 'center' }}
+                  />
+                </svg>
+                <span className="macro-card-pct">{goal > 0 ? Math.round((eaten / goal) * 100) : 0}%</span>
+              </div>
+              <div className="macro-card-info">
+                <span className="macro-card-label">{label}</span>
+                <span className="macro-card-value">{eaten}{unit} <span className="macro-card-sep">/</span> {goal}{unit}</span>
+                <span className="macro-card-remaining">{remaining}{unit} left</span>
+              </div>
+            </div>
+          );
+        })}
       </div>
 
       {/* Actions */}
@@ -162,6 +205,13 @@ export default function DashboardPage() {
         </button>
         <button className="btn btn-secondary" style={{ flex: 1 }} onClick={() => navigate('/scan')}>
           📷 Scan Photo
+        </button>
+        <button className="btn btn-secondary" style={{ minWidth: 44 }} onClick={async () => {
+          const text = buildDailySummaryShareText(totals, todayMeals, target);
+          const result = await shareText(text, "Today's Nutrition");
+          if (result === 'copied') alert('Copied to clipboard!');
+        }} aria-label="Share today's summary" title="Share today's summary">
+          ↗
         </button>
       </div>
 

@@ -7,6 +7,8 @@ import DashboardPage from './pages/DashboardPage';
 import ScanPage from './pages/ScanPage';
 import ReportsPage from './pages/ReportsPage';
 import ProfilePage from './pages/ProfilePage';
+import TermsPage from './pages/TermsPage';
+import PrivacyPage from './pages/PrivacyPage';
 
 function ProtectedLayout() {
   const { user, loading } = useAuth();
@@ -58,6 +60,8 @@ function App() {
             <Route path="/profile" element={<ProfilePage />} />
           </Route>
 
+          <Route path="/terms" element={<TermsPage />} />
+          <Route path="/privacy" element={<PrivacyPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </AuthProvider>

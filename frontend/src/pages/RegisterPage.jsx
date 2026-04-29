@@ -238,6 +238,11 @@ export default function RegisterPage() {
         <p style={{ textAlign: 'center', marginTop: 'var(--space-md)', color: 'var(--color-text-secondary)' }}>
           Already have an account? <Link to="/login">Sign in</Link>
         </p>
+
+        <p className="legal-links">
+          By signing up, you agree to our{' '}
+          <Link to="/terms">Terms</Link> and <Link to="/privacy">Privacy Policy</Link>
+        </p>
       </div>
     </div>
   );

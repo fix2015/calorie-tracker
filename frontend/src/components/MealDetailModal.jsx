@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { meals } from '../services/api';
+import { buildMealShareText, shareText } from '../services/share';
 
 const UPLOAD_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:3001';
 
@@ -119,6 +120,13 @@ export default function MealDetailModal({ meal, onClose, onUpdated }) {
             <div style={{ display: 'flex', gap: 'var(--space-sm)' }}>
               <button className="btn btn-secondary" style={{ flex: 1 }} onClick={() => setEditing(true)}>
                 ✏️ Edit
+              </button>
+              <button className="btn btn-secondary" style={{ flex: 1 }} onClick={async () => {
+                const text = buildMealShareText(meal);
+                const result = await shareText(text, meal.name);
+                if (result === 'copied') alert('Copied to clipboard!');
+              }}>
+                ↗ Share
               </button>
               <button className="btn btn-danger" style={{ flex: 1 }} onClick={handleDelete} disabled={loading}>
                 🗑️ Delete

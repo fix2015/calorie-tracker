@@ -64,6 +64,12 @@ export default function LoginPage() {
         <p style={{ textAlign: 'center', marginTop: 'var(--space-md)', color: 'var(--color-text-secondary)' }}>
           Don't have an account? <Link to="/register">Sign up</Link>
         </p>
+
+        <p className="legal-links">
+          <Link to="/terms">Terms of Service</Link>
+          <span className="legal-links-sep">&middot;</span>
+          <Link to="/privacy">Privacy Policy</Link>
+        </p>
       </div>
     </div>
   );

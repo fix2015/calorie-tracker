@@ -403,6 +403,138 @@ a:hover { text-decoration: underline; }
   color: var(--color-text-secondary);
 }
 
+/* Motivation banner */
+.motivation-banner {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 300;
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  padding: var(--space-md) var(--space-lg);
+  background: linear-gradient(135deg, #4F46E5, #7C3AED);
+  color: white;
+  animation: motivationSlideIn 0.4s ease-out;
+}
+
+.motivation-text {
+  flex: 1;
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.motivation-close {
+  background: rgba(255,255,255,0.2);
+  border: none;
+  color: white;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-full);
+  font-size: 18px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background 0.2s;
+}
+.motivation-close:hover { background: rgba(255,255,255,0.35); }
+
+@keyframes motivationSlideIn {
+  from { transform: translateY(-100%); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+/* Macro target cards */
+.macro-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-sm);
+  margin-bottom: var(--space-md);
+}
+
+.macro-card {
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  padding: var(--space-md);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--color-border);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-sm);
+  text-align: center;
+}
+
+.macro-card-ring {
+  width: 64px;
+  height: 64px;
+  position: relative;
+}
+
+.macro-card-ring svg {
+  width: 100%;
+  height: 100%;
+}
+
+.macro-card-pct {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.macro-card-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.macro-card-label {
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--color-text-secondary);
+}
+
+.macro-card-value {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.macro-card-sep {
+  color: var(--color-text-secondary);
+  font-weight: 400;
+}
+
+.macro-card-remaining {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+}
+
+@media (max-width: 480px) {
+  .macro-cards {
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-xs);
+  }
+  .macro-card {
+    padding: var(--space-sm);
+  }
+  .macro-card-ring {
+    width: 52px;
+    height: 52px;
+  }
+}
+
 /* Photo scan */
 .scan-area {
   display: flex;
@@ -471,4 +603,68 @@ a:hover { text-decoration: underline; }
 
 @keyframes spin {
   to { transform: rotate(360deg); }
+}
+
+/* Legal pages */
+.legal-page {
+  max-width: 680px;
+  width: 100%;
+}
+
+.legal-page section {
+  margin-bottom: var(--space-lg);
+}
+
+.legal-page h2 {
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+  margin-bottom: var(--space-sm);
+  color: var(--color-text);
+}
+
+.legal-page p {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  line-height: 1.7;
+  margin-bottom: var(--space-sm);
+}
+
+.legal-page ul {
+  padding-left: var(--space-lg);
+  margin-bottom: var(--space-sm);
+}
+
+.legal-page li {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  line-height: 1.7;
+  margin-bottom: var(--space-xs);
+}
+
+.legal-updated {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  margin-bottom: var(--space-lg);
+}
+
+/* Legal links (footer-style) */
+.legal-links {
+  text-align: center;
+  margin-top: var(--space-md);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+}
+
+.legal-links a {
+  color: var(--color-text-secondary);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.legal-links a:hover {
+  color: var(--color-primary);
+}
+
+.legal-links-sep {
+  margin: 0 var(--space-sm);
 }

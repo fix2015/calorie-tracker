@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../services/AuthContext';
 import { users } from '../services/api';
 
@@ -207,6 +208,12 @@ export default function ProfilePage() {
             {deleting ? 'Deleting...' : 'Delete Account'}
           </button>
         </div>
+
+        <p className="legal-links" style={{ marginTop: 'var(--space-lg)' }}>
+          <Link to="/terms">Terms of Service</Link>
+          <span className="legal-links-sep">&middot;</span>
+          <Link to="/privacy">Privacy Policy</Link>
+        </p>
       </div>
     </div>
   );

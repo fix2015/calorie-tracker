@@ -30,13 +30,15 @@ npm run lint                # ESLint
 
 ### Tests
 ```bash
-cd backend && npm test      # Node.js built-in test runner: node --test src/tests/**/*.test.js
+cd backend && npm test                              # all tests
+cd backend && node --test src/tests/foo.test.js     # single test file
 ```
+Uses Node.js built-in test runner (no framework). Test directory: `backend/src/tests/`.
 
 ### Production deployment
 ```bash
 # See infra/ for docker-compose.prod.yml and nginx configs
-# CI/CD via GitHub Actions deploys to EC2
+# CI/CD via GitHub Actions (.github/workflows/deploy.yml) deploys to EC2
 ```
 
 ## Architecture
@@ -44,26 +46,27 @@ cd backend && npm test      # Node.js built-in test runner: node --test src/test
 **Monorepo with two apps:** `backend/` (Express API) and `frontend/` (React SPA).
 
 ### Backend (CommonJS, Node.js)
-- **Entry:** `src/index.js` — Express app with CORS, static uploads, route mounting
+- **Entry:** `src/index.js` — Express app with CORS, static uploads, route mounting. Health check at `GET /api/health`.
 - **Routes:** `src/routes/{auth,users,meals,reports}.js` — REST endpoints under `/api/`
-- **Services:** `src/services/{auth,vision}.js` — business logic; vision service calls OpenAI GPT-4o for photo meal scanning
-- **Middleware:** `src/middleware/auth.js` (JWT verify), `upload.js` (multer), `errorHandler.js`
+- **Services:** `src/services/vision.js` — calls OpenAI GPT-4o for photo meal scanning. Provider configurable via `AI_PROVIDER` env var.
+- **Middleware:** `src/middleware/auth.js` (JWT verify), `upload.js` (multer for photo uploads), `errorHandler.js`
+- **Rate limiting:** `express-rate-limit` applied to auth routes and AI-powered endpoints (photo scan, suggestions)
 - **Database:** PostgreSQL via Prisma ORM. Schema at `prisma/schema.prisma`
   - Models: User, Meal, RefreshToken, SuggestionCache
   - Prisma uses `@map` to snake_case DB columns while keeping camelCase in JS
+  - All models use `onDelete: Cascade` from User
 - **Auth flow:** JWT access + refresh tokens. Refresh tokens stored hashed in DB.
-- **AI:** OpenAI GPT-4o Vision for photo scanning. Provider configurable via `AI_PROVIDER` env var.
 - **Validation:** Zod schemas in route handlers
 
 ### Frontend (React 19, Vite, ES modules)
-- **Routing:** React Router v7 in `App.jsx`. Protected routes use `<ProtectedLayout>` with `<Outlet>`
+- **Routing:** React Router v7 in `App.jsx`. Protected routes use `<ProtectedLayout>` with `<Outlet>`. Public routes (`/login`, `/register`) redirect authenticated users to `/`.
 - **Auth state:** `services/AuthContext.jsx` — React context with auto-refresh on mount
 - **API client:** `services/api.js` — fetch wrapper with automatic JWT refresh on 401
-- **Pages:** Dashboard (calorie ring + meal list), Scan (camera/upload → AI), Reports (Recharts), Profile (auto-calc calorie target via Mifflin-St Jeor)
+- **Pages:** Dashboard (calorie ring + meal list), Scan (camera/upload → AI), Reports (Recharts), Profile (Mifflin-St Jeor calorie target auto-calculation)
 - **Styling:** Plain CSS in `styles/` directory, no CSS framework
 - **Image handling:** Client-side resize before upload (`services/imageResize.js`)
 
 ### Key env vars
 - `VITE_API_URL` — frontend API base (default `http://localhost:3001/api`)
 - `VITE_BASE_PATH` — frontend route basename (used for subdirectory deploys)
-- Backend vars in `backend/.env.example`: DATABASE_URL, JWT_SECRET, OPENAI_API_KEY
+- Backend vars in `backend/.env.example`: DATABASE_URL, JWT_SECRET, JWT_REFRESH_SECRET, OPENAI_API_KEY, AI_PROVIDER
