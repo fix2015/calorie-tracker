@@ -19,6 +19,9 @@ export default function DashboardPage() {
   const [showWeighIn, setShowWeighIn] = useState(false);
   const [weighInValue, setWeighInValue] = useState('');
   const [weighInLoading, setWeighInLoading] = useState(false);
+  const [aiAnalysis, setAiAnalysis] = useState(null);
+  const [aiLoading, setAiLoading] = useState(false);
+  const [showAnalysis, setShowAnalysis] = useState(false);
   const [motivation, setMotivation] = useState(
     () => MOTIVATION_QUOTES[Math.floor(Math.random() * MOTIVATION_QUOTES.length)]
   );
@@ -204,6 +207,59 @@ export default function DashboardPage() {
           );
         })}
       </div>
+
+      {/* AI Analysis button */}
+      <button
+        className="ai-analyze-btn"
+        onClick={async () => {
+          setAiLoading(true);
+          setShowAnalysis(true);
+          setAiAnalysis(null);
+          try {
+            const res = await reports.analyze();
+            setAiAnalysis(res.analysis);
+          } catch (err) {
+            setAiAnalysis(err.message || 'Analysis failed. Please try again.');
+          } finally {
+            setAiLoading(false);
+          }
+        }}
+        disabled={aiLoading}
+      >
+        <span className="ai-analyze-icon">✦</span>
+        <span>AI Nutrition Analysis</span>
+      </button>
+
+      {/* AI Analysis modal */}
+      {showAnalysis && (
+        <div className="modal-overlay" onClick={() => setShowAnalysis(false)}>
+          <div className="modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: 520 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-md)' }}>
+              <h2 style={{ margin: 0 }}>AI Analysis</h2>
+              <button
+                onClick={() => setShowAnalysis(false)}
+                style={{ background: 'none', border: 'none', fontSize: 20, cursor: 'pointer', color: 'var(--color-text-secondary)', padding: 4 }}
+              >
+                &times;
+              </button>
+            </div>
+            {aiLoading ? (
+              <div style={{ textAlign: 'center', padding: 'var(--space-xl) 0' }}>
+                <div className="spinner" />
+                <p style={{ color: 'var(--color-text-secondary)', fontSize: 'var(--font-size-sm)', marginTop: 'var(--space-md)' }}>
+                  Analyzing your nutrition...
+                </p>
+              </div>
+            ) : (
+              <div className="ai-analysis-content">
+                {aiAnalysis && aiAnalysis.split('\n').filter(Boolean).map((p, i) => (
+                  <p key={i}>{p}</p>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Actions */}
       <div style={{ display: 'flex', gap: 'var(--space-sm)', marginBottom: 'var(--space-md)' }}>

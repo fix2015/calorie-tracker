@@ -402,6 +402,66 @@ a:hover { text-decoration: underline; }
   margin-bottom: var(--space-md);
 }
 
+/* AI Analysis button */
+.ai-analyze-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-sm);
+  padding: var(--space-md);
+  margin-bottom: var(--space-md);
+  border: none;
+  border-radius: var(--radius-lg);
+  background: linear-gradient(135deg, #7C3AED, #4F46E5, #2563EB);
+  color: white;
+  font-size: var(--font-size-base);
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+  box-shadow: 0 4px 15px rgba(79, 70, 229, 0.3);
+  min-height: 48px;
+}
+
+.ai-analyze-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(79, 70, 229, 0.4);
+}
+
+.ai-analyze-btn:active {
+  transform: translateY(0);
+}
+
+.ai-analyze-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.ai-analyze-icon {
+  font-size: 18px;
+  animation: sparkle 2s ease-in-out infinite;
+}
+
+@keyframes sparkle {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.7; transform: scale(1.2); }
+}
+
+.ai-analysis-content {
+  font-size: var(--font-size-sm);
+  line-height: 1.7;
+  color: var(--color-text);
+}
+
+.ai-analysis-content p {
+  margin-bottom: var(--space-md);
+}
+
+.ai-analysis-content p:last-child {
+  margin-bottom: 0;
+}
+
 /* Context help (scan page) */
 .context-help-icon {
   display: inline-flex;

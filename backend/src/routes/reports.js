@@ -94,6 +94,73 @@ router.get('/weekly', authenticate, async (req, res, next) => {
   }
 });
 
+const analysisLimiter = rateLimit({
+  windowMs: 24 * 60 * 60 * 1000,
+  max: 10,
+  message: { error: 'Daily analysis limit reached (10/day). Try again tomorrow!' },
+  keyGenerator: (req) => req.userId,
+});
+
+router.get('/analyze', authenticate, analysisLimiter, async (req, res, next) => {
+  try {
+    const user = await prisma.user.findUnique({ where: { id: req.userId } });
+    if (!user) return res.status(404).json({ error: 'User not found' });
+
+    const today = new Date().toISOString().slice(0, 10);
+    const dayStart = new Date(`${today}T00:00:00.000Z`);
+    const dayEnd = new Date(`${today}T23:59:59.999Z`);
+
+    const meals = await prisma.meal.findMany({
+      where: { userId: req.userId, consumedAt: { gte: dayStart, lte: dayEnd } },
+    });
+
+    if (meals.length === 0) {
+      return res.json({ analysis: "Log some meals first — I need data to give you a meaningful analysis!" });
+    }
+
+    const totals = meals.reduce(
+      (acc, m) => ({
+        calories: acc.calories + m.calories,
+        proteinG: acc.proteinG + m.proteinG,
+        carbsG: acc.carbsG + m.carbsG,
+        fatG: acc.fatG + m.fatG,
+      }),
+      { calories: 0, proteinG: 0, carbsG: 0, fatG: 0 }
+    );
+
+    const target = user.dailyCalorieTarget || 2000;
+    const mealList = meals.map((m) => `${m.name}: ${m.calories} kcal, P${Math.round(m.proteinG)}g C${Math.round(m.carbsG)}g F${Math.round(m.fatG)}g`).join('; ');
+
+    const OpenAI = require('openai');
+    const ai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+
+    const response = await ai.chat.completions.create({
+      model: 'gpt-4o-mini',
+      max_tokens: 300,
+      messages: [
+        {
+          role: 'system',
+          content: 'You are a friendly, knowledgeable nutrition coach. Give personalized, actionable advice. Use short paragraphs. Be encouraging but honest.',
+        },
+        {
+          role: 'user',
+          content: `Analyze my nutrition today. Profile: ${user.gender || 'unknown'}, ${user.age || '?'} years, ${user.weightKg || '?'} kg, ${user.heightCm || '?'} cm, goal: ${user.goal || 'maintain'}${user.targetWeightKg ? `, target weight: ${user.targetWeightKg} kg` : ''}.
+
+Daily target: ${target} kcal. Eaten so far: ${Math.round(totals.calories)} kcal, P: ${Math.round(totals.proteinG)}g, C: ${Math.round(totals.carbsG)}g, F: ${Math.round(totals.fatG)}g.
+
+Meals: ${mealList}
+
+Give a brief analysis (3-4 short paragraphs): 1) Overall assessment 2) What's good 3) What to improve 4) Suggestion for next meal. Keep it under 150 words.`,
+        },
+      ],
+    });
+
+    res.json({ analysis: response.choices[0].message.content.trim() });
+  } catch (err) {
+    next(err);
+  }
+});
+
 router.get('/suggestion', authenticate, aiLimiter, async (req, res, next) => {
   try {
     const user = await prisma.user.findUnique({ where: { id: req.userId } });

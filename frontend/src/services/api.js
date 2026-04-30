@@ -85,4 +85,5 @@ export const reports = {
   daily: (date) => request(`/reports/daily${date ? `?date=${date}` : ''}`),
   weekly: () => request('/reports/weekly'),
   suggestion: () => request('/reports/suggestion'),
+  analyze: () => request('/reports/analyze'),
 };
