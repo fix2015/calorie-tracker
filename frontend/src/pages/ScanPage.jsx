@@ -13,6 +13,8 @@ export default function ScanPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
+  const [context, setContext] = useState('');
+  const [showContextTip, setShowContextTip] = useState(false);
   const [showWeightPrompt, setShowWeightPrompt] = useState(false);
   const [weight, setWeight] = useState('');
   const [pendingBlob, setPendingBlob] = useState(null);
@@ -29,6 +31,7 @@ export default function ScanPage() {
     setResult(null);
     setEditing(false);
     setError('');
+    setContext('');
   };
 
   const submitPhoto = async (blob, extraWeight) => {
@@ -38,6 +41,7 @@ export default function ScanPage() {
       const formData = new FormData();
       formData.append('photo', blob, 'meal.jpg');
       if (extraWeight) formData.append('weight', extraWeight);
+      if (context.trim()) formData.append('context', context.trim());
 
       const res = await meals.photo(formData);
 
@@ -142,13 +146,40 @@ export default function ScanPage() {
             </button>
 
             {preview && (
-              <button
-                className="btn btn-primary btn-block"
-                onClick={handleScan}
-                disabled={loading}
-              >
-                {loading ? 'Analyzing...' : 'Analyze Photo'}
-              </button>
+              <>
+                <div className="form-group" style={{ width: '100%' }}>
+                  <label htmlFor="meal-context" style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-xs)' }}>
+                    Additional info
+                    <span
+                      className="context-help-icon"
+                      onClick={() => setShowContextTip(!showContextTip)}
+                      role="button"
+                      tabIndex={0}
+                    >
+                      ?
+                    </span>
+                  </label>
+                  {showContextTip && (
+                    <p className="context-help-tip">
+                      Help the AI be more accurate! Mention things like: portion size, cooking method, sauce/dressing, number of servings, or specific ingredients the photo can't show.
+                    </p>
+                  )}
+                  <input
+                    id="meal-context"
+                    type="text"
+                    value={context}
+                    onChange={(e) => setContext(e.target.value)}
+                    placeholder="e.g. 2 eggs, cooked in olive oil, with side salad"
+                  />
+                </div>
+                <button
+                  className="btn btn-primary btn-block"
+                  onClick={handleScan}
+                  disabled={loading}
+                >
+                  {loading ? 'Analyzing...' : 'Analyze Photo'}
+                </button>
+              </>
             )}
 
             {loading && <div className="spinner" />}

@@ -65,7 +65,18 @@ router.post('/photo', authenticate, aiLimiter, upload.single('photo'), async (re
     }
 
     // Analyze photo with AI first (needs original file)
-    const result = await analyzePhoto(req.file.path, user.weightKg);
+    const context = req.body.context || '';
+    let result;
+    try {
+      result = await analyzePhoto(req.file.path, user.weightKg, context);
+    } catch (aiErr) {
+      // Still upload the photo to S3 even if AI fails
+      const s3Url = await uploadImage(req.file.path);
+      return res.status(422).json({
+        error: aiErr.message || 'Could not analyze this photo. Please try again.',
+        photoUrl: s3Url || `/uploads/${req.file.filename}`,
+      });
+    }
     const lowConfidence = result.confidence < 0.4;
 
     // Then resize + upload to S3 (deletes local file if S3 configured)

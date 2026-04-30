@@ -402,6 +402,41 @@ a:hover { text-decoration: underline; }
   margin-bottom: var(--space-md);
 }
 
+/* Context help (scan page) */
+.context-help-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--color-primary-light);
+  color: white;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  flex-shrink: 0;
+  user-select: none;
+  transition: background 0.2s;
+}
+.context-help-icon:hover { background: var(--color-primary); }
+
+.context-help-tip {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-sm) var(--space-md);
+  line-height: 1.5;
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
 /* Suggestion card */
 .suggestion-card {
   background: linear-gradient(135deg, #EEF2FF, #E0E7FF);

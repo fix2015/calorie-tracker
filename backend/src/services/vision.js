@@ -10,12 +10,16 @@ function getProvider() {
   throw new Error(`Unsupported AI_PROVIDER: ${provider}`);
 }
 
-async function analyzePhoto(imagePath, weightKg) {
+async function analyzePhoto(imagePath, weightKg, context) {
   const client = getProvider();
   const imageData = fs.readFileSync(imagePath);
   const base64 = imageData.toString('base64');
   const mimeType = imagePath.endsWith('.png') ? 'image/png' :
     imagePath.endsWith('.webp') ? 'image/webp' : 'image/jpeg';
+
+  const contextHint = context
+    ? ` The user provided additional context: "${context}".`
+    : '';
 
   const response = await client.chat.completions.create({
     model: 'gpt-4o',
@@ -23,7 +27,7 @@ async function analyzePhoto(imagePath, weightKg) {
     messages: [
       {
         role: 'system',
-        content: `You are a nutrition estimator. Given a meal photo and the user's weight (${weightKg} kg), estimate: dish name, total calories, protein/carbs/fat in grams, and confidence (0-1). Account for portion size relative to typical plates. Return ONLY JSON: {"name","calories","protein_g","carbs_g","fat_g","confidence"}. No prose.`,
+        content: `You are a nutrition estimator. Given a meal photo and the user's weight (${weightKg} kg), estimate: dish name, total calories, protein/carbs/fat in grams, and confidence (0-1). Account for portion size relative to typical plates.${contextHint} Return ONLY valid JSON: {"name","calories","protein_g","carbs_g","fat_g","confidence"}. No markdown, no code fences, no prose.`,
       },
       {
         role: 'user',
@@ -36,9 +40,21 @@ async function analyzePhoto(imagePath, weightKg) {
 
   const text = response.choices[0].message.content.trim();
   const jsonMatch = text.match(/\{[\s\S]*\}/);
-  if (!jsonMatch) throw new Error('AI did not return valid JSON');
+  if (!jsonMatch) {
+    throw new Error('Could not analyze this photo. Please try again or add more context about the meal.');
+  }
 
-  const result = JSON.parse(jsonMatch[0]);
+  let result;
+  try {
+    result = JSON.parse(jsonMatch[0]);
+  } catch {
+    throw new Error('Could not analyze this photo. Please try again or add more context about the meal.');
+  }
+
+  if (!result.name && !result.calories) {
+    throw new Error('Could not recognize the meal. Try a clearer photo or describe what you ate.');
+  }
+
   return {
     name: result.name || 'Unknown dish',
     calories: Math.round(Number(result.calories) || 0),
