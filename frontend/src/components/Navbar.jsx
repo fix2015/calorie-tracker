@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { useAuth } from '../services/AuthContext';
-import { notificationsApi } from '../services/api';
+import { notificationsApi, messagesApi } from '../services/api';
 import { playNotificationSound } from '../services/notificationSound';
 
 const icons = {
@@ -18,19 +18,28 @@ const icons = {
 export default function Navbar() {
   const { user, logout } = useAuth();
   const location = useLocation();
-  const [unreadCount, setUnreadCount] = useState(0);
-  const prevCountRef = useRef(0);
+  const [notifCount, setNotifCount] = useState(0);
+  const [msgCount, setMsgCount] = useState(0);
+  const prevNotifRef = useRef(0);
+  const prevMsgRef = useRef(0);
 
   useEffect(() => {
     const check = () => {
       notificationsApi.unreadCount().then((data) => {
-        const newCount = data.count;
-        // Play sound if count increased and user is not on messages page
-        if (newCount > prevCountRef.current && !location.pathname.startsWith('/messages')) {
+        if (data.count > prevNotifRef.current && !location.pathname.startsWith('/notifications')) {
           playNotificationSound();
         }
-        prevCountRef.current = newCount;
-        setUnreadCount(newCount);
+        prevNotifRef.current = data.count;
+        setNotifCount(data.count);
+      }).catch(() => {});
+
+      messagesApi.list().then((data) => {
+        const total = data.conversations.reduce((sum, c) => sum + (c.unreadCount || 0), 0);
+        if (total > prevMsgRef.current && !location.pathname.startsWith('/messages')) {
+          playNotificationSound();
+        }
+        prevMsgRef.current = total;
+        setMsgCount(total);
       }).catch(() => {});
     };
     check();
@@ -43,8 +52,8 @@ export default function Navbar() {
     { to: '/dashboard', label: 'Dashboard', icon: icons.dashboard },
     { to: '/scan', label: 'Scan', icon: icons.scan },
     { to: '/explore', label: 'Explore', icon: icons.explore },
-    { to: '/notifications', label: 'Alerts', icon: icons.notifications, badge: unreadCount },
-    { to: '/messages', label: 'Messages', icon: icons.messages },
+    { to: '/notifications', label: 'Alerts', icon: icons.notifications, badge: notifCount },
+    { to: '/messages', label: 'Messages', icon: icons.messages, badge: msgCount },
     { to: '/profile', label: 'Profile', icon: icons.profile },
   ];
 
