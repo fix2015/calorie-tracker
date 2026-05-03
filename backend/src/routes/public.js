@@ -36,16 +36,19 @@ router.get('/search', async (req, res, next) => {
 });
 
 // GET /trending — popular public meals
-router.get('/trending', async (req, res, next) => {
+router.get('/trending', optionalAuth, async (req, res, next) => {
   try {
     const limit = Math.min(parseInt(req.query.limit) || 12, 48);
     const cursor = req.query.cursor || null;
 
+    const where = {
+      isPublic: true,
+      user: { isPublic: true },
+    };
+    if (req.userId) where.userId = { not: req.userId };
+
     const meals = await prisma.meal.findMany({
-      where: {
-        isPublic: true,
-        user: { isPublic: true },
-      },
+      where,
       orderBy: [{ createdAt: 'desc' }],
       take: limit + 1,
       ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
@@ -69,16 +72,19 @@ router.get('/trending', async (req, res, next) => {
 });
 
 // GET /popular-users — public users sorted by followers
-router.get('/popular-users', async (req, res, next) => {
+router.get('/popular-users', optionalAuth, async (req, res, next) => {
   try {
     const limit = Math.min(parseInt(req.query.limit) || 10, 30);
     const offset = parseInt(req.query.offset) || 0;
 
+    const where = {
+      isPublic: true,
+      username: { not: null },
+    };
+    if (req.userId) where.id = { not: req.userId };
+
     const users = await prisma.user.findMany({
-      where: {
-        isPublic: true,
-        username: { not: null },
-      },
+      where,
       select: {
         id: true, name: true, username: true, bio: true, avatarUrl: true,
         _count: { select: { followers: true, meals: true } },
