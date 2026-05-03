@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react';
-import { NavLink } from 'react-router-dom';
+import { useState, useEffect, useRef } from 'react';
+import { NavLink, useLocation } from 'react-router-dom';
 import { useAuth } from '../services/AuthContext';
 import { notificationsApi } from '../services/api';
+import { playNotificationSound } from '../services/notificationSound';
 
 const icons = {
   home: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>,
@@ -16,15 +17,26 @@ const icons = {
 
 export default function Navbar() {
   const { user, logout } = useAuth();
+  const location = useLocation();
   const [unreadCount, setUnreadCount] = useState(0);
+  const prevCountRef = useRef(0);
 
   useEffect(() => {
-    notificationsApi.unreadCount().then((data) => setUnreadCount(data.count)).catch(() => {});
-    const interval = setInterval(() => {
-      notificationsApi.unreadCount().then((data) => setUnreadCount(data.count)).catch(() => {});
-    }, 30000);
+    const check = () => {
+      notificationsApi.unreadCount().then((data) => {
+        const newCount = data.count;
+        // Play sound if count increased and user is not on messages page
+        if (newCount > prevCountRef.current && !location.pathname.startsWith('/messages')) {
+          playNotificationSound();
+        }
+        prevCountRef.current = newCount;
+        setUnreadCount(newCount);
+      }).catch(() => {});
+    };
+    check();
+    const interval = setInterval(check, 15000);
     return () => clearInterval(interval);
-  }, []);
+  }, [location.pathname]);
 
   const links = [
     { to: '/', label: 'Home', icon: icons.home },
