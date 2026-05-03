@@ -100,9 +100,8 @@ export default function ScanPage() {
     setLoading(true);
     setError('');
     try {
-      // Delete the AI-created meal and save the edited version
-      if (result.id) await meals.remove(result.id);
-      await meals.manual({
+      // Update the existing AI meal with edited values (preserves photo)
+      await meals.update(result.id, {
         name: result.name,
         calories: Number(result.calories),
         proteinG: Number(result.proteinG),
