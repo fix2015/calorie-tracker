@@ -91,20 +91,20 @@ export default function ExplorePage() {
   const isSearching = query.trim().length >= 2;
 
   return (
-    <div className="page">
+    <div className="page" style={!user ? { padding: 'var(--space-lg) var(--space-md)' } : undefined}>
       <h1 className="page-title">Explore</h1>
 
       {!user && (
         <div className="explore-auth-banner">
           <p>Join CalTracker to like, comment, follow, and share your meals</p>
-          <div style={{ display: 'flex', gap: 'var(--space-sm)' }}>
+          <div style={{ display: 'flex', gap: 'var(--space-sm)', justifyContent: 'center' }}>
             <Link to="/login" className="action-btn action-btn-follow">Log In</Link>
             <Link to="/register" className="action-btn action-btn-message">Sign Up</Link>
           </div>
         </div>
       )}
 
-      <div style={{ maxWidth: 700 }}>
+      <div>
         <div className="form-group" style={{ marginBottom: 'var(--space-lg)' }}>
           <input
             type="text"

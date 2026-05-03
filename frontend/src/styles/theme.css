@@ -984,13 +984,13 @@ a:hover { text-decoration: underline; }
 .meal-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 3px;
+  gap: var(--space-xs);
 }
 
 @media (max-width: 480px) {
   .meal-grid {
     grid-template-columns: repeat(2, 1fr);
-    gap: 2px;
+    gap: var(--space-xs);
   }
 }
 
@@ -999,8 +999,8 @@ a:hover { text-decoration: underline; }
   position: relative;
   overflow: hidden;
   cursor: pointer;
-  background: var(--color-bg);
-  border-radius: var(--radius-sm);
+  background: var(--color-border);
+  border-radius: var(--radius-md);
 }
 
 .meal-tile img {
@@ -1020,10 +1020,11 @@ a:hover { text-decoration: underline; }
   bottom: 0;
   left: 0;
   right: 0;
-  padding: var(--space-sm);
-  background: linear-gradient(transparent, rgba(0,0,0,0.6));
+  padding: var(--space-md) var(--space-sm) var(--space-sm);
+  background: linear-gradient(transparent, rgba(0,0,0,0.65));
   color: white;
   font-size: var(--font-size-xs);
+  border-radius: 0 0 var(--radius-md) var(--radius-md);
 }
 
 .meal-tile-placeholder {
@@ -1036,6 +1037,7 @@ a:hover { text-decoration: underline; }
   gap: var(--space-xs);
   padding: var(--space-sm);
   text-align: center;
+  background: linear-gradient(135deg, var(--color-bg), var(--color-surface));
 }
 
 .meal-tile-name {
