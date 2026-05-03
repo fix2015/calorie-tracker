@@ -136,6 +136,7 @@ export const publicApi = {
     method: 'POST',
     body: JSON.stringify({ text }),
   }),
+  toggleCommentLike: (commentId) => request(`/public/comments/${commentId}/like`, { method: 'POST' }),
   getComments: (mealId, cursor) => {
     const params = new URLSearchParams();
     if (cursor) params.set('cursor', cursor);

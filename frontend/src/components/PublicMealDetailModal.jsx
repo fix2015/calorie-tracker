@@ -29,6 +29,38 @@ function CommentText({ text }) {
   );
 }
 
+function CommentItem({ comment: c, user }) {
+  const [liked, setLiked] = useState(false);
+  const [likesCount, setLikesCount] = useState(c._count?.likes || 0);
+
+  const handleLike = async () => {
+    if (!user) return;
+    try {
+      const res = await publicApi.toggleCommentLike(c.id);
+      setLiked(res.liked);
+      setLikesCount(res.likesCount);
+    } catch {}
+  };
+
+  return (
+    <div className="comment-item">
+      <div className="comment-body">
+        <div>
+          <a href={c.user.username ? `/u/${c.user.username}` : '#'} className="comment-author" onClick={(e) => e.stopPropagation()}>{c.user.name}</a>
+          <CommentText text={c.text} />
+        </div>
+        <button className={`comment-like-btn${liked ? ' liked' : ''}`} onClick={handleLike} disabled={!user}>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill={liked ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+        </button>
+      </div>
+      <div className="comment-meta">
+        <span className="comment-time">{timeAgo(c.createdAt)}</span>
+        {likesCount > 0 && <span className="comment-likes">{likesCount} like{likesCount !== 1 ? 's' : ''}</span>}
+      </div>
+    </div>
+  );
+}
+
 function timeAgo(dateStr) {
   const diff = Date.now() - new Date(dateStr).getTime();
   const mins = Math.floor(diff / 60000);
@@ -182,11 +214,7 @@ export default function PublicMealDetailModal({ mealId, username, onClose }) {
                 </p>
               )}
               {comments.map((c) => (
-                <div key={c.id} className="comment-item">
-                  <a href={c.user.username ? `/u/${c.user.username}` : '#'} className="comment-author" onClick={(e) => e.stopPropagation()}>{c.user.name}</a>
-                  <CommentText text={c.text} />
-                  <div className="comment-time">{timeAgo(c.createdAt)}</div>
-                </div>
+                <CommentItem key={c.id} comment={c} user={user} />
               ))}
             </div>
 

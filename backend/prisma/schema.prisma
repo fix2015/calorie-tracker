@@ -63,6 +63,7 @@ model User {
   comments            Comment[]
   followers           Follow[]               @relation("following")
   following           Follow[]               @relation("followers")
+  commentLikes        CommentLike[]
   blockedUsers        BlockedUser[]           @relation("blocker")
   blockedBy           BlockedUser[]           @relation("blocked")
   conversations       ConversationParticipant[]
@@ -144,9 +145,24 @@ model Comment {
 
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   meal      Meal     @relation(fields: [mealId], references: [id], onDelete: Cascade)
+  likes     CommentLike[]
 
   @@index([mealId, createdAt])
   @@map("comments")
+}
+
+model CommentLike {
+  id        String   @id @default(cuid())
+  userId    String   @map("user_id")
+  commentId String   @map("comment_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  comment   Comment  @relation(fields: [commentId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, commentId])
+  @@index([commentId])
+  @@map("comment_likes")
 }
 
 model Follow {

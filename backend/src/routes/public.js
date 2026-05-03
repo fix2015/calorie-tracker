@@ -453,6 +453,7 @@ router.get('/meals/:mealId', optionalAuth, async (req, res, next) => {
       take: 20,
       include: {
         user: { select: { id: true, name: true, username: true, avatarUrl: true } },
+        _count: { select: { likes: true } },
       },
     });
 
@@ -518,6 +519,7 @@ router.post('/meals/:mealId/comments', authenticate, async (req, res, next) => {
       data: { userId: req.userId, mealId: meal.id, text: data.text },
       include: {
         user: { select: { id: true, name: true, username: true, avatarUrl: true } },
+        _count: { select: { likes: true } },
       },
     });
 
@@ -539,6 +541,31 @@ router.post('/meals/:mealId/comments', authenticate, async (req, res, next) => {
     }
 
     res.status(201).json(comment);
+  } catch (err) {
+    next(err);
+  }
+});
+
+// POST /comments/:commentId/like — toggle comment like
+router.post('/comments/:commentId/like', authenticate, async (req, res, next) => {
+  try {
+    const comment = await prisma.comment.findUnique({ where: { id: req.params.commentId } });
+    if (!comment) return res.status(404).json({ error: 'Comment not found' });
+
+    const existing = await prisma.commentLike.findUnique({
+      where: { userId_commentId: { userId: req.userId, commentId: comment.id } },
+    });
+
+    if (existing) {
+      await prisma.commentLike.delete({ where: { id: existing.id } });
+    } else {
+      await prisma.commentLike.create({
+        data: { userId: req.userId, commentId: comment.id },
+      });
+    }
+
+    const likesCount = await prisma.commentLike.count({ where: { commentId: comment.id } });
+    res.json({ liked: !existing, likesCount });
   } catch (err) {
     next(err);
   }
@@ -566,6 +593,7 @@ router.get('/meals/:mealId/comments', async (req, res, next) => {
       ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
       include: {
         user: { select: { id: true, name: true, username: true, avatarUrl: true } },
+        _count: { select: { likes: true } },
       },
     });
 
