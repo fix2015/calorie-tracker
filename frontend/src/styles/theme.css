@@ -369,6 +369,7 @@ a:hover { text-decoration: underline; }
   .main-content {
     padding: var(--space-md);
     padding-bottom: 80px;
+    background: #fff;
   }
 }
 
