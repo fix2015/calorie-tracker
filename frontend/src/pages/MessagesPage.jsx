@@ -29,7 +29,6 @@ function Inbox() {
 
   return (
     <>
-      <h1 className="page-title">Messages</h1>
       {conversations.length === 0 ? (
         <p style={{ textAlign: 'center', color: 'var(--color-text-secondary)', padding: 'var(--space-xl) 0' }}>
           No conversations yet

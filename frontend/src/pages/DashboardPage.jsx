@@ -103,8 +103,6 @@ export default function DashboardPage() {
 
   return (
     <div className="page dashboard-page">
-      <h1 className="page-title">My stats</h1>
-
       {/* Weigh-in prompt */}
       {needsWeighIn && !showWeighIn && (
         <div className="dash-weighin-prompt" onClick={() => { setShowWeighIn(true); setWeighInValue(user?.weightKg?.toString() || ''); }}>

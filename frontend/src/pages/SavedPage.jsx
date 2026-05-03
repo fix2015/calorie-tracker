@@ -35,8 +35,6 @@ export default function SavedPage() {
 
   return (
     <div className="page">
-      <h1 className="page-title">Saved</h1>
-
       {meals.length === 0 ? (
         <div style={{ textAlign: 'center', padding: 'var(--space-2xl) 0', color: 'var(--color-text-secondary)' }}>
           <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" style={{ opacity: 0.3, marginBottom: 'var(--space-md)' }}><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>

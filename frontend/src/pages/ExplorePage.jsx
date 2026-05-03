@@ -85,8 +85,6 @@ export default function ExplorePage() {
 
   return (
     <div className="page" style={!user ? { padding: 'var(--space-lg) var(--space-md)' } : undefined}>
-      <h1 className="page-title">Discover</h1>
-
       {!user && (
         <div className="explore-auth-banner">
           <p>Join CalTracker to like, comment, follow, and share your meals</p>

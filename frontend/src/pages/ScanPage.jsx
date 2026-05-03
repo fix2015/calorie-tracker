@@ -120,8 +120,6 @@ export default function ScanPage() {
 
   return (
     <div className="page">
-      <h1 className="page-title">Scan Food Photo</h1>
-
       {/* Camera / file selection */}
       {!result && (
         <div className="card">

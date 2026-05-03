@@ -120,8 +120,6 @@ export default function ProfilePage() {
 
   return (
     <div className="page">
-      <h1 className="page-title">Profile</h1>
-
       <div className="card" style={{ maxWidth: 560 }}>
         {user?.dailyCalorieTarget && (
           <div style={{

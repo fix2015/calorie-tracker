@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate, Outlet } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, Outlet, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './services/AuthContext';
 import Navbar from './components/Navbar';
 import TopBar from './components/TopBar';
@@ -17,8 +17,21 @@ import SavedPage from './pages/SavedPage';
 import NotificationsPage from './pages/NotificationsPage';
 import MessagesPage from './pages/MessagesPage';
 
+const PAGE_TITLES = {
+  '/': null,
+  '/dashboard': 'My stats',
+  '/scan': 'Scan',
+  '/notifications': 'Notifications',
+  '/messages': 'Messages',
+  '/saved': 'Saved',
+  '/reports': 'Reports',
+  '/profile': 'Profile',
+  '/explore': 'Discover',
+};
+
 function ProtectedLayout() {
   const { user, loading } = useAuth();
+  const location = useLocation();
 
   if (loading) {
     return <div className="page"><div className="spinner" /></div>;
@@ -28,11 +41,14 @@ function ProtectedLayout() {
     return <Navigate to="/explore" replace />;
   }
 
+  const pathBase = '/' + (location.pathname.split('/')[1] || '');
+  const title = PAGE_TITLES[pathBase] ?? null;
+
   return (
     <div className="app-layout">
       <Navbar />
       <div className="main-content">
-        <TopBar />
+        <TopBar title={title} />
         <Outlet />
       </div>
     </div>
@@ -65,7 +81,7 @@ function ExploreWrapper() {
       <div className="app-layout">
         <Navbar />
         <div className="main-content">
-          <TopBar />
+          <TopBar title="Discover" />
           <ExplorePage />
         </div>
       </div>

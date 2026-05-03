@@ -2191,11 +2191,17 @@ a:hover { text-decoration: underline; }
   position: sticky;
   top: 0;
   display: flex;
-  justify-content: flex-end;
+  justify-content: space-between;
   align-items: center;
   padding: var(--space-sm) 0;
   z-index: 100;
-  background: var(--color-surface);
+  background: #fff;
+}
+
+.top-bar-title {
+  font-size: var(--font-size-2xl);
+  font-weight: 700;
+  margin: 0;
 }
 
 .top-bar-actions {

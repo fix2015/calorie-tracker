@@ -68,8 +68,6 @@ export default function NotificationsPage() {
 
   return (
     <div className="page">
-      <h1 className="page-title">Notifications</h1>
-
       {notifications.length === 0 ? (
         <p style={{ textAlign: 'center', color: 'var(--color-text-secondary)', padding: 'var(--space-xl) 0' }}>
           No notifications yet

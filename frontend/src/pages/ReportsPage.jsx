@@ -52,8 +52,6 @@ export default function ReportsPage() {
 
   return (
     <div className="page">
-      <h1 className="page-title">Reports</h1>
-
       {/* Daily summary */}
       <div className="card" style={{ marginBottom: 'var(--space-md)' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-md)' }}>

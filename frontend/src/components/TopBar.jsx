@@ -4,7 +4,7 @@ import { useAuth } from '../services/AuthContext';
 import { publicApi, notificationsApi } from '../services/api';
 import { photoSrc } from '../services/photoUrl';
 
-export default function TopBar() {
+export default function TopBar({ title }) {
   const { user } = useAuth();
   const [hasSaved, setHasSaved] = useState(false);
   const [notifCount, setNotifCount] = useState(0);
@@ -18,6 +18,7 @@ export default function TopBar() {
 
   return (
     <div className="top-bar">
+      {title && <h1 className="top-bar-title">{title}</h1>}
       <div className="top-bar-actions">
         {user?.username && user?.isPublic && (
           <Link to={`/u/${user.username}`} className="feed-my-profile">
