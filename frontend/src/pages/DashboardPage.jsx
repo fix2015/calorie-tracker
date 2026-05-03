@@ -231,7 +231,7 @@ export default function DashboardPage() {
       })()}
 
       {/* Weight progress */}
-      {user?.weightKg && user?.targetWeightKg && user?.goal !== 'maintain' && (() => {
+      {user?.weightKg && user?.targetWeightKg && (() => {
         const current = user.weightKg;
         const goalW = user.targetWeightKg;
         const startW = weightHistory.length > 0 ? weightHistory[0].weightKg : current;
@@ -301,6 +301,15 @@ export default function DashboardPage() {
                 </div>
               );
             })()}
+
+            <button
+              className="btn btn-secondary"
+              style={{ width: '100%', marginTop: 'var(--space-md)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 'var(--space-xs)' }}
+              onClick={() => { setShowWeighIn(true); setWeighInValue(user?.weightKg?.toString() || ''); }}
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+              Update weight
+            </button>
           </div>
         );
       })()}
