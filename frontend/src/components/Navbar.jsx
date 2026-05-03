@@ -12,6 +12,7 @@ const icons = {
   notifications: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>,
   messages: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>,
   profile: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>,
+  saved: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>,
   publicProfile: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>,
 };
 
@@ -64,6 +65,7 @@ export default function Navbar() {
     { to: '/explore', label: 'Discover', icon: icons.explore },
     { to: '/scan', label: 'Scan', icon: icons.scan },
     { to: '/dashboard', label: 'Stats', icon: icons.dashboard },
+    { to: '/saved', label: 'Saved', icon: icons.saved },
     { to: '/notifications', label: 'Alerts', icon: icons.notifications, badge: notifCount },
     { to: '/messages', label: 'Messages', icon: icons.messages, badge: msgCount },
     { to: '/profile', label: 'Profile', icon: icons.profile },
@@ -73,7 +75,7 @@ export default function Navbar() {
     <>
       {/* Desktop sidebar */}
       <aside className="sidebar">
-        <div className="logo">CalTracker</div>
+        <div className="logo"><img src="/logo.png" alt="CalTracker" style={{ width: 28, height: 28, borderRadius: 6 }} /> CalTracker</div>
         <nav>
           {sidebarLinks.map((link) => (
             <NavLink key={link.to} to={link.to} end={link.to === '/'}>

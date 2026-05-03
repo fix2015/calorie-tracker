@@ -6,6 +6,66 @@ const { createNotification } = require('../utils/notifications');
 
 const router = Router();
 
+// POST /meals/:mealId/save — toggle save/bookmark
+router.post('/meals/:mealId/save', authenticate, async (req, res, next) => {
+  try {
+    const meal = await prisma.meal.findUnique({
+      where: { id: req.params.mealId },
+      include: { user: { select: { isPublic: true } } },
+    });
+    if (!meal || !meal.user.isPublic) return res.status(404).json({ error: 'Meal not found' });
+
+    const existing = await prisma.savedMeal.findUnique({
+      where: { userId_mealId: { userId: req.userId, mealId: meal.id } },
+    });
+
+    if (existing) {
+      await prisma.savedMeal.delete({ where: { id: existing.id } });
+    } else {
+      await prisma.savedMeal.create({
+        data: { userId: req.userId, mealId: meal.id },
+      });
+    }
+
+    res.json({ saved: !existing });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// GET /saved — list saved meals
+router.get('/saved', authenticate, async (req, res, next) => {
+  try {
+    const limit = Math.min(parseInt(req.query.limit) || 20, 50);
+    const cursor = req.query.cursor || null;
+
+    const saved = await prisma.savedMeal.findMany({
+      where: { userId: req.userId },
+      orderBy: { createdAt: 'desc' },
+      take: limit + 1,
+      ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
+      include: {
+        meal: {
+          select: {
+            id: true, name: true, calories: true, proteinG: true, carbsG: true, fatG: true,
+            photoUrl: true, consumedAt: true, tags: true,
+            user: { select: { id: true, name: true, username: true, avatarUrl: true } },
+            _count: { select: { likes: true, comments: true } },
+          },
+        },
+      },
+    });
+
+    const hasMore = saved.length > limit;
+    if (hasMore) saved.pop();
+    const nextCursor = hasMore ? saved[saved.length - 1].id : null;
+
+    res.json({ meals: saved.map(s => s.meal), nextCursor });
+  } catch (err) {
+    next(err);
+  }
+});
+
 // GET /search — search public profiles
 router.get('/search', optionalAuth, async (req, res, next) => {
   try {
@@ -44,11 +104,13 @@ router.get('/trending', optionalAuth, async (req, res, next) => {
     const limit = Math.min(parseInt(req.query.limit) || 12, 48);
     const cursor = req.query.cursor || null;
 
+    const tag = req.query.tag || null;
     const where = {
       isPublic: true,
       user: { isPublic: true },
     };
     if (req.userId) where.userId = { not: req.userId };
+    if (tag) where.tags = { has: tag };
 
     const meals = await prisma.meal.findMany({
       where,
@@ -58,7 +120,7 @@ router.get('/trending', optionalAuth, async (req, res, next) => {
       select: {
         id: true, name: true, calories: true,
         proteinG: true, carbsG: true, fatG: true,
-        photoUrl: true, consumedAt: true, source: true,
+        photoUrl: true, consumedAt: true, source: true, tags: true,
         user: { select: { id: true, name: true, username: true, avatarUrl: true } },
         _count: { select: { likes: true, comments: true } },
       },
@@ -168,11 +230,17 @@ router.get('/feed', authenticate, async (req, res, next) => {
     });
     const likedSet = new Set(userLikes.map(l => l.mealId));
 
+    const userSaves = await prisma.savedMeal.findMany({
+      where: { userId: req.userId, mealId: { in: mealIds } },
+      select: { mealId: true },
+    });
+    const savedSet = new Set(userSaves.map(s => s.mealId));
+
     const hasMore = meals.length > limit;
     if (hasMore) meals.pop();
     const nextCursor = hasMore ? meals[meals.length - 1].id : null;
 
-    const feedMeals = meals.map(m => ({ ...m, isLiked: likedSet.has(m.id) }));
+    const feedMeals = meals.map(m => ({ ...m, isLiked: likedSet.has(m.id), isSaved: savedSet.has(m.id) }));
     res.json({ meals: feedMeals, nextCursor });
   } catch (err) {
     next(err);
@@ -440,11 +508,14 @@ router.get('/meals/:mealId', optionalAuth, async (req, res, next) => {
     }
 
     let isLiked = false;
+    let isSaved = false;
     if (req.userId) {
-      const like = await prisma.like.findUnique({
-        where: { userId_mealId: { userId: req.userId, mealId: meal.id } },
-      });
+      const [like, saved] = await Promise.all([
+        prisma.like.findUnique({ where: { userId_mealId: { userId: req.userId, mealId: meal.id } } }),
+        prisma.savedMeal.findUnique({ where: { userId_mealId: { userId: req.userId, mealId: meal.id } } }),
+      ]);
       isLiked = !!like;
+      isSaved = !!saved;
     }
 
     const comments = await prisma.comment.findMany({
@@ -454,7 +525,13 @@ router.get('/meals/:mealId', optionalAuth, async (req, res, next) => {
       include: {
         user: { select: { id: true, name: true, username: true, avatarUrl: true } },
         _count: { select: { likes: true } },
+        likes: req.userId ? { where: { userId: req.userId }, select: { id: true }, take: 1 } : false,
       },
+    });
+
+    const commentsWithLiked = comments.map(c => {
+      const { likes: commentLikes, ...rest } = c;
+      return { ...rest, isLiked: commentLikes ? commentLikes.length > 0 : false };
     });
 
     const { user, ...mealData } = meal;
@@ -462,7 +539,8 @@ router.get('/meals/:mealId', optionalAuth, async (req, res, next) => {
       ...mealData,
       owner: { id: user.id, username: user.username, name: user.name, avatarUrl: user.avatarUrl },
       isLiked,
-      comments,
+      isSaved,
+      comments: commentsWithLiked,
     });
   } catch (err) {
     next(err);

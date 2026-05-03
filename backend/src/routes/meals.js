@@ -6,6 +6,19 @@ const { upload } = require('../middleware/upload');
 const { manualMealSchema } = require('../utils/validation');
 const { analyzePhoto } = require('../services/vision');
 const { uploadImage } = require('../services/s3');
+const { refreshDailyStat } = require('../utils/dailyStats');
+
+function autoTags(meal) {
+  const tags = [];
+  if (meal.proteinG >= 25) tags.push('High protein');
+  if (meal.carbsG <= 20) tags.push('Low carb');
+  if (meal.fatG <= 10) tags.push('Low fat');
+  if (meal.calories <= 300) tags.push('Light');
+  if (meal.calories <= 500 && meal.proteinG >= 20) tags.push('Healthy');
+  if (meal.fatG >= 30) tags.push('High fat');
+  if (meal.carbsG >= 60) tags.push('High carb');
+  return tags.slice(0, 4);
+}
 
 const router = Router();
 
@@ -19,6 +32,7 @@ const aiLimiter = rateLimit({
 router.post('/manual', authenticate, async (req, res, next) => {
   try {
     const data = manualMealSchema.parse(req.body);
+    const tags = autoTags(data);
     const meal = await prisma.meal.create({
       data: {
         userId: req.userId,
@@ -27,10 +41,12 @@ router.post('/manual', authenticate, async (req, res, next) => {
         proteinG: data.proteinG,
         carbsG: data.carbsG,
         fatG: data.fatG,
+        tags,
         source: 'manual',
         consumedAt: data.consumedAt ? new Date(data.consumedAt) : new Date(),
       },
     });
+    refreshDailyStat(req.userId, meal.consumedAt).catch(() => {});
     res.status(201).json(meal);
   } catch (err) {
     next(err);
@@ -83,6 +99,7 @@ router.post('/photo', authenticate, aiLimiter, upload.single('photo'), async (re
     const s3Url = await uploadImage(req.file.path);
     const photoUrl = s3Url || `/uploads/${req.file.filename}`;
 
+    const mealTags = autoTags(result);
     const meal = await prisma.meal.create({
       data: {
         userId: req.userId,
@@ -91,6 +108,7 @@ router.post('/photo', authenticate, aiLimiter, upload.single('photo'), async (re
         proteinG: result.proteinG,
         carbsG: result.carbsG,
         fatG: result.fatG,
+        tags: mealTags,
         source: 'photo_ai',
         photoUrl,
         aiConfidence: result.confidence,
@@ -98,6 +116,7 @@ router.post('/photo', authenticate, aiLimiter, upload.single('photo'), async (re
       },
     });
 
+    refreshDailyStat(req.userId, meal.consumedAt).catch(() => {});
     res.status(201).json({
       meal,
       low_confidence: lowConfidence,
@@ -154,6 +173,7 @@ router.patch('/:id', authenticate, async (req, res, next) => {
       where: { id: req.params.id },
       data: updateData,
     });
+    refreshDailyStat(req.userId, updated.consumedAt).catch(() => {});
     res.json(updated);
   } catch (err) {
     next(err);
@@ -168,6 +188,7 @@ router.delete('/:id', authenticate, async (req, res, next) => {
     if (!meal) return res.status(404).json({ error: 'Meal not found' });
 
     await prisma.meal.delete({ where: { id: req.params.id } });
+    refreshDailyStat(req.userId, meal.consumedAt).catch(() => {});
     res.json({ message: 'Meal deleted' });
   } catch (err) {
     next(err);

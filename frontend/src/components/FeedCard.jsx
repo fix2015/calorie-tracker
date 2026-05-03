@@ -29,7 +29,7 @@ function getHealthTags(meal) {
 export default function FeedCard({ meal, onOpenDetail }) {
   const [liked, setLiked] = useState(meal.isLiked || false);
   const [likesCount, setLikesCount] = useState(meal._count?.likes || 0);
-  const [saved, setSaved] = useState(false);
+  const [saved, setSaved] = useState(meal.isSaved || false);
 
   const handleLike = useCallback(async () => {
     try {
@@ -93,7 +93,12 @@ export default function FeedCard({ meal, onOpenDetail }) {
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
             </button>
           </div>
-          <button className={`feed-action-btn feed-action-save${saved ? ' saved' : ''}`} onClick={() => setSaved(!saved)}>
+          <button className={`feed-action-btn feed-action-save${saved ? ' saved' : ''}`} onClick={async () => {
+            try {
+              const res = await publicApi.toggleSave(meal.id);
+              setSaved(res.saved);
+            } catch {}
+          }}>
             <svg width="22" height="22" viewBox="0 0 24 24" fill={saved ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
           </button>
         </div>

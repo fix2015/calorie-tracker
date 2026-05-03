@@ -7,6 +7,8 @@ import { photoSrc } from '../services/photoUrl';
 import FeedCard from '../components/FeedCard';
 import PublicMealDetailModal from '../components/PublicMealDetailModal';
 
+// hasSaved/savedMeals state removed - saved is now in TopBar
+
 export default function FeedPage() {
   const { user } = useAuth();
   const [tab, setTab] = useState('following');
@@ -44,6 +46,12 @@ export default function FeedPage() {
       setSuggestions(suggestData.users);
       setLoading(false);
     });
+
+    // Check if user has saved meals
+    publicApi.savedMeals(null).then((data) => {
+      setHasSaved((data.meals || []).length > 0);
+      setSavedMeals(data.meals || []);
+    }).catch(() => {});
 
     // Load following users for avatar row
     if (user?.username) {
@@ -93,33 +101,14 @@ export default function FeedPage() {
 
   return (
     <div className="page feed-page">
-      {/* Header */}
-      <div className="feed-top-bar">
-        <div className="feed-tabs">
-          <button className={`feed-tab${tab === 'foryou' ? ' active' : ''}`} onClick={() => setTab('foryou')}>
-            For you
-          </button>
-          <button className={`feed-tab${tab === 'following' ? ' active' : ''}`} onClick={() => setTab('following')}>
-            Following
-          </button>
-        </div>
-        <div className="feed-top-actions">
-          {user?.username && user?.isPublic && (
-            <Link to={`/u/${user.username}`} className="feed-my-profile">
-              {user.avatarUrl ? (
-                <img src={photoSrc(user.avatarUrl)} alt="" className="feed-my-avatar" />
-              ) : (
-                <div className="feed-my-avatar-placeholder">{user.name?.charAt(0)?.toUpperCase() || '?'}</div>
-              )}
-            </Link>
-          )}
-          <Link to="/notifications" className="feed-top-btn">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-          </Link>
-          <Link to="/messages" className="feed-top-btn">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
-          </Link>
-        </div>
+      {/* Tabs row */}
+      <div className="feed-tabs-row">
+        <button className={`feed-tab${tab === 'foryou' ? ' active' : ''}`} onClick={() => setTab('foryou')}>
+          For you
+        </button>
+        <button className={`feed-tab${tab === 'following' ? ' active' : ''}`} onClick={() => setTab('following')}>
+          Following
+        </button>
       </div>
 
       {/* Following users avatar row */}

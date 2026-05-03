@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../services/AuthContext';
 import { reports, users } from '../services/api';
 import { calcMacroTargets, MOTIVATION_QUOTES } from '../services/macroCalc';
-import { buildDailySummaryShareText, shareText } from '../services/share';
 import { photoSrc } from '../services/photoUrl';
 import { requestNotificationPermission, startNotificationScheduler } from '../services/notifications';
 import AddMealModal from '../components/AddMealModal';
@@ -22,6 +21,7 @@ export default function DashboardPage() {
   const [aiAnalysis, setAiAnalysis] = useState(null);
   const [aiLoading, setAiLoading] = useState(false);
   const [showAnalysis, setShowAnalysis] = useState(false);
+  const [weeklyData, setWeeklyData] = useState([]);
 
   const target = user?.dailyCalorieTarget || 2000;
   const macroTargets = calcMacroTargets(user);
@@ -44,7 +44,16 @@ export default function DashboardPage() {
     }
   };
 
-  useEffect(() => { fetchData(); }, []);
+  useEffect(() => {
+    fetchData();
+    // Backfill stats cache then load weekly
+    fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3001/api'}/reports/backfill-stats`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${localStorage.getItem('accessToken')}` },
+    }).catch(() => {}).finally(() => {
+      reports.weekly().then((data) => setWeeklyData(data.days || [])).catch(() => {});
+    });
+  }, []);
 
   const handleMealUpdated = () => {
     setSelectedMeal(null);
@@ -91,16 +100,7 @@ export default function DashboardPage() {
 
   return (
     <div className="page dashboard-page">
-      {/* Header */}
-      <div className="dash-header">
-        <h1 className="page-title" style={{ margin: 0 }}>My stats</h1>
-        <button className="btn btn-secondary" style={{ minWidth: 'auto', padding: 'var(--space-xs) var(--space-sm)', minHeight: 36 }} onClick={async () => {
-          const text = buildDailySummaryShareText(totals, todayMeals, target);
-          await shareText(text, "Today's Nutrition");
-        }}>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
-        </button>
-      </div>
+      <h1 className="page-title">My stats</h1>
 
       {/* Weigh-in prompt */}
       {needsWeighIn && !showWeighIn && (
@@ -183,6 +183,49 @@ export default function DashboardPage() {
           </div>
         </div>
       </div>
+
+      {/* Calorie intake chart */}
+      {weeklyData.length > 0 && (() => {
+        const maxCal = Math.max(...weeklyData.map(d => d.totals?.calories || 0), target, 1);
+        const today = new Date().toDateString();
+        const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+        return (
+          <div className="card" style={{ marginBottom: 'var(--space-md)' }}>
+            <div className="dash-today-header">
+              <h2 style={{ margin: 0, fontSize: 'var(--font-size-lg)' }}>Calorie intake</h2>
+              <button className="dash-edit-goal" onClick={() => navigate('/reports')}>View more</button>
+            </div>
+            <div className="dash-chart">
+              <div className="dash-chart-y">
+                <span>{Math.round(maxCal / 1000)}k</span>
+                <span>{Math.round(maxCal / 2000)}k</span>
+                <span>0</span>
+              </div>
+              <div className="dash-chart-bars">
+                {/* Target line */}
+                <div className="dash-chart-target" style={{ bottom: `${(target / maxCal) * 100}%` }} />
+                {weeklyData.map((d) => {
+                  const isToday = new Date(d.date).toDateString() === today;
+                  const cal = d.totals?.calories || 0;
+                  const height = maxCal > 0 ? (cal / maxCal) * 100 : 0;
+                  const dayName = dayNames[new Date(d.date).getDay()];
+                  return (
+                    <div key={d.date} className="dash-chart-col">
+                      <div className="dash-chart-bar-wrap">
+                        <div
+                          className={`dash-chart-bar${isToday ? ' today' : ''}`}
+                          style={{ height: `${Math.max(height, 2)}%` }}
+                        />
+                      </div>
+                      <span className={`dash-chart-label${isToday ? ' today' : ''}`}>{dayName}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        );
+      })()}
 
       {/* Actions */}
       <div className="dash-actions">

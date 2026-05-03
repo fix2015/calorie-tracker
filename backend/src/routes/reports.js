@@ -3,6 +3,7 @@ const rateLimit = require('express-rate-limit');
 const prisma = require('../utils/prisma');
 const { authenticate } = require('../middleware/auth');
 const { getSuggestion } = require('../services/vision');
+const { getDailyStats } = require('../utils/dailyStats');
 
 const router = Router();
 
@@ -55,33 +56,7 @@ router.get('/daily', authenticate, async (req, res, next) => {
 
 router.get('/weekly', authenticate, async (req, res, next) => {
   try {
-    const days = [];
-    for (let i = 6; i >= 0; i--) {
-      const d = new Date();
-      d.setDate(d.getDate() - i);
-      const dateStr = d.toISOString().slice(0, 10);
-      const dayStart = new Date(`${dateStr}T00:00:00.000Z`);
-      const dayEnd = new Date(`${dateStr}T23:59:59.999Z`);
-
-      const meals = await prisma.meal.findMany({
-        where: {
-          userId: req.userId,
-          consumedAt: { gte: dayStart, lte: dayEnd },
-        },
-      });
-
-      const totals = meals.reduce(
-        (acc, m) => ({
-          calories: acc.calories + m.calories,
-          proteinG: acc.proteinG + m.proteinG,
-          carbsG: acc.carbsG + m.carbsG,
-          fatG: acc.fatG + m.fatG,
-        }),
-        { calories: 0, proteinG: 0, carbsG: 0, fatG: 0 }
-      );
-
-      days.push({ date: dateStr, ...totals, mealCount: meals.length });
-    }
+    const days = await getDailyStats(req.userId, 7);
 
     const user = await prisma.user.findUnique({
       where: { id: req.userId },
@@ -89,6 +64,32 @@ router.get('/weekly', authenticate, async (req, res, next) => {
     });
 
     res.json({ target: user?.dailyCalorieTarget || 2000, days });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// GET /weight-history — weight logs
+router.get('/weight-history', authenticate, async (req, res, next) => {
+  try {
+    const logs = await prisma.weightLog.findMany({
+      where: { userId: req.userId },
+      orderBy: { createdAt: 'desc' },
+      take: 30,
+      select: { weightKg: true, createdAt: true },
+    });
+    res.json({ logs: logs.reverse() });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// POST /backfill-stats — backfill daily stats cache
+router.post('/backfill-stats', authenticate, async (req, res, next) => {
+  try {
+    const { backfillDailyStats } = require('../utils/dailyStats');
+    await backfillDailyStats(req.userId, 30);
+    res.json({ ok: true });
   } catch (err) {
     next(err);
   }

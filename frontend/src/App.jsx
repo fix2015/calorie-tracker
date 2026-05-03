@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate, Outlet } from 'react-router-dom';
 import { AuthProvider, useAuth } from './services/AuthContext';
 import Navbar from './components/Navbar';
+import TopBar from './components/TopBar';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import DashboardPage from './pages/DashboardPage';
@@ -12,6 +13,7 @@ import PrivacyPage from './pages/PrivacyPage';
 import PublicProfilePage from './pages/PublicProfilePage';
 import ExplorePage from './pages/ExplorePage';
 import FeedPage from './pages/FeedPage';
+import SavedPage from './pages/SavedPage';
 import NotificationsPage from './pages/NotificationsPage';
 import MessagesPage from './pages/MessagesPage';
 
@@ -30,6 +32,7 @@ function ProtectedLayout() {
     <div className="app-layout">
       <Navbar />
       <div className="main-content">
+        <TopBar />
         <Outlet />
       </div>
     </div>
@@ -62,6 +65,7 @@ function ExploreWrapper() {
       <div className="app-layout">
         <Navbar />
         <div className="main-content">
+          <TopBar />
           <ExplorePage />
         </div>
       </div>
@@ -86,6 +90,7 @@ function App() {
             <Route path="/notifications" element={<NotificationsPage />} />
             <Route path="/messages" element={<MessagesPage />} />
             <Route path="/messages/:conversationId" element={<MessagesPage />} />
+            <Route path="/saved" element={<SavedPage />} />
             <Route path="/reports" element={<ReportsPage />} />
             <Route path="/profile" element={<ProfilePage />} />
           </Route>

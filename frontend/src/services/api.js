@@ -91,15 +91,17 @@ export const reports = {
   weekly: () => request('/reports/weekly'),
   suggestion: () => request('/reports/suggestion'),
   analyze: () => request('/reports/analyze'),
+  weightHistory: () => request('/reports/weight-history'),
 };
 
 export const publicApi = {
   search: (q) => request(`/public/search?q=${encodeURIComponent(q)}`),
   popularUsers: (offset = 0, limit = 10) => request(`/public/popular-users?offset=${offset}&limit=${limit}`),
-  trending: (cursor, limit = 12) => {
+  trending: (cursor, limit = 12, tag) => {
     const params = new URLSearchParams();
     if (cursor) params.set('cursor', cursor);
     params.set('limit', limit);
+    if (tag) params.set('tag', tag);
     return request(`/public/trending?${params}`);
   },
   suggestions: () => request('/public/suggestions'),
@@ -136,6 +138,12 @@ export const publicApi = {
     method: 'POST',
     body: JSON.stringify({ text }),
   }),
+  toggleSave: (mealId) => request(`/public/meals/${mealId}/save`, { method: 'POST' }),
+  savedMeals: (cursor) => {
+    const params = new URLSearchParams();
+    if (cursor) params.set('cursor', cursor);
+    return request(`/public/saved?${params}`);
+  },
   toggleCommentLike: (commentId) => request(`/public/comments/${commentId}/like`, { method: 'POST' }),
   getComments: (mealId, cursor) => {
     const params = new URLSearchParams();

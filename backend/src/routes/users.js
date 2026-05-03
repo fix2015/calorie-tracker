@@ -33,7 +33,13 @@ router.patch('/me', authenticate, async (req, res, next) => {
 
     const updateData = { ...data };
     if (dailyCalorieTarget) updateData.dailyCalorieTarget = dailyCalorieTarget;
-    if (data.weightKg) updateData.weightUpdatedAt = new Date();
+    if (data.weightKg && data.weightKg !== current.weightKg) {
+      updateData.weightUpdatedAt = new Date();
+      // Log weight change
+      prisma.weightLog.create({
+        data: { userId: req.userId, weightKg: data.weightKg },
+      }).catch(() => {});
+    }
     if (data.username && data.username !== current.username) updateData.usernameChangedAt = new Date();
 
     const user = await prisma.user.update({
