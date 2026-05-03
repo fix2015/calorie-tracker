@@ -15,8 +15,12 @@ export function buildMealShareText(meal) {
   if (meal.source === 'photo_ai') {
     lines.push('(AI-scanned from photo)');
   }
-  lines.push('', 'Tracked with Calorie Tracker');
+  lines.push('', 'Tracked with Calorie Tracker', getAppUrl());
   return lines.join('\n');
+}
+
+function getAppUrl() {
+  return window.location.origin + (import.meta.env.VITE_BASE_PATH || '/');
 }
 
 export function buildDailySummaryShareText(totals, mealsList, target) {
@@ -48,14 +52,43 @@ export function buildDailySummaryShareText(totals, mealsList, target) {
     }
   }
 
-  lines.push('', 'Tracked with Calorie Tracker');
+  lines.push('', 'Tracked with Calorie Tracker', getAppUrl());
   return lines.join('\n');
 }
 
-export async function shareText(text, title) {
+async function fetchImageFile(imageUrl) {
+  try {
+    const res = await fetch(imageUrl);
+    if (!res.ok) return null;
+    const blob = await res.blob();
+    const ext = blob.type === 'image/png' ? 'png' : 'jpg';
+    return new File([blob], `meal.${ext}`, { type: blob.type });
+  } catch {
+    return null;
+  }
+}
+
+export async function shareText(text, title, imageUrl) {
   if (navigator.share) {
+    const url = getAppUrl();
+
+    if (imageUrl) {
+      const file = await fetchImageFile(imageUrl);
+      if (file && navigator.canShare && navigator.canShare({ files: [file] })) {
+        // Share image + text together — include text in body so Telegram/WhatsApp show it as caption
+        const shareData = { files: [file], text: text + '\n' + url };
+        try {
+          await navigator.share(shareData);
+          return true;
+        } catch (e) {
+          if (e.name === 'AbortError') return false;
+        }
+      }
+    }
+
+    // No image or image share not supported — share text + url
     try {
-      await navigator.share({ title: title || 'Calorie Tracker', text });
+      await navigator.share({ title: title || 'Calorie Tracker', text, url });
       return true;
     } catch (e) {
       if (e.name === 'AbortError') return false;
