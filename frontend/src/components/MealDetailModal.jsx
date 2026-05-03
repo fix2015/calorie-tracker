@@ -157,19 +157,22 @@ export default function MealDetailModal({ meal, onClose, onUpdated }) {
             </div>
 
             <div style={{ display: 'flex', gap: 'var(--space-sm)' }}>
-              <button className="btn btn-secondary" style={{ flex: 1 }} onClick={() => setEditing(true)}>
-                ✏️ Edit
+              <button className="action-btn action-btn-follow" style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }} onClick={() => setEditing(true)}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                Edit
               </button>
-              <button className="btn btn-secondary" style={{ flex: 1 }} onClick={async () => {
+              <button className="action-btn action-btn-message" style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }} onClick={async () => {
                 const text = buildMealShareText(meal);
                 const imgUrl = meal.photoUrl ? photoSrc(meal.photoUrl) : null;
                 const result = await shareText(text, meal.name, imgUrl);
                 if (result === 'copied') alert('Copied to clipboard!');
               }}>
-                ↗ Share
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                Share
               </button>
-              <button className="btn btn-danger" style={{ flex: 1 }} onClick={handleDelete} disabled={loading}>
-                🗑️ Delete
+              <button className="action-btn" style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, background: '#FEE2E2', color: '#DC2626' }} onClick={handleDelete} disabled={loading}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                Delete
               </button>
             </div>
           </>
