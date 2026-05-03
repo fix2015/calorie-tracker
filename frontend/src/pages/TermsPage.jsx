@@ -1,7 +1,14 @@
+import { useNavigate } from 'react-router-dom';
+
 export default function TermsPage() {
+  const navigate = useNavigate();
   return (
-    <div className="page" style={{ display: 'flex', justifyContent: 'center' }}>
+    <div className="page" style={{ display: 'flex', justifyContent: 'center', padding: 'var(--space-md)' }}>
       <div className="card legal-page">
+        <button onClick={() => navigate(-1)} style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 'var(--space-xs)', color: 'var(--color-primary)', fontWeight: 600, fontSize: 'var(--font-size-sm)', padding: 0, marginBottom: 'var(--space-md)' }}>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
+          Back
+        </button>
         <h1 className="page-title">Terms of Service</h1>
         <p className="legal-updated">Last updated: April 29, 2026</p>
 
