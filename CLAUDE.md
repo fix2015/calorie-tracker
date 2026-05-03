@@ -26,6 +26,8 @@ npm install
 npm run dev                 # Vite dev server on port 5173
 npm run build               # production build
 npm run lint                # ESLint
+npm run build:cap           # build for Capacitor (mobile)
+npx cap sync                # sync web assets to native projects
 ```
 
 ### Tests
@@ -33,7 +35,7 @@ npm run lint                # ESLint
 cd backend && npm test                              # all tests
 cd backend && node --test src/tests/foo.test.js     # single test file
 ```
-Uses Node.js built-in test runner (no framework). Test directory: `backend/src/tests/`.
+Uses Node.js built-in test runner (no framework). Test directory: `backend/src/tests/` (currently empty — tests need to be added).
 
 ### Production deployment
 ```bash
@@ -47,8 +49,8 @@ Uses Node.js built-in test runner (no framework). Test directory: `backend/src/t
 
 ### Backend (CommonJS, Node.js)
 - **Entry:** `src/index.js` — Express app with CORS, static uploads, route mounting. Health check at `GET /api/health`.
-- **Routes:** `src/routes/{auth,users,meals,reports}.js` — REST endpoints under `/api/`
-- **Services:** `src/services/vision.js` — calls OpenAI GPT-4o for photo meal scanning. Provider configurable via `AI_PROVIDER` env var.
+- **Routes:** `src/routes/{auth,users,meals,reports}.js` — REST endpoints under `/api/`. Notable rate limits: photo scan (20/hr), AI suggestions (20/hr), nutrition analysis (10/day).
+- **Services:** `src/services/vision.js` — calls OpenAI GPT-4o for photo meal scanning. Provider configurable via `AI_PROVIDER` env var. `src/services/s3.js` — image resize (sharp) + S3 upload with local fallback when S3 is not configured.
 - **Middleware:** `src/middleware/auth.js` (JWT verify), `upload.js` (multer for photo uploads), `errorHandler.js`
 - **Rate limiting:** `express-rate-limit` applied to auth routes and AI-powered endpoints (photo scan, suggestions)
 - **Database:** PostgreSQL via Prisma ORM. Schema at `prisma/schema.prisma`
@@ -65,8 +67,15 @@ Uses Node.js built-in test runner (no framework). Test directory: `backend/src/t
 - **Pages:** Dashboard (calorie ring + meal list), Scan (camera/upload → AI), Reports (Recharts), Profile (Mifflin-St Jeor calorie target auto-calculation)
 - **Styling:** Plain CSS in `styles/` directory, no CSS framework
 - **Image handling:** Client-side resize before upload (`services/imageResize.js`)
+- **Other services:** `macroCalc.js` (macro calculations), `notifications.js` (push notifications for meal reminders), `share.js` (share functionality), `photoUrl.js` (photo URL resolution)
+
+### Mobile (Capacitor)
+- Capacitor 8 wraps the Vite SPA for iOS/Android (`frontend/capacitor.config.json`, app ID: `com.calorietracker.app`)
+- Native projects in `frontend/ios/` and `frontend/android/`
+- Build flow: `npm run build:cap` → `npx cap sync` → open in Xcode/Android Studio
 
 ### Key env vars
 - `VITE_API_URL` — frontend API base (default `http://localhost:3001/api`)
 - `VITE_BASE_PATH` — frontend route basename (used for subdirectory deploys)
 - Backend vars in `backend/.env.example`: DATABASE_URL, JWT_SECRET, JWT_REFRESH_SECRET, OPENAI_API_KEY, AI_PROVIDER
+- S3 vars (optional — falls back to local `uploads/`): AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_REGION, S3_BUCKET_NAME

@@ -66,6 +66,11 @@ export const auth = {
 export const users = {
   updateProfile: (data) => request('/users/me', { method: 'PATCH', body: JSON.stringify(data) }),
   deleteAccount: () => request('/users/me', { method: 'DELETE' }),
+  uploadAvatar: (file) => {
+    const fd = new FormData();
+    fd.append('avatar', file);
+    return request('/users/avatar', { method: 'POST', body: fd });
+  },
 };
 
 export const meals = {
@@ -86,4 +91,74 @@ export const reports = {
   weekly: () => request('/reports/weekly'),
   suggestion: () => request('/reports/suggestion'),
   analyze: () => request('/reports/analyze'),
+};
+
+export const publicApi = {
+  search: (q) => request(`/public/search?q=${encodeURIComponent(q)}`),
+  trending: (cursor, limit = 18) => {
+    const params = new URLSearchParams();
+    if (cursor) params.set('cursor', cursor);
+    params.set('limit', limit);
+    return request(`/public/trending?${params}`);
+  },
+  suggestions: () => request('/public/suggestions'),
+  feed: (cursor, limit = 12) => {
+    const params = new URLSearchParams();
+    if (cursor) params.set('cursor', cursor);
+    params.set('limit', limit);
+    return request(`/public/feed?${params}`);
+  },
+  follow: (username) => request(`/public/u/${username}/follow`, { method: 'POST' }),
+  getFollowers: (username, cursor) => {
+    const params = new URLSearchParams();
+    if (cursor) params.set('cursor', cursor);
+    return request(`/public/u/${username}/followers?${params}`);
+  },
+  getFollowing: (username, cursor) => {
+    const params = new URLSearchParams();
+    if (cursor) params.set('cursor', cursor);
+    return request(`/public/u/${username}/following?${params}`);
+  },
+  getProfile: (username) => request(`/public/u/${username}`),
+  getMeals: (username, cursor, limit = 12, date) => {
+    const params = new URLSearchParams();
+    if (cursor) params.set('cursor', cursor);
+    params.set('limit', limit);
+    if (date) params.set('date', date);
+    return request(`/public/u/${username}/meals?${params}`);
+  },
+  getMealDetail: (mealId) => request(`/public/meals/${mealId}`),
+  toggleLike: (mealId) => request(`/public/meals/${mealId}/like`, { method: 'POST' }),
+  addComment: (mealId, text) => request(`/public/meals/${mealId}/comments`, {
+    method: 'POST',
+    body: JSON.stringify({ text }),
+  }),
+  getComments: (mealId, cursor) => {
+    const params = new URLSearchParams();
+    if (cursor) params.set('cursor', cursor);
+    return request(`/public/meals/${mealId}/comments?${params}`);
+  },
+};
+
+export const notificationsApi = {
+  list: (cursor) => {
+    const params = new URLSearchParams();
+    if (cursor) params.set('cursor', cursor);
+    return request(`/notifications?${params}`);
+  },
+  unreadCount: () => request('/notifications/unread-count'),
+  readAll: () => request('/notifications/read-all', { method: 'PATCH' }),
+  read: (id) => request(`/notifications/${id}/read`, { method: 'PATCH' }),
+};
+
+export const messagesApi = {
+  list: () => request('/messages'),
+  start: (userId) => request('/messages', { method: 'POST', body: JSON.stringify({ userId }) }),
+  getMessages: (convId, cursor) => {
+    const params = new URLSearchParams();
+    if (cursor) params.set('cursor', cursor);
+    return request(`/messages/${convId}?${params}`);
+  },
+  send: (convId, text) => request(`/messages/${convId}`, { method: 'POST', body: JSON.stringify({ text }) }),
+  markRead: (convId) => request(`/messages/${convId}/read`, { method: 'PATCH' }),
 };

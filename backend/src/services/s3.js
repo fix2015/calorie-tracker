@@ -32,12 +32,15 @@ function isS3Configured() {
  * Returns the public S3 URL.
  * Falls back to local storage if S3 is not configured.
  */
-async function uploadImage(filePath) {
+async function uploadImage(filePath, opts = {}) {
+  const maxW = opts.maxWidth || MAX_WIDTH;
+  const maxH = opts.maxHeight || MAX_HEIGHT;
+  const cover = opts.cover || false;
   const buffer = fs.readFileSync(filePath);
 
-  // Resize with sharp — fit within 1200x1200, preserve aspect ratio
+  // Resize with sharp
   const resized = await sharp(buffer)
-    .resize(MAX_WIDTH, MAX_HEIGHT, { fit: 'inside', withoutEnlargement: true })
+    .resize(maxW, maxH, { fit: cover ? 'cover' : 'inside', withoutEnlargement: !cover })
     .jpeg({ quality: JPEG_QUALITY, mozjpeg: true })
     .toBuffer();
 

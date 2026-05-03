@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../services/AuthContext';
+import { users } from '../services/api';
 
 const ACTIVITY_LEVELS = [
   { value: 'sedentary', label: 'Sedentary (little or no exercise)' },
@@ -22,6 +23,10 @@ export default function RegisterPage() {
   const [loading, setLoading] = useState(false);
   const { register } = useAuth();
   const navigate = useNavigate();
+
+  const [avatarFile, setAvatarFile] = useState(null);
+  const [avatarPreview, setAvatarPreview] = useState(null);
+  const avatarRef = useRef(null);
 
   const [form, setForm] = useState({
     name: '',
@@ -74,6 +79,14 @@ export default function RegisterPage() {
     setStep(step - 1);
   };
 
+  const handleAvatarChange = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setAvatarPreview(URL.createObjectURL(file));
+    // Resize to square before storing
+    resizeAvatar(file).then(setAvatarFile);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
@@ -91,6 +104,10 @@ export default function RegisterPage() {
         activityLevel: form.activityLevel,
         goal: form.goal,
       });
+      // Upload avatar after registration (now authenticated)
+      if (avatarFile) {
+        try { await users.uploadAvatar(avatarFile); } catch { /* non-blocking */ }
+      }
       navigate('/');
     } catch (err) {
       setError(err.message || 'Registration failed');
@@ -120,6 +137,26 @@ export default function RegisterPage() {
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-md)' }}>
           {step === 1 && (
             <>
+              <div style={{ textAlign: 'center', marginBottom: 'var(--space-sm)' }}>
+                <div
+                  className="avatar-upload-area"
+                  style={{ width: 80, height: 80 }}
+                  onClick={() => avatarRef.current?.click()}
+                >
+                  {avatarPreview ? (
+                    <img src={avatarPreview} alt="Avatar" style={{ width: 80, height: 80, borderRadius: '50%', objectFit: 'cover', display: 'block' }} />
+                  ) : (
+                    <div className="public-avatar-placeholder" style={{ width: 80, height: 80, margin: 0, fontSize: 'var(--font-size-xl)' }}>
+                      {form.name ? form.name.charAt(0).toUpperCase() : '?'}
+                    </div>
+                  )}
+                  <div className="avatar-upload-overlay" style={{ width: 80, height: 80 }}>
+                    <span style={{ fontSize: 18 }}>📷</span>
+                  </div>
+                </div>
+                <input ref={avatarRef} type="file" accept="image/jpeg,image/png,image/webp" onChange={handleAvatarChange} style={{ display: 'none' }} />
+                <p style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)', marginTop: 'var(--space-xs)' }}>Add photo (optional)</p>
+              </div>
               <div className="form-group">
                 <label htmlFor="name">Name</label>
                 <input id="name" type="text" value={form.name} onChange={set('name')} required placeholder="Your name" />
@@ -246,4 +283,26 @@ export default function RegisterPage() {
       </div>
     </div>
   );
+}
+
+function resizeAvatar(file, maxSize = 512) {
+  return new Promise((resolve) => {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      const size = Math.min(img.width, img.height);
+      const sx = (img.width - size) / 2;
+      const sy = (img.height - size) / 2;
+      const outSize = Math.min(size, maxSize);
+      const canvas = document.createElement('canvas');
+      canvas.width = outSize;
+      canvas.height = outSize;
+      canvas.getContext('2d').drawImage(img, sx, sy, size, size, 0, 0, outSize, outSize);
+      canvas.toBlob((blob) => {
+        resolve(new File([blob], 'avatar.jpg', { type: 'image/jpeg' }));
+      }, 'image/jpeg', 0.85);
+    };
+    img.src = url;
+  });
 }

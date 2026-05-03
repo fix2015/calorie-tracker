@@ -14,6 +14,7 @@ export default function MealDetailModal({ meal, onClose, onUpdated }) {
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [mealPublic, setMealPublic] = useState(meal.isPublic !== false);
 
   const set = (field) => (e) => setForm({ ...form, [field]: e.target.value });
 
@@ -116,13 +117,42 @@ export default function MealDetailModal({ meal, onClose, onUpdated }) {
               </div>
             </div>
 
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 'var(--space-sm)', padding: 'var(--space-sm) 0', borderTop: '1px solid var(--color-border)' }}>
+              <span style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-text-secondary)' }}>
+                {mealPublic ? 'Visible on public profile' : 'Hidden from public profile'}
+              </span>
+              <label className="toggle-switch">
+                <input
+                  type="checkbox"
+                  checked={mealPublic}
+                  onChange={async (e) => {
+                    const val = e.target.checked;
+                    setMealPublic(val);
+                    try {
+                      await meals.update(meal.id, {
+                        name: meal.name,
+                        calories: meal.calories,
+                        proteinG: meal.proteinG,
+                        carbsG: meal.carbsG,
+                        fatG: meal.fatG,
+                        isPublic: val,
+                      });
+                      onUpdated();
+                    } catch { setMealPublic(!val); }
+                  }}
+                />
+                <span className="toggle-slider"></span>
+              </label>
+            </div>
+
             <div style={{ display: 'flex', gap: 'var(--space-sm)' }}>
               <button className="btn btn-secondary" style={{ flex: 1 }} onClick={() => setEditing(true)}>
                 ✏️ Edit
               </button>
               <button className="btn btn-secondary" style={{ flex: 1 }} onClick={async () => {
                 const text = buildMealShareText(meal);
-                const result = await shareText(text, meal.name);
+                const imgUrl = meal.photoUrl ? photoSrc(meal.photoUrl) : null;
+                const result = await shareText(text, meal.name, imgUrl);
                 if (result === 'copied') alert('Copied to clipboard!');
               }}>
                 ↗ Share

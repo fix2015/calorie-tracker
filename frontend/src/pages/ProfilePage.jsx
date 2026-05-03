@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../services/AuthContext';
 import { users } from '../services/api';
+import AvatarUpload from '../components/AvatarUpload';
 
 const ACTIVITY_LEVELS = [
   { value: 'sedentary', label: 'Sedentary' },
@@ -45,6 +46,10 @@ export default function ProfilePage() {
     targetWeightKg: '',
     activityLevel: 'moderate',
     goal: 'maintain',
+    username: '',
+    bio: '',
+    linkUrl: '',
+    isPublic: false,
   });
 
   useEffect(() => {
@@ -58,6 +63,10 @@ export default function ProfilePage() {
         targetWeightKg: user.targetWeightKg || '',
         activityLevel: user.activityLevel || 'moderate',
         goal: user.goal || 'maintain',
+        username: user.username || '',
+        bio: user.bio || '',
+        linkUrl: user.linkUrl || '',
+        isPublic: user.isPublic || false,
       });
     }
   }, [user]);
@@ -82,9 +91,14 @@ export default function ProfilePage() {
         targetWeightKg: form.targetWeightKg ? Number(form.targetWeightKg) : undefined,
         activityLevel: form.activityLevel,
         goal: form.goal,
+        isPublic: form.isPublic,
+        username: form.username || null,
+        bio: form.bio || null,
+        linkUrl: form.linkUrl || null,
       });
       await refreshUser();
-      setSuccess('Profile updated! Calorie target recalculated.');
+      setSuccess('Profile saved successfully!');
+      setTimeout(() => setSuccess(''), 4000);
     } catch (err) {
       setError(err.message || 'Update failed');
     } finally {
@@ -123,8 +137,33 @@ export default function ProfilePage() {
           </div>
         )}
 
-        <p className={`error-text${error ? ' visible' : ''}`} style={{ marginBottom: error ? 'var(--space-md)' : 0 }}><span>{error}</span></p>
-        <p className={`success-text${success ? ' visible' : ''}`} style={{ marginBottom: success ? 'var(--space-md)' : 0 }}><span>{success}</span></p>
+        <AvatarUpload
+          currentUrl={user?.avatarUrl}
+          name={user?.name}
+          onUpload={async (file) => {
+            try {
+              await users.uploadAvatar(file);
+              await refreshUser();
+              setSuccess('Avatar updated!');
+              setTimeout(() => setSuccess(''), 3000);
+            } catch (err) {
+              setError(err.message || 'Avatar upload failed');
+            }
+          }}
+        />
+
+        {error && (
+          <div className="profile-toast profile-toast-error">
+            <span>{error}</span>
+            <button onClick={() => setError('')}>&times;</button>
+          </div>
+        )}
+        {success && (
+          <div className="profile-toast profile-toast-success">
+            <span>{success}</span>
+            <button onClick={() => setSuccess('')}>&times;</button>
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-md)' }}>
           <div className="form-group">
@@ -187,6 +226,71 @@ export default function ProfilePage() {
               ))}
             </select>
           </div>
+
+          <hr style={{ margin: 'var(--space-md) 0', border: 'none', borderTop: '1px solid var(--color-border)' }} />
+
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div>
+              <strong>Public Profile</strong>
+              <p style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-text-secondary)', margin: 0 }}>
+                Share your meals publicly
+              </p>
+            </div>
+            <label className="toggle-switch">
+              <input
+                type="checkbox"
+                checked={form.isPublic}
+                onChange={(e) => { setForm({ ...form, isPublic: e.target.checked }); setSuccess(''); }}
+              />
+              <span className="toggle-slider"></span>
+            </label>
+          </div>
+
+          {form.isPublic && (
+            <>
+              <div className="form-group">
+                <label htmlFor="prof-username">Username</label>
+                <input
+                  id="prof-username"
+                  type="text"
+                  value={form.username}
+                  onChange={set('username')}
+                  placeholder="your_username"
+                  minLength={3}
+                  maxLength={30}
+                  pattern="^[a-zA-Z0-9_]+$"
+                  title="Letters, numbers and underscores only"
+                  required
+                />
+              </div>
+              <div className="form-group">
+                <label htmlFor="prof-bio">Bio <span style={{ fontWeight: 400, color: 'var(--color-text-secondary)' }}>({form.bio.length}/300)</span></label>
+                <textarea
+                  id="prof-bio"
+                  value={form.bio}
+                  onChange={(e) => { if (e.target.value.length <= 300) { setForm({ ...form, bio: e.target.value }); setSuccess(''); } }}
+                  placeholder="Tell others about your nutrition journey..."
+                  rows={3}
+                  style={{ resize: 'vertical' }}
+                />
+              </div>
+              <div className="form-group">
+                <label htmlFor="prof-link">Link</label>
+                <input
+                  id="prof-link"
+                  type="url"
+                  value={form.linkUrl}
+                  onChange={set('linkUrl')}
+                  placeholder="https://example.com"
+                />
+              </div>
+              {form.username && (
+                <p style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-text-secondary)' }}>
+                  Your public profile: <a href={`/u/${form.username}`} target="_blank" rel="noopener noreferrer">{window.location.origin}/u/{form.username}</a>
+                </p>
+              )}
+            </>
+          )}
 
           <button type="submit" className="btn btn-primary btn-block" disabled={saving}>
             {saving ? 'Saving...' : 'Save & Recalculate'}

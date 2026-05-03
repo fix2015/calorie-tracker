@@ -27,6 +27,14 @@ const updateProfileSchema = z.object({
   targetWeightKg: z.number().min(20).max(500).optional(),
   activityLevel: z.enum(['sedentary', 'light', 'moderate', 'active', 'very_active']).optional(),
   goal: z.enum(['lose', 'maintain', 'gain']).optional(),
+  username: z.string().min(3).max(30).regex(/^[a-zA-Z0-9_]+$/).optional().nullable(),
+  bio: z.string().max(300).optional().nullable(),
+  linkUrl: z.string().url().optional().nullable(),
+  isPublic: z.boolean().optional(),
+});
+
+const commentSchema = z.object({
+  text: z.string().min(1).max(500),
 });
 
 const manualMealSchema = z.object({
@@ -38,4 +46,4 @@ const manualMealSchema = z.object({
   consumedAt: z.string().datetime().optional(),
 });
 
-module.exports = { registerSchema, loginSchema, updateProfileSchema, manualMealSchema };
+module.exports = { registerSchema, loginSchema, updateProfileSchema, manualMealSchema, commentSchema };

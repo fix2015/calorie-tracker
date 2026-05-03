@@ -26,15 +26,17 @@ export function AuthProvider({ children }) {
   const login = async (email, password) => {
     const res = await auth.login({ email, password });
     setTokens(res.accessToken, res.refreshToken);
-    setUser(res.user);
-    return res.user;
+    const full = await auth.me();
+    setUser(full);
+    return full;
   };
 
   const register = async (data) => {
     const res = await auth.register(data);
     setTokens(res.accessToken, res.refreshToken);
-    setUser(res.user);
-    return res.user;
+    const full = await auth.me();
+    setUser(full);
+    return full;
   };
 
   const refreshUser = async () => {

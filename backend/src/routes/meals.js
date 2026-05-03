@@ -136,16 +136,20 @@ router.patch('/:id', authenticate, async (req, res, next) => {
     if (!meal) return res.status(404).json({ error: 'Meal not found' });
 
     const data = manualMealSchema.parse(req.body);
+    const updateData = {
+      name: data.name,
+      calories: data.calories,
+      proteinG: data.proteinG,
+      carbsG: data.carbsG,
+      fatG: data.fatG,
+      consumedAt: data.consumedAt ? new Date(data.consumedAt) : meal.consumedAt,
+    };
+    if (typeof req.body.isPublic === 'boolean') {
+      updateData.isPublic = req.body.isPublic;
+    }
     const updated = await prisma.meal.update({
       where: { id: req.params.id },
-      data: {
-        name: data.name,
-        calories: data.calories,
-        proteinG: data.proteinG,
-        carbsG: data.carbsG,
-        fatG: data.fatG,
-        consumedAt: data.consumedAt ? new Date(data.consumedAt) : meal.consumedAt,
-      },
+      data: updateData,
     });
     res.json(updated);
   } catch (err) {

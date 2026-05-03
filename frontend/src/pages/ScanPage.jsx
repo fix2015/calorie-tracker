@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { meals } from '../services/api';
 import { resizeImage } from '../services/imageResize';
@@ -7,11 +7,20 @@ import { photoSrc } from '../services/photoUrl';
 export default function ScanPage() {
   const fileRef = useRef(null);
   const navigate = useNavigate();
+  const openedRef = useRef(false);
 
   const [preview, setPreview] = useState(null);
   const [file, setFile] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+
+  // Immediately open file picker on mount
+  useEffect(() => {
+    if (!openedRef.current) {
+      openedRef.current = true;
+      setTimeout(() => fileRef.current?.click(), 100);
+    }
+  }, []);
 
   const [context, setContext] = useState('');
   const [showContextTip, setShowContextTip] = useState(false);
@@ -100,7 +109,7 @@ export default function ScanPage() {
         carbsG: Number(result.carbsG),
         fatG: Number(result.fatG),
       });
-      navigate('/');
+      navigate('/dashboard');
     } catch (err) {
       setError(err.message || 'Save failed');
     } finally {
@@ -128,26 +137,17 @@ export default function ScanPage() {
             />
 
             {preview ? (
-              <div className="photo-preview">
-                <img src={preview} alt="Food preview" />
-              </div>
-            ) : (
-              <p style={{ color: 'var(--color-text-secondary)' }}>
-                Take a photo or select an image of your meal
-              </p>
-            )}
-
-            <button
-              className="camera-btn"
-              onClick={() => fileRef.current?.click()}
-              title="Choose photo"
-            >
-              📷
-            </button>
-
-            {preview && (
               <>
-                <div className="form-group" style={{ width: '100%' }}>
+                <div className="photo-preview">
+                  <img src={preview} alt="Food preview" />
+                </div>
+                <button
+                  style={{ background: 'none', border: 'none', color: 'var(--color-text-secondary)', cursor: 'pointer', fontSize: 'var(--font-size-sm)', marginTop: 'var(--space-xs)' }}
+                  onClick={() => fileRef.current?.click()}
+                >
+                  Choose different photo
+                </button>
+                <div className="form-group" style={{ width: '100%', marginTop: 'var(--space-md)' }}>
                   <label htmlFor="meal-context" style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-xs)' }}>
                     Additional info
                     <span
@@ -173,11 +173,28 @@ export default function ScanPage() {
                   />
                 </div>
                 <button
-                  className="btn btn-primary btn-block"
+                  className="ai-analyze-btn"
                   onClick={handleScan}
                   disabled={loading}
                 >
-                  {loading ? 'Analyzing...' : 'Analyze Photo'}
+                  {loading ? (
+                    <>Analyzing...</>
+                  ) : (
+                    <><span className="ai-analyze-icon">&#10024;</span> AI Nutrition Analysis</>
+                  )}
+                </button>
+              </>
+            ) : (
+              <>
+                <p style={{ color: 'var(--color-text-secondary)', textAlign: 'center' }}>
+                  Select a photo of your meal to scan
+                </p>
+                <button
+                  className="btn btn-primary"
+                  onClick={() => fileRef.current?.click()}
+                  style={{ marginTop: 'var(--space-md)' }}
+                >
+                  Choose Photo
                 </button>
               </>
             )}

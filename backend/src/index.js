@@ -6,6 +6,9 @@ const authRoutes = require('./routes/auth');
 const userRoutes = require('./routes/users');
 const mealRoutes = require('./routes/meals');
 const reportRoutes = require('./routes/reports');
+const publicRoutes = require('./routes/public');
+const notificationRoutes = require('./routes/notifications');
+const messageRoutes = require('./routes/messages');
 const { errorHandler } = require('./middleware/errorHandler');
 
 const app = express();
@@ -25,6 +28,9 @@ app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/meals', mealRoutes);
 app.use('/api/reports', reportRoutes);
+app.use('/api/public', publicRoutes);
+app.use('/api/notifications', notificationRoutes);
+app.use('/api/messages', messageRoutes);
 
 app.use(errorHandler);
 

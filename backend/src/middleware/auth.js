@@ -15,4 +15,17 @@ function authenticate(req, res, next) {
   }
 }
 
-module.exports = { authenticate };
+function optionalAuth(req, res, next) {
+  const header = req.headers.authorization;
+  if (header && header.startsWith('Bearer ')) {
+    try {
+      const payload = verifyAccessToken(header.slice(7));
+      req.userId = payload.userId;
+    } catch {
+      // Ignore invalid tokens for public routes
+    }
+  }
+  next();
+}
+
+module.exports = { authenticate, optionalAuth };

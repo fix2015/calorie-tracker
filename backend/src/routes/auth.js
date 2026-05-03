@@ -39,7 +39,7 @@ router.post('/register', authLimiter, async (req, res, next) => {
     const existing = await prisma.user.findUnique({ where: { email: data.email } });
     if (existing) return res.status(409).json({ error: 'Email already registered' });
 
-    const passwordHash = await bcrypt.hash(data.password, 12);
+    const passwordHash = await bcrypt.hash(data.password, 10);
     const dailyCalorieTarget = computeDailyCalorieTarget(data);
 
     const user = await prisma.user.create({
@@ -127,6 +127,7 @@ router.get('/me', authenticate, async (req, res, next) => {
         id: true, email: true, name: true, age: true, gender: true,
         heightCm: true, weightKg: true, targetWeightKg: true, weightUpdatedAt: true,
         activityLevel: true, goal: true, dailyCalorieTarget: true,
+        username: true, bio: true, avatarUrl: true, linkUrl: true, isPublic: true,
       },
     });
     if (!user) return res.status(404).json({ error: 'User not found' });
