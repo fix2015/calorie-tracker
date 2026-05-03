@@ -23,6 +23,7 @@ export default function DashboardPage() {
   const [showAnalysis, setShowAnalysis] = useState(false);
   const [weeklyData, setWeeklyData] = useState([]);
   const [weightHistory, setWeightHistory] = useState([]);
+  const [dashTab, setDashTab] = useState('meals');
 
   const target = user?.dailyCalorieTarget || 2000;
   const macroTargets = calcMacroTargets(user);
@@ -47,7 +48,6 @@ export default function DashboardPage() {
 
   useEffect(() => {
     fetchData();
-    // Backfill stats cache then load weekly
     fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3001/api'}/reports/backfill-stats`, {
       method: 'POST',
       headers: { 'Authorization': `Bearer ${localStorage.getItem('accessToken')}` },
@@ -137,7 +137,6 @@ export default function DashboardPage() {
         </div>
 
         <div className="dash-today-content">
-          {/* Calorie ring — left side */}
           <div className="dash-ring-wrap">
             <div className="calorie-ring" style={{ width: 130, height: 130 }}>
               <svg viewBox="0 0 160 160">
@@ -154,7 +153,6 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {/* Macro bars — right side */}
           <div className="dash-macros">
             {macros.map(({ label, eaten, target: t, color }) => (
               <div key={label} className="dash-macro-row">
@@ -170,7 +168,6 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Quick stats */}
         <div className="dash-quick-stats">
           <div className="dash-stat">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="12" cy="12" r="3"/></svg>
@@ -185,164 +182,203 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* Calorie intake chart */}
-      {weeklyData.length > 0 && (() => {
-        const maxCal = Math.max(...weeklyData.map(d => d.totals?.calories || 0), target, 1);
-        const today = new Date().toDateString();
-        const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-        return (
-          <div className="card" style={{ marginBottom: 'var(--space-md)' }}>
-            <div className="dash-today-header">
-              <h2 style={{ margin: 0, fontSize: 'var(--font-size-lg)' }}>Calorie intake</h2>
-              <button className="dash-edit-goal" onClick={() => navigate('/reports')}>View more</button>
-            </div>
-            <div className="dash-chart">
-              <div className="dash-chart-y">
-                <span>{Math.round(maxCal / 1000)}k</span>
-                <span>{Math.round(maxCal / 2000)}k</span>
-                <span>0</span>
-              </div>
-              <div className="dash-chart-bars">
-                {/* Target line */}
-                <div className="dash-chart-target" style={{ bottom: `${(target / maxCal) * 100}%` }} />
-                {weeklyData.map((d) => {
-                  const isToday = new Date(d.date).toDateString() === today;
-                  const cal = d.totals?.calories || 0;
-                  const height = maxCal > 0 ? (cal / maxCal) * 100 : 0;
-                  const dayName = dayNames[new Date(d.date).getDay()];
-                  return (
-                    <div key={d.date} className="dash-chart-col">
-                      <div className="dash-chart-bar-wrap">
-                        <div
-                          className={`dash-chart-bar${isToday ? ' today' : ''}`}
-                          style={{ height: `${Math.max(height, 2)}%` }}
-                        />
-                      </div>
-                      <span className={`dash-chart-label${isToday ? ' today' : ''}`}>{dayName}</span>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
-        );
-      })()}
-
-      {/* Weight progress */}
-      {user?.weightKg && user?.targetWeightKg && (() => {
-        const current = user.weightKg;
-        const goalW = user.targetWeightKg;
-        const startW = weightHistory.length > 0 ? weightHistory[0].weightKg : current;
-        const totalDiff = Math.abs(startW - goalW);
-        const remaining = Math.abs(current - goalW);
-        const progress = totalDiff > 0 ? Math.min(((totalDiff - remaining) / totalDiff) * 100, 100) : 0;
-        const isLosing = user.goal === 'lose';
-
-        return (
-          <div className="card" style={{ marginBottom: 'var(--space-md)' }}>
-            <div className="dash-today-header">
-              <h2 style={{ margin: 0, fontSize: 'var(--font-size-lg)' }}>Weight progress</h2>
-              <span style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-primary)', fontWeight: 600 }}>
-                {remaining.toFixed(1)} kg to go
-              </span>
-            </div>
-
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', margin: 'var(--space-md) 0 var(--space-sm)' }}>
-              <div style={{ textAlign: 'center' }}>
-                <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)' }}>Current</div>
-                <div style={{ fontSize: 'var(--font-size-lg)', fontWeight: 700 }}>{current} kg</div>
-              </div>
-              <div style={{ flex: 1, margin: '0 var(--space-md)', position: 'relative' }}>
-                <div style={{ height: 8, borderRadius: 4, background: 'var(--color-bg)', overflow: 'hidden' }}>
-                  <div style={{ height: '100%', width: `${Math.max(progress, 2)}%`, background: 'var(--color-primary)', borderRadius: 4, transition: 'width 0.5s ease' }} />
-                </div>
-                <div style={{ textAlign: 'center', fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)', marginTop: 4 }}>
-                  {Math.round(progress)}%
-                </div>
-              </div>
-              <div style={{ textAlign: 'center' }}>
-                <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)' }}>Goal</div>
-                <div style={{ fontSize: 'var(--font-size-lg)', fontWeight: 700, color: 'var(--color-primary)' }}>{goalW} kg</div>
-              </div>
-            </div>
-
-            {/* Weight history mini chart */}
-            {weightHistory.length >= 2 && (() => {
-              const weights = weightHistory.map(l => l.weightKg);
-              const minW = Math.min(...weights, goalW) - 1;
-              const maxW = Math.max(...weights) + 1;
-              const range = maxW - minW || 1;
-              const chartW = 100;
-              const chartH = 60;
-              const points = weightHistory.map((l, i) => {
-                const x = weightHistory.length > 1 ? (i / (weightHistory.length - 1)) * chartW : chartW / 2;
-                const y = chartH - ((l.weightKg - minW) / range) * chartH;
-                return `${x},${y}`;
-              }).join(' ');
-              const goalY = chartH - ((goalW - minW) / range) * chartH;
-
-              return (
-                <div style={{ marginTop: 'var(--space-sm)' }}>
-                  <svg viewBox={`-2 -2 ${chartW + 4} ${chartH + 4}`} style={{ width: '100%', height: 80 }} preserveAspectRatio="none">
-                    <line x1="0" y1={goalY} x2={chartW} y2={goalY} stroke="var(--color-primary)" strokeWidth="0.5" strokeDasharray="3,3" opacity="0.5" />
-                    <polyline points={points} fill="none" stroke="var(--color-primary)" strokeWidth="1.5" strokeLinejoin="round" strokeLinecap="round" />
-                    {weightHistory.map((l, i) => {
-                      const x = weightHistory.length > 1 ? (i / (weightHistory.length - 1)) * chartW : chartW / 2;
-                      const y = chartH - ((l.weightKg - minW) / range) * chartH;
-                      return <circle key={i} cx={x} cy={y} r="1.5" fill="var(--color-primary)" />;
-                    })}
-                  </svg>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)' }}>
-                    <span>{new Date(weightHistory[0].createdAt).toLocaleDateString([], { month: 'short', day: 'numeric' })}</span>
-                    <span>{new Date(weightHistory[weightHistory.length - 1].createdAt).toLocaleDateString([], { month: 'short', day: 'numeric' })}</span>
-                  </div>
-                </div>
-              );
-            })()}
-
-            <button
-              className="btn btn-secondary"
-              style={{ width: '100%', marginTop: 'var(--space-md)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 'var(--space-xs)' }}
-              onClick={() => { setShowWeighIn(true); setWeighInValue(user?.weightKg?.toString() || ''); }}
-            >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
-              Update weight
-            </button>
-          </div>
-        );
-      })()}
-
-      {/* Actions */}
-      <div className="dash-actions">
-        <button className="action-btn action-btn-follow" style={{ flex: 1 }} onClick={() => setShowAddMeal(true)}>
-          + Add Meal
-        </button>
-        <button className="action-btn action-btn-share" style={{ flex: 1 }} onClick={() => navigate('/scan')}>
-          Scan Photo
-        </button>
+      {/* Tabs */}
+      <div className="dash-tabs">
+        <button className={`dash-tab${dashTab === 'meals' ? ' active' : ''}`} onClick={() => setDashTab('meals')}>Meals</button>
+        <button className={`dash-tab${dashTab === 'reports' ? ' active' : ''}`} onClick={() => setDashTab('reports')}>Reports</button>
       </div>
 
-      {/* AI Analysis button */}
-      <button
-        className="ai-analyze-btn"
-        onClick={async () => {
-          setAiLoading(true);
-          setShowAnalysis(true);
-          setAiAnalysis(null);
-          try {
-            const res = await reports.analyze();
-            setAiAnalysis(res.analysis);
-          } catch (err) {
-            setAiAnalysis(err.message || 'Analysis failed.');
-          } finally {
-            setAiLoading(false);
-          }
-        }}
-        disabled={aiLoading}
-      >
-        <span className="ai-analyze-icon">✦</span>
-        <span>AI Nutrition Analysis</span>
-      </button>
+      {/* Tab: Meals */}
+      {dashTab === 'meals' && (
+        <>
+          <div className="dash-actions">
+            <button className="action-btn action-btn-follow" style={{ flex: 1 }} onClick={() => setShowAddMeal(true)}>
+              + Add Meal
+            </button>
+            <button className="action-btn action-btn-share" style={{ flex: 1 }} onClick={() => navigate('/scan')}>
+              Scan Photo
+            </button>
+          </div>
+
+          <button
+            className="ai-analyze-btn"
+            onClick={async () => {
+              setAiLoading(true);
+              setShowAnalysis(true);
+              setAiAnalysis(null);
+              try {
+                const res = await reports.analyze();
+                setAiAnalysis(res.analysis);
+              } catch (err) {
+                setAiAnalysis(err.message || 'Analysis failed.');
+              } finally {
+                setAiLoading(false);
+              }
+            }}
+            disabled={aiLoading}
+          >
+            <span className="ai-analyze-icon">✦</span>
+            <span>AI Nutrition Analysis</span>
+          </button>
+
+          <div className="card">
+            <h2 style={{ marginBottom: 'var(--space-md)', fontSize: 'var(--font-size-lg)' }}>Recent meals</h2>
+            {todayMeals.length === 0 ? (
+              <p style={{ color: 'var(--color-text-secondary)', padding: 'var(--space-md) 0', textAlign: 'center' }}>No meals logged today</p>
+            ) : todayMeals.map((m) => (
+              <div className="dash-meal-item" key={m.id} onClick={() => setSelectedMeal(m)}>
+                {m.photoUrl ? (
+                  <img src={photoSrc(m.photoUrl)} alt={m.name} className="dash-meal-img" />
+                ) : (
+                  <div className="dash-meal-img-placeholder">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="12" cy="12" r="3"/></svg>
+                  </div>
+                )}
+                <div className="dash-meal-info">
+                  <span className="dash-meal-name">{m.name}</span>
+                  <span className="dash-meal-meta">
+                    {m.source === 'photo_ai' && 'AI · '}
+                    P {Math.round(m.proteinG)}g · C {Math.round(m.carbsG)}g · F {Math.round(m.fatG)}g
+                  </span>
+                </div>
+                <div className="dash-meal-right">
+                  <span className="dash-meal-cals">{m.calories} kcal</span>
+                  <span className="dash-meal-time">{new Date(m.consumedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
+
+      {/* Tab: Reports */}
+      {dashTab === 'reports' && (
+        <>
+          {/* Calorie intake chart */}
+          {weeklyData.length > 0 && (() => {
+            const maxCal = Math.max(...weeklyData.map(d => d.totals?.calories || 0), target, 1);
+            const today = new Date().toDateString();
+            const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+            return (
+              <div className="card" style={{ marginBottom: 'var(--space-md)' }}>
+                <div className="dash-today-header">
+                  <h2 style={{ margin: 0, fontSize: 'var(--font-size-lg)' }}>Calorie intake</h2>
+                  <button className="dash-edit-goal" onClick={() => navigate('/reports')}>View more</button>
+                </div>
+                <div className="dash-chart">
+                  <div className="dash-chart-y">
+                    <span>{Math.round(maxCal / 1000)}k</span>
+                    <span>{Math.round(maxCal / 2000)}k</span>
+                    <span>0</span>
+                  </div>
+                  <div className="dash-chart-bars">
+                    <div className="dash-chart-target" style={{ bottom: `${(target / maxCal) * 100}%` }} />
+                    {weeklyData.map((d) => {
+                      const isToday = new Date(d.date).toDateString() === today;
+                      const cal = d.totals?.calories || 0;
+                      const height = maxCal > 0 ? (cal / maxCal) * 100 : 0;
+                      const dayName = dayNames[new Date(d.date).getDay()];
+                      return (
+                        <div key={d.date} className="dash-chart-col">
+                          <div className="dash-chart-bar-wrap">
+                            <div
+                              className={`dash-chart-bar${isToday ? ' today' : ''}`}
+                              style={{ height: `${Math.max(height, 2)}%` }}
+                            />
+                          </div>
+                          <span className={`dash-chart-label${isToday ? ' today' : ''}`}>{dayName}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+            );
+          })()}
+
+          {/* Weight progress */}
+          {user?.weightKg && user?.targetWeightKg && (() => {
+            const current = user.weightKg;
+            const goalW = user.targetWeightKg;
+            const startW = weightHistory.length > 0 ? weightHistory[0].weightKg : current;
+            const totalDiff = Math.abs(startW - goalW);
+            const remaining = Math.abs(current - goalW);
+            const progress = totalDiff > 0 ? Math.min(((totalDiff - remaining) / totalDiff) * 100, 100) : 0;
+
+            return (
+              <div className="card" style={{ marginBottom: 'var(--space-md)' }}>
+                <div className="dash-today-header">
+                  <h2 style={{ margin: 0, fontSize: 'var(--font-size-lg)' }}>Weight progress</h2>
+                  <span style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-primary)', fontWeight: 600 }}>
+                    {remaining.toFixed(1)} kg to go
+                  </span>
+                </div>
+
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', margin: 'var(--space-md) 0 var(--space-sm)' }}>
+                  <div style={{ textAlign: 'center' }}>
+                    <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)' }}>Current</div>
+                    <div style={{ fontSize: 'var(--font-size-lg)', fontWeight: 700 }}>{current} kg</div>
+                  </div>
+                  <div style={{ flex: 1, margin: '0 var(--space-md)', position: 'relative' }}>
+                    <div style={{ height: 8, borderRadius: 4, background: 'var(--color-bg)', overflow: 'hidden' }}>
+                      <div style={{ height: '100%', width: `${Math.max(progress, 2)}%`, background: 'var(--color-primary)', borderRadius: 4, transition: 'width 0.5s ease' }} />
+                    </div>
+                    <div style={{ textAlign: 'center', fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)', marginTop: 4 }}>
+                      {Math.round(progress)}%
+                    </div>
+                  </div>
+                  <div style={{ textAlign: 'center' }}>
+                    <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)' }}>Goal</div>
+                    <div style={{ fontSize: 'var(--font-size-lg)', fontWeight: 700, color: 'var(--color-primary)' }}>{goalW} kg</div>
+                  </div>
+                </div>
+
+                {weightHistory.length >= 2 && (() => {
+                  const weights = weightHistory.map(l => l.weightKg);
+                  const minW = Math.min(...weights, goalW) - 1;
+                  const maxW = Math.max(...weights) + 1;
+                  const range = maxW - minW || 1;
+                  const chartW = 100;
+                  const chartH = 60;
+                  const points = weightHistory.map((l, i) => {
+                    const x = weightHistory.length > 1 ? (i / (weightHistory.length - 1)) * chartW : chartW / 2;
+                    const y = chartH - ((l.weightKg - minW) / range) * chartH;
+                    return `${x},${y}`;
+                  }).join(' ');
+                  const goalY = chartH - ((goalW - minW) / range) * chartH;
+
+                  return (
+                    <div style={{ marginTop: 'var(--space-sm)' }}>
+                      <svg viewBox={`-2 -2 ${chartW + 4} ${chartH + 4}`} style={{ width: '100%', height: 80 }} preserveAspectRatio="none">
+                        <line x1="0" y1={goalY} x2={chartW} y2={goalY} stroke="var(--color-primary)" strokeWidth="0.5" strokeDasharray="3,3" opacity="0.5" />
+                        <polyline points={points} fill="none" stroke="var(--color-primary)" strokeWidth="1.5" strokeLinejoin="round" strokeLinecap="round" />
+                        {weightHistory.map((l, i) => {
+                          const x = weightHistory.length > 1 ? (i / (weightHistory.length - 1)) * chartW : chartW / 2;
+                          const y = chartH - ((l.weightKg - minW) / range) * chartH;
+                          return <circle key={i} cx={x} cy={y} r="1.5" fill="var(--color-primary)" />;
+                        })}
+                      </svg>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)' }}>
+                        <span>{new Date(weightHistory[0].createdAt).toLocaleDateString([], { month: 'short', day: 'numeric' })}</span>
+                        <span>{new Date(weightHistory[weightHistory.length - 1].createdAt).toLocaleDateString([], { month: 'short', day: 'numeric' })}</span>
+                      </div>
+                    </div>
+                  );
+                })()}
+
+                <button
+                  className="btn btn-secondary"
+                  style={{ width: '100%', marginTop: 'var(--space-md)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 'var(--space-xs)' }}
+                  onClick={() => { setShowWeighIn(true); setWeighInValue(user?.weightKg?.toString() || ''); }}
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                  Update weight
+                </button>
+              </div>
+            );
+          })()}
+        </>
+      )}
 
       {/* AI Analysis modal */}
       {showAnalysis && (
@@ -365,35 +401,6 @@ export default function DashboardPage() {
           </div>
         </div>
       )}
-
-      {/* Recent meals */}
-      <div className="card">
-        <h2 style={{ marginBottom: 'var(--space-md)', fontSize: 'var(--font-size-lg)' }}>Recent meals</h2>
-        {todayMeals.length === 0 ? (
-          <p style={{ color: 'var(--color-text-secondary)', padding: 'var(--space-md) 0', textAlign: 'center' }}>No meals logged today</p>
-        ) : todayMeals.map((m) => (
-          <div className="dash-meal-item" key={m.id} onClick={() => setSelectedMeal(m)}>
-            {m.photoUrl ? (
-              <img src={photoSrc(m.photoUrl)} alt={m.name} className="dash-meal-img" />
-            ) : (
-              <div className="dash-meal-img-placeholder">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="12" cy="12" r="3"/></svg>
-              </div>
-            )}
-            <div className="dash-meal-info">
-              <span className="dash-meal-name">{m.name}</span>
-              <span className="dash-meal-meta">
-                {m.source === 'photo_ai' && 'AI · '}
-                P {Math.round(m.proteinG)}g · C {Math.round(m.carbsG)}g · F {Math.round(m.fatG)}g
-              </span>
-            </div>
-            <div className="dash-meal-right">
-              <span className="dash-meal-cals">{m.calories} kcal</span>
-              <span className="dash-meal-time">{new Date(m.consumedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
-            </div>
-          </div>
-        ))}
-      </div>
 
       {showAddMeal && (
         <AddMealModal onClose={() => setShowAddMeal(false)} onSaved={() => { setShowAddMeal(false); fetchData(); }} />

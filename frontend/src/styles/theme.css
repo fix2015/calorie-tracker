@@ -1001,6 +1001,31 @@ a:hover { text-decoration: underline; }
   font-weight: 700;
 }
 
+.dash-tabs {
+  display: flex;
+  border-bottom: 1px solid var(--color-border);
+  margin-bottom: var(--space-md);
+}
+
+.dash-tab {
+  flex: 1;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  font-size: var(--font-size-base);
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  padding: var(--space-sm) var(--space-md);
+  text-align: center;
+  transition: all 0.2s;
+}
+
+.dash-tab.active {
+  color: var(--color-text);
+  border-bottom-color: var(--color-text);
+}
+
 .dash-actions {
   display: flex;
   gap: var(--space-sm);
@@ -2192,11 +2217,15 @@ a:hover { text-decoration: underline; }
   position: sticky;
   top: 0;
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-end;
   align-items: center;
   padding: var(--space-sm) 0;
   z-index: 100;
   background: #fff;
+}
+
+.top-bar:has(.top-bar-title) {
+  justify-content: space-between;
 }
 
 .top-bar-title {
@@ -2446,6 +2475,7 @@ a:hover { text-decoration: underline; }
   cursor: pointer;
   position: relative;
   overflow: hidden;
+  border-radius: var(--radius-lg);
 }
 
 .feed-photo {
