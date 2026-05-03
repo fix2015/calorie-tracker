@@ -45,7 +45,6 @@ router.get('/trending', async (req, res, next) => {
       where: {
         isPublic: true,
         user: { isPublic: true },
-        photoUrl: { not: null },
       },
       orderBy: [{ createdAt: 'desc' }],
       take: limit + 1,
