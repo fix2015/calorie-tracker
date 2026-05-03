@@ -20,7 +20,7 @@ export default function FeedPage() {
   useEffect(() => {
     setLoading(true);
     Promise.all([
-      publicApi.feed().catch(() => ({ meals: [], nextCursor: null })),
+      publicApi.feed(null, 8).catch(() => ({ meals: [], nextCursor: null })),
       publicApi.suggestions().catch(() => ({ users: [] })),
     ]).then(([feedData, suggestData]) => {
       setMeals(feedData.meals);
@@ -33,7 +33,7 @@ export default function FeedPage() {
   const fetchMore = useCallback(() => {
     if (!nextCursor || loadingMore) return;
     setLoadingMore(true);
-    publicApi.feed(nextCursor).then((data) => {
+    publicApi.feed(nextCursor, 8).then((data) => {
       setMeals((prev) => [...prev, ...data.meals]);
       setNextCursor(data.nextCursor);
       setLoadingMore(false);
@@ -48,8 +48,8 @@ export default function FeedPage() {
       if (res.following) {
         setFollowingSet((prev) => new Set([...prev, username]));
         setSuggestions((prev) => prev.filter(u => u.username !== username));
-        // Refresh feed
-        publicApi.feed().then((data) => {
+        // Load new user's meals into feed
+        publicApi.feed(null, 8).then((data) => {
           setMeals(data.meals);
           setNextCursor(data.nextCursor);
         }).catch(() => {});

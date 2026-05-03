@@ -15,30 +15,36 @@ export default function ExplorePage() {
   const [searched, setSearched] = useState(false);
   const debounceRef = useRef(null);
 
+  // Popular users
+  const [popularUsers, setPopularUsers] = useState([]);
+  const [usersOffset, setUsersOffset] = useState(0);
+  const [usersHasMore, setUsersHasMore] = useState(false);
+  const [usersLoading, setUsersLoading] = useState(true);
+
+  // Trending meals
   const [trending, setTrending] = useState([]);
   const [trendingCursor, setTrendingCursor] = useState(null);
   const [trendingLoading, setTrendingLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [selectedMeal, setSelectedMeal] = useState(null);
 
-  const [suggestions, setSuggestions] = useState([]);
   const [followingSet, setFollowingSet] = useState(new Set());
 
-  // Load trending and suggestions on mount
+  // Load initial data
   useEffect(() => {
-    const promises = [
-      publicApi.trending().catch(() => ({ meals: [], nextCursor: null })),
-    ];
-    if (user) {
-      promises.push(publicApi.suggestions().catch(() => ({ users: [] })));
-    }
-    Promise.all(promises).then(([t, s]) => {
-      setTrending(t.meals);
-      setTrendingCursor(t.nextCursor);
-      if (s) setSuggestions(s.users);
+    publicApi.popularUsers(0, 6).then((data) => {
+      setPopularUsers(data.users);
+      setUsersHasMore(data.hasMore);
+      setUsersOffset(data.nextOffset);
+      setUsersLoading(false);
+    }).catch(() => setUsersLoading(false));
+
+    publicApi.trending(null, 12).then((data) => {
+      setTrending(data.meals);
+      setTrendingCursor(data.nextCursor);
       setTrendingLoading(false);
-    });
-  }, [user]);
+    }).catch(() => setTrendingLoading(false));
+  }, []);
 
   // Search
   const search = useCallback((q) => {
@@ -65,11 +71,23 @@ export default function ExplorePage() {
     return () => clearTimeout(debounceRef.current);
   }, [query, search]);
 
-  // Infinite scroll for trending
+  // Load more popular users
+  const loadMoreUsers = useCallback(() => {
+    if (!usersHasMore) return;
+    setUsersLoading(true);
+    publicApi.popularUsers(usersOffset, 6).then((data) => {
+      setPopularUsers((prev) => [...prev, ...data.users]);
+      setUsersHasMore(data.hasMore);
+      setUsersOffset(data.nextOffset);
+      setUsersLoading(false);
+    }).catch(() => setUsersLoading(false));
+  }, [usersOffset, usersHasMore]);
+
+  // Infinite scroll for trending meals
   const fetchMoreTrending = useCallback(() => {
     if (!trendingCursor || loadingMore) return;
     setLoadingMore(true);
-    publicApi.trending(trendingCursor).then((data) => {
+    publicApi.trending(trendingCursor, 12).then((data) => {
       setTrending((prev) => [...prev, ...data.meals]);
       setTrendingCursor(data.nextCursor);
       setLoadingMore(false);
@@ -124,19 +142,19 @@ export default function ExplorePage() {
             )}
             {!searchLoading && results.length > 0 && (
               <div className="explore-results">
-                {results.map((user) => (
-                  <Link key={user.id} to={`/u/${user.username}`} className="explore-result-item">
-                    {user.avatarUrl ? (
-                      <img src={photoSrc(user.avatarUrl)} alt="" className="explore-result-avatar" />
+                {results.map((u) => (
+                  <Link key={u.id} to={`/u/${u.username}`} className="explore-result-item">
+                    {u.avatarUrl ? (
+                      <img src={photoSrc(u.avatarUrl)} alt="" className="explore-result-avatar" />
                     ) : (
                       <div className="explore-result-avatar-placeholder">
-                        {user.name?.charAt(0)?.toUpperCase() || '?'}
+                        {u.name?.charAt(0)?.toUpperCase() || '?'}
                       </div>
                     )}
                     <div className="explore-result-info">
-                      <span className="explore-result-name">{user.name}</span>
-                      <span className="explore-result-username">@{user.username}</span>
-                      {user.bio && <span className="explore-result-bio">{user.bio}</span>}
+                      <span className="explore-result-name">{u.name}</span>
+                      <span className="explore-result-username">@{u.username}</span>
+                      {u.bio && <span className="explore-result-bio">{u.bio}</span>}
                     </div>
                   </Link>
                 ))}
@@ -145,46 +163,55 @@ export default function ExplorePage() {
           </>
         )}
 
-        {/* Non-search content */}
+        {/* Browse content */}
         {!isSearching && (
           <>
-            {/* Suggested users */}
-            {suggestions.length > 0 && (
-              <div className="feed-suggestions-section" style={{ marginBottom: 'var(--space-lg)' }}>
-                <h3 className="feed-section-title">Suggested for you</h3>
-                <div className="feed-suggestions">
-                  {suggestions.map((u) => (
-                    <div key={u.id} className="suggestion-card-mini">
-                      <Link to={`/u/${u.username}`}>
-                        {u.avatarUrl ? (
-                          <img src={photoSrc(u.avatarUrl)} alt="" className="suggestion-avatar" />
-                        ) : (
-                          <div className="suggestion-avatar-placeholder">
-                            {u.name?.charAt(0)?.toUpperCase() || '?'}
-                          </div>
-                        )}
-                        <span className="suggestion-name">{u.name}</span>
-                        <span className="suggestion-handle">@{u.username}</span>
-                      </Link>
+            {/* Popular users */}
+            <h3 className="feed-section-title">Popular users</h3>
+            {popularUsers.length > 0 ? (
+              <>
+                <div className="explore-users-grid">
+                  {popularUsers.map((u) => (
+                    <Link key={u.id} to={`/u/${u.username}`} className="explore-user-card">
+                      {u.avatarUrl ? (
+                        <img src={photoSrc(u.avatarUrl)} alt="" className="explore-user-avatar" />
+                      ) : (
+                        <div className="explore-user-avatar-placeholder">
+                          {u.name?.charAt(0)?.toUpperCase() || '?'}
+                        </div>
+                      )}
+                      <span className="explore-user-name">{u.name}</span>
+                      <span className="explore-user-handle">@{u.username}</span>
+                      <span className="explore-user-stats">{u._count?.followers || 0} followers</span>
                       <button
-                        className="btn follow-btn"
-                        onClick={() => handleFollow(u.username)}
-                        disabled={followingSet.has(u.username)}
+                        className={`btn follow-btn${followingSet.has(u.username) ? ' following' : ''}`}
+                        onClick={(e) => { e.preventDefault(); handleFollow(u.username); }}
                       >
                         {followingSet.has(u.username) ? 'Following' : 'Follow'}
                       </button>
-                    </div>
+                    </Link>
                   ))}
                 </div>
-              </div>
+                {usersHasMore && (
+                  <div style={{ textAlign: 'center', marginTop: 'var(--space-md)', marginBottom: 'var(--space-lg)' }}>
+                    <button className="btn btn-secondary" onClick={loadMoreUsers} disabled={usersLoading}>
+                      {usersLoading ? 'Loading...' : 'Show more users'}
+                    </button>
+                  </div>
+                )}
+              </>
+            ) : usersLoading ? (
+              <div style={{ textAlign: 'center', padding: 'var(--space-md)' }}><div className="spinner"></div></div>
+            ) : (
+              <p style={{ color: 'var(--color-text-secondary)', padding: 'var(--space-md) 0' }}>No public users yet</p>
             )}
 
             {/* Trending meals */}
+            <h3 className="feed-section-title" style={{ marginTop: 'var(--space-lg)' }}>Trending meals</h3>
             {trendingLoading ? (
               <div style={{ textAlign: 'center' }}><div className="spinner"></div></div>
-            ) : trending.length > 0 && (
+            ) : trending.length > 0 ? (
               <>
-                <h3 className="feed-section-title">Trending meals</h3>
                 <div className="meal-grid">
                   {trending.map((meal) => (
                     <div key={meal.id} className="meal-tile" onClick={() => setSelectedMeal(meal)}>
@@ -208,6 +235,8 @@ export default function ExplorePage() {
                 {loadingMore && <div style={{ textAlign: 'center', padding: 'var(--space-lg)' }}><div className="spinner"></div></div>}
                 <div ref={sentinelRef} className="scroll-sentinel" />
               </>
+            ) : (
+              <p style={{ color: 'var(--color-text-secondary)', padding: 'var(--space-md) 0' }}>No meals yet</p>
             )}
           </>
         )}

@@ -38,7 +38,7 @@ router.get('/search', async (req, res, next) => {
 // GET /trending — popular public meals
 router.get('/trending', async (req, res, next) => {
   try {
-    const limit = Math.min(parseInt(req.query.limit) || 18, 48);
+    const limit = Math.min(parseInt(req.query.limit) || 12, 48);
     const cursor = req.query.cursor || null;
 
     const meals = await prisma.meal.findMany({
@@ -64,6 +64,35 @@ router.get('/trending', async (req, res, next) => {
     const nextCursor = hasMore ? meals[meals.length - 1].id : null;
 
     res.json({ meals, nextCursor });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// GET /popular-users — public users sorted by followers
+router.get('/popular-users', async (req, res, next) => {
+  try {
+    const limit = Math.min(parseInt(req.query.limit) || 10, 30);
+    const offset = parseInt(req.query.offset) || 0;
+
+    const users = await prisma.user.findMany({
+      where: {
+        isPublic: true,
+        username: { not: null },
+      },
+      select: {
+        id: true, name: true, username: true, bio: true, avatarUrl: true,
+        _count: { select: { followers: true, meals: true } },
+      },
+      orderBy: { followers: { _count: 'desc' } },
+      skip: offset,
+      take: limit + 1,
+    });
+
+    const hasMore = users.length > limit;
+    if (hasMore) users.pop();
+
+    res.json({ users, hasMore, nextOffset: offset + limit });
   } catch (err) {
     next(err);
   }

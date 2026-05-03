@@ -50,6 +50,27 @@ function PublicRoute({ children }) {
   return children;
 }
 
+function ExploreWrapper() {
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return <div className="page"><div className="spinner" /></div>;
+  }
+
+  if (user) {
+    return (
+      <div className="app-layout">
+        <Navbar />
+        <div className="main-content">
+          <ExplorePage />
+        </div>
+      </div>
+    );
+  }
+
+  return <ExplorePage />;
+}
+
 function App() {
   return (
     <BrowserRouter basename={import.meta.env.VITE_BASE_PATH || '/'}>
@@ -62,7 +83,6 @@ function App() {
             <Route path="/" element={<FeedPage />} />
             <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/scan" element={<ScanPage />} />
-            <Route path="/explore" element={<ExplorePage />} />
             <Route path="/notifications" element={<NotificationsPage />} />
             <Route path="/messages" element={<MessagesPage />} />
             <Route path="/messages/:conversationId" element={<MessagesPage />} />
@@ -70,7 +90,7 @@ function App() {
             <Route path="/profile" element={<ProfilePage />} />
           </Route>
 
-          <Route path="/explore" element={<ExplorePage />} />
+          <Route path="/explore" element={<ExploreWrapper />} />
           <Route path="/u/:username" element={<PublicProfilePage />} />
           <Route path="/terms" element={<TermsPage />} />
           <Route path="/privacy" element={<PrivacyPage />} />

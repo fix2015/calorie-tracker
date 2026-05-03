@@ -95,7 +95,8 @@ export const reports = {
 
 export const publicApi = {
   search: (q) => request(`/public/search?q=${encodeURIComponent(q)}`),
-  trending: (cursor, limit = 18) => {
+  popularUsers: (offset = 0, limit = 10) => request(`/public/popular-users?offset=${offset}&limit=${limit}`),
+  trending: (cursor, limit = 12) => {
     const params = new URLSearchParams();
     if (cursor) params.set('cursor', cursor);
     params.set('limit', limit);
