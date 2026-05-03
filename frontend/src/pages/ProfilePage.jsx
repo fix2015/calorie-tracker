@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../services/AuthContext';
-import { users } from '../services/api';
+import { users, reports } from '../services/api';
 import AvatarUpload from '../components/AvatarUpload';
 
 const ACTIVITY_LEVELS = [
@@ -24,6 +24,11 @@ export default function ProfilePage() {
   const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [weightHistory, setWeightHistory] = useState([]);
+
+  useEffect(() => {
+    reports.weightHistory().then((data) => setWeightHistory(data.logs || [])).catch(() => {});
+  }, []);
 
   const handleDeleteAccount = async () => {
     if (!window.confirm('Are you sure you want to delete your account? This cannot be undone.')) return;
@@ -199,6 +204,28 @@ export default function ProfilePage() {
               <input id="prof-weight" type="number" step="0.1" value={form.weightKg} onChange={set('weightKg')} required min="30" max="300" />
             </div>
           </div>
+
+          {/* Weight progress mini */}
+          {weightHistory.length >= 2 && form.targetWeightKg && (() => {
+            const startW = weightHistory[0].weightKg;
+            const currentW = Number(form.weightKg) || startW;
+            const goalW = Number(form.targetWeightKg);
+            const totalDiff = Math.abs(startW - goalW);
+            const remaining = Math.abs(currentW - goalW);
+            const progress = totalDiff > 0 ? Math.min(((totalDiff - remaining) / totalDiff) * 100, 100) : 0;
+            return (
+              <div style={{ background: 'var(--color-bg)', borderRadius: 'var(--radius-md)', padding: 'var(--space-sm) var(--space-md)', marginBottom: 'var(--space-sm)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)', marginBottom: 4 }}>
+                  <span>Start: {startW} kg</span>
+                  <span style={{ color: 'var(--color-primary)', fontWeight: 600 }}>{Math.round(progress)}% progress</span>
+                  <span>Goal: {goalW} kg</span>
+                </div>
+                <div style={{ height: 6, borderRadius: 3, background: 'var(--color-border)', overflow: 'hidden' }}>
+                  <div style={{ height: '100%', width: `${Math.max(progress, 2)}%`, background: 'var(--color-primary)', borderRadius: 3 }} />
+                </div>
+              </div>
+            );
+          })()}
 
           <div className="form-group">
             <label htmlFor="prof-goal">Goal</label>
