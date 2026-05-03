@@ -22,20 +22,10 @@ export default function DashboardPage() {
   const [aiAnalysis, setAiAnalysis] = useState(null);
   const [aiLoading, setAiLoading] = useState(false);
   const [showAnalysis, setShowAnalysis] = useState(false);
-  const [motivation, setMotivation] = useState(
-    () => MOTIVATION_QUOTES[Math.floor(Math.random() * MOTIVATION_QUOTES.length)]
-  );
 
   const target = user?.dailyCalorieTarget || 2000;
   const macroTargets = calcMacroTargets(user);
 
-  // Motivation banner — auto-dismiss after 10s
-  useEffect(() => {
-    const timer = setTimeout(() => setMotivation(null), 10000);
-    return () => clearTimeout(timer);
-  }, []);
-
-  // Request notification permission and start scheduler
   useEffect(() => {
     requestNotificationPermission().then((granted) => {
       if (granted) startNotificationScheduler();
@@ -61,7 +51,6 @@ export default function DashboardPage() {
     fetchData();
   };
 
-  // Check if weigh-in is needed (>7 days since last update)
   const needsWeighIn = user?.weightUpdatedAt
     ? (Date.now() - new Date(user.weightUpdatedAt).getTime()) > 7 * 24 * 60 * 60 * 1000
     : true;
@@ -87,125 +76,121 @@ export default function DashboardPage() {
   const consumed = totals.calories;
 
   const ratio = target > 0 ? consumed / target : 0;
-  const ringColor = ratio > 1 ? 'var(--color-danger)' : ratio > 0.9 ? 'var(--color-warning)' : 'var(--color-success)';
+  const ringColor = ratio > 1 ? 'var(--color-danger)' : ratio > 0.9 ? 'var(--color-warning)' : 'var(--color-primary)';
   const radius = 70;
   const circumference = 2 * Math.PI * radius;
   const offset = circumference - Math.min(ratio, 1) * circumference;
 
   if (loading) return <div className="page"><div className="spinner" /></div>;
 
-  return (
-    <div className="page">
-      {/* Motivation banner */}
-      {motivation && (
-        <div className="motivation-banner">
-          <span className="motivation-text">{motivation}</span>
-          <button className="motivation-close" onClick={() => setMotivation(null)} aria-label="Close">
-            &times;
-          </button>
-        </div>
-      )}
+  const macros = [
+    { label: 'Protein', eaten: Math.round(totals.proteinG), target: macroTargets?.proteinG || 0, color: '#3B82F6' },
+    { label: 'Carbs', eaten: Math.round(totals.carbsG), target: macroTargets?.carbsG || 0, color: '#F59E0B' },
+    { label: 'Fats', eaten: Math.round(totals.fatG), target: macroTargets?.fatG || 0, color: '#22C55E' },
+  ];
 
-      <h1 className="page-title">Dashboard</h1>
+  return (
+    <div className="page dashboard-page">
+      {/* Header */}
+      <div className="dash-header">
+        <h1 className="page-title" style={{ margin: 0 }}>My stats</h1>
+        <button className="btn btn-secondary" style={{ minWidth: 'auto', padding: 'var(--space-xs) var(--space-sm)', minHeight: 36 }} onClick={async () => {
+          const text = buildDailySummaryShareText(totals, todayMeals, target);
+          await shareText(text, "Today's Nutrition");
+        }}>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+        </button>
+      </div>
 
       {/* Weigh-in prompt */}
       {needsWeighIn && !showWeighIn && (
-        <div style={{
-          background: 'linear-gradient(135deg, #FEF3C7, #FDE68A)',
-          borderRadius: 'var(--radius-md)',
-          padding: 'var(--space-md)',
-          marginBottom: 'var(--space-md)',
-          display: 'flex',
-          alignItems: 'center',
-          gap: 'var(--space-md)',
-        }}>
-          <span style={{ fontSize: 24 }}>⚖️</span>
+        <div className="dash-weighin-prompt" onClick={() => { setShowWeighIn(true); setWeighInValue(user?.weightKg?.toString() || ''); }}>
+          <span style={{ fontSize: 20 }}>⚖️</span>
           <div style={{ flex: 1 }}>
-            <strong style={{ fontSize: 'var(--font-size-sm)' }}>Time for a weigh-in!</strong>
-            <p style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)' }}>
-              Update your weight to keep your calorie target accurate.
-            </p>
+            <strong style={{ fontSize: 'var(--font-size-sm)' }}>Weekly weigh-in</strong>
+            <p style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)', margin: 0 }}>Tap to update your weight</p>
           </div>
-          <button className="btn btn-primary" style={{ fontSize: 'var(--font-size-sm)', padding: '6px 12px', minHeight: 36 }} onClick={() => { setShowWeighIn(true); setWeighInValue(user?.weightKg?.toString() || ''); }}>
-            Update
-          </button>
+          <span style={{ color: 'var(--color-text-secondary)' }}>›</span>
         </div>
       )}
 
       {showWeighIn && (
         <div className="card" style={{ marginBottom: 'var(--space-md)' }}>
-          <h3 style={{ marginBottom: 'var(--space-sm)' }}>⚖️ Weekly Weigh-in</h3>
-          <p style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-text-secondary)', marginBottom: 'var(--space-md)' }}>
-            {user?.targetWeightKg && user?.goal !== 'maintain'
-              ? `Current: ${user.weightKg} kg → Target: ${user.targetWeightKg} kg`
-              : `Last recorded: ${user?.weightKg || '—'} kg`
-            }
-          </p>
+          <h3 style={{ marginBottom: 'var(--space-sm)' }}>Update Weight</h3>
           <form onSubmit={handleWeighIn} style={{ display: 'flex', gap: 'var(--space-sm)', alignItems: 'flex-end' }}>
             <div className="form-group" style={{ flex: 1 }}>
-              <label htmlFor="weigh-in">New weight (kg)</label>
+              <label htmlFor="weigh-in">Weight (kg)</label>
               <input id="weigh-in" type="number" step="0.1" min="20" max="500" value={weighInValue} onChange={e => setWeighInValue(e.target.value)} required />
             </div>
-            <button type="submit" className="btn btn-primary" disabled={weighInLoading} style={{ marginBottom: 1 }}>
-              {weighInLoading ? '...' : 'Save'}
-            </button>
-            <button type="button" className="btn btn-secondary" onClick={() => setShowWeighIn(false)} style={{ marginBottom: 1 }}>
-              Skip
-            </button>
+            <button type="submit" className="btn btn-primary" disabled={weighInLoading}>{weighInLoading ? '...' : 'Save'}</button>
+            <button type="button" className="btn btn-secondary" onClick={() => setShowWeighIn(false)}>Cancel</button>
           </form>
         </div>
       )}
 
-      {/* Calorie ring */}
-      <div className="card" style={{ textAlign: 'center', marginBottom: 'var(--space-md)' }}>
-        <div className="calorie-ring">
-          <svg viewBox="0 0 160 160">
-            <circle cx="80" cy="80" r={radius} fill="none" stroke="var(--color-border)" strokeWidth="12" />
-            <circle cx="80" cy="80" r={radius} fill="none" stroke={ringColor} strokeWidth="12"
-              strokeLinecap="round" strokeDasharray={circumference} strokeDashoffset={offset}
-            />
-          </svg>
-          <div className="calorie-ring-center">
-            <div className="amount">{consumed}</div>
-            <div className="label">/ {target} kcal</div>
+      {/* Today card — ring + macros */}
+      <div className="card dash-today-card">
+        <div className="dash-today-header">
+          <h2 style={{ margin: 0, fontSize: 'var(--font-size-lg)' }}>Today</h2>
+        </div>
+
+        <div className="dash-today-content">
+          {/* Calorie ring */}
+          <div className="dash-ring-wrap">
+            <div className="calorie-ring" style={{ width: 140, height: 140 }}>
+              <svg viewBox="0 0 160 160">
+                <circle cx="80" cy="80" r={radius} fill="none" stroke="var(--color-bg)" strokeWidth="14" />
+                <circle cx="80" cy="80" r={radius} fill="none" stroke={ringColor} strokeWidth="14"
+                  strokeLinecap="round" strokeDasharray={circumference} strokeDashoffset={offset}
+                />
+              </svg>
+              <div className="calorie-ring-center">
+                <div className="amount" style={{ fontSize: 'var(--font-size-xl)' }}>{consumed}</div>
+                <div className="label">/ {target} kcal</div>
+                <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)' }}>Consumed</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Macro bars */}
+          <div className="dash-macros">
+            {macros.map(({ label, eaten, target: t, color }) => (
+              <div key={label} className="dash-macro-row">
+                <div className="dash-macro-label">{label}</div>
+                <div className="dash-macro-bar-wrap">
+                  <div className="dash-macro-bar-bg">
+                    <div className="dash-macro-bar-fill" style={{ width: `${t > 0 ? Math.min((eaten / t) * 100, 100) : 0}%`, background: color }} />
+                  </div>
+                </div>
+                <div className="dash-macro-value">{eaten} <span>/ {t}g</span></div>
+              </div>
+            ))}
           </div>
         </div>
 
+        {/* Quick stats */}
+        <div className="dash-quick-stats">
+          <div className="dash-stat">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="12" cy="12" r="3"/></svg>
+            <strong>{todayMeals.length}</strong>
+            <span>Meals</span>
+          </div>
+          <div className="dash-stat">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+            <strong>{Math.max(0, target - consumed)}</strong>
+            <span>Remaining</span>
+          </div>
+        </div>
       </div>
 
-      {/* Macro target cards */}
-      <div className="macro-cards">
-        {[
-          { label: 'Protein', eaten: Math.round(totals.proteinG), target: macroTargets?.proteinG, color: '#8B5CF6', unit: 'g' },
-          { label: 'Carbs', eaten: Math.round(totals.carbsG), target: macroTargets?.carbsG, color: '#F59E0B', unit: 'g' },
-          { label: 'Fat', eaten: Math.round(totals.fatG), target: macroTargets?.fatG, color: '#10B981', unit: 'g' },
-        ].map(({ label, eaten, target: t, color, unit }) => {
-          const goal = t || 0;
-          const remaining = Math.max(0, goal - eaten);
-          const ratio = goal > 0 ? Math.min(eaten / goal, 1) : 0;
-          const r = 28;
-          const circ = 2 * Math.PI * r;
-          const off = circ - ratio * circ;
-          return (
-            <div className="macro-card" key={label}>
-              <div className="macro-card-ring">
-                <svg viewBox="0 0 64 64">
-                  <circle cx="32" cy="32" r={r} fill="none" stroke="var(--color-border)" strokeWidth="5" />
-                  <circle cx="32" cy="32" r={r} fill="none" stroke={color} strokeWidth="5"
-                    strokeLinecap="round" strokeDasharray={circ} strokeDashoffset={off}
-                    style={{ transform: 'rotate(-90deg)', transformOrigin: 'center' }}
-                  />
-                </svg>
-                <span className="macro-card-pct">{goal > 0 ? Math.round((eaten / goal) * 100) : 0}%</span>
-              </div>
-              <div className="macro-card-info">
-                <span className="macro-card-label">{label}</span>
-                <span className="macro-card-value">{eaten}{unit} <span className="macro-card-sep">/</span> {goal}{unit}</span>
-                <span className="macro-card-remaining">{remaining}{unit} left</span>
-              </div>
-            </div>
-          );
-        })}
+      {/* Actions */}
+      <div className="dash-actions">
+        <button className="action-btn action-btn-follow" style={{ flex: 1 }} onClick={() => setShowAddMeal(true)}>
+          + Add Meal
+        </button>
+        <button className="action-btn action-btn-share" style={{ flex: 1 }} onClick={() => navigate('/scan')}>
+          Scan Photo
+        </button>
       </div>
 
       {/* AI Analysis button */}
@@ -219,7 +204,7 @@ export default function DashboardPage() {
             const res = await reports.analyze();
             setAiAnalysis(res.analysis);
           } catch (err) {
-            setAiAnalysis(err.message || 'Analysis failed. Please try again.');
+            setAiAnalysis(err.message || 'Analysis failed.');
           } finally {
             setAiLoading(false);
           }
@@ -236,103 +221,57 @@ export default function DashboardPage() {
           <div className="modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: 520 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-md)' }}>
               <h2 style={{ margin: 0 }}>AI Analysis</h2>
-              <button
-                onClick={() => setShowAnalysis(false)}
-                style={{ background: 'none', border: 'none', fontSize: 20, cursor: 'pointer', color: 'var(--color-text-secondary)', padding: 4 }}
-              >
-                &times;
-              </button>
+              <button onClick={() => setShowAnalysis(false)} style={{ background: 'none', border: 'none', fontSize: 20, cursor: 'pointer', color: 'var(--color-text-secondary)' }}>&times;</button>
             </div>
             {aiLoading ? (
               <div style={{ textAlign: 'center', padding: 'var(--space-xl) 0' }}>
                 <div className="spinner" />
-                <p style={{ color: 'var(--color-text-secondary)', fontSize: 'var(--font-size-sm)', marginTop: 'var(--space-md)' }}>
-                  Analyzing your nutrition...
-                </p>
+                <p style={{ color: 'var(--color-text-secondary)', fontSize: 'var(--font-size-sm)', marginTop: 'var(--space-md)' }}>Analyzing your nutrition...</p>
               </div>
             ) : (
               <div className="ai-analysis-content">
-                {aiAnalysis && aiAnalysis.split('\n').filter(Boolean).map((p, i) => (
-                  <p key={i}>{p}</p>
-                ))}
+                {aiAnalysis && aiAnalysis.split('\n').filter(Boolean).map((p, i) => <p key={i}>{p}</p>)}
               </div>
             )}
           </div>
         </div>
       )}
 
-      {/* Actions */}
-      <div style={{ display: 'flex', gap: 'var(--space-sm)', marginBottom: 'var(--space-md)' }}>
-        <button className="btn btn-primary" style={{ flex: 1 }} onClick={() => setShowAddMeal(true)}>
-          + Add Meal
-        </button>
-        <button className="btn btn-secondary" style={{ flex: 1 }} onClick={() => navigate('/scan')}>
-          📷 Scan Photo
-        </button>
-        <button className="btn btn-secondary" style={{ minWidth: 44 }} onClick={async () => {
-          const text = buildDailySummaryShareText(totals, todayMeals, target);
-          const result = await shareText(text, "Today's Nutrition");
-          if (result === 'copied') alert('Copied to clipboard!');
-        }} aria-label="Share today's summary" title="Share today's summary">
-          ↗
-        </button>
-      </div>
-
-      {/* Today's meals */}
+      {/* Recent meals */}
       <div className="card">
-        <h2 style={{ marginBottom: 'var(--space-sm)' }}>Today's Meals</h2>
-        {todayMeals.length === 0 && (
-          <p style={{ color: 'var(--color-text-secondary)', padding: 'var(--space-md) 0' }}>
-            No meals logged today.
-          </p>
-        )}
-        {todayMeals.map((m) => (
-          <div className="meal-item" key={m.id} onClick={() => setSelectedMeal(m)} style={{ cursor: 'pointer' }}>
-            {m.photoUrl && (
-              <img
-                src={photoSrc(m.photoUrl)}
-                alt={m.name}
-                style={{
-                  width: 52,
-                  height: 52,
-                  borderRadius: 'var(--radius-md)',
-                  objectFit: 'cover',
-                  flexShrink: 0,
-                }}
-              />
+        <h2 style={{ marginBottom: 'var(--space-md)', fontSize: 'var(--font-size-lg)' }}>Recent meals</h2>
+        {todayMeals.length === 0 ? (
+          <p style={{ color: 'var(--color-text-secondary)', padding: 'var(--space-md) 0', textAlign: 'center' }}>No meals logged today</p>
+        ) : todayMeals.map((m) => (
+          <div className="dash-meal-item" key={m.id} onClick={() => setSelectedMeal(m)}>
+            {m.photoUrl ? (
+              <img src={photoSrc(m.photoUrl)} alt={m.name} className="dash-meal-img" />
+            ) : (
+              <div className="dash-meal-img-placeholder">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="12" cy="12" r="3"/></svg>
+              </div>
             )}
-            <div className="meal-info">
-              <div className="meal-name">
-                {m.name}
-                {m.source === 'photo_ai' && (
-                  <span style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-primary-light)', marginLeft: 4 }}>AI</span>
-                )}
-              </div>
-              <div className="meal-meta">
+            <div className="dash-meal-info">
+              <span className="dash-meal-name">{m.name}</span>
+              <span className="dash-meal-meta">
+                {m.source === 'photo_ai' && 'AI · '}
                 P {Math.round(m.proteinG)}g · C {Math.round(m.carbsG)}g · F {Math.round(m.fatG)}g
-                {' · '}
-                {new Date(m.consumedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-              </div>
+              </span>
             </div>
-            <span className="meal-cals">{m.calories} kcal</span>
-            <span style={{ color: 'var(--color-text-secondary)', fontSize: 14, marginLeft: 4 }}>›</span>
+            <div className="dash-meal-right">
+              <span className="dash-meal-cals">{m.calories} kcal</span>
+              <span className="dash-meal-time">{new Date(m.consumedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+            </div>
           </div>
         ))}
       </div>
 
       {showAddMeal && (
-        <AddMealModal
-          onClose={() => setShowAddMeal(false)}
-          onSaved={() => { setShowAddMeal(false); fetchData(); }}
-        />
+        <AddMealModal onClose={() => setShowAddMeal(false)} onSaved={() => { setShowAddMeal(false); fetchData(); }} />
       )}
 
       {selectedMeal && (
-        <MealDetailModal
-          meal={selectedMeal}
-          onClose={() => setSelectedMeal(null)}
-          onUpdated={handleMealUpdated}
-        />
+        <MealDetailModal meal={selectedMeal} onClose={() => setSelectedMeal(null)} onUpdated={handleMealUpdated} />
       )}
     </div>
   );
