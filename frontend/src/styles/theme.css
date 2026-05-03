@@ -193,7 +193,7 @@ a:hover { text-decoration: underline; }
 
 /* Layout */
 .page {
-  padding: var(--space-lg) 0;
+  padding: 0;
   min-height: 100vh;
 }
 
@@ -367,8 +367,7 @@ a:hover { text-decoration: underline; }
 /* Mobile body padding for bottom nav */
 @media (max-width: 767px) {
   .main-content {
-    padding: var(--space-md);
-    padding-bottom: 80px;
+    padding: 0 var(--space-md) 80px;
     background: #fff;
     height: 100vh;
     overflow-y: auto;
@@ -2223,6 +2222,7 @@ a:hover { text-decoration: underline; }
   justify-content: flex-end;
   align-items: center;
   padding: var(--space-sm) 0;
+  padding-top: var(--space-md);
   margin: 0 calc(-1 * var(--space-md));
   padding-left: var(--space-md);
   padding-right: var(--space-md);
