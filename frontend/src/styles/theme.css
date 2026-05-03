@@ -2218,9 +2218,13 @@ a:hover { text-decoration: underline; }
   .feed-page {
     margin-left: calc(-1 * var(--space-md));
     margin-right: calc(-1 * var(--space-md));
+    padding-left: 0;
+    padding-right: 0;
   }
-  .feed-page .feed-tabs-row {
-    padding: 0 var(--space-md);
+  .feed-page .feed-tabs-row,
+  .feed-page .stories-row {
+    padding-left: var(--space-md);
+    padding-right: var(--space-md);
   }
 }
 
