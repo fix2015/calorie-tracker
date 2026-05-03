@@ -143,13 +143,37 @@ router.delete('/users/:id', async (req, res, next) => {
   }
 });
 
-// GET /meals — list recent meals
+// GET /suggestions — list AI suggestion cache entries
+router.get('/suggestions', async (req, res, next) => {
+  try {
+    const suggestions = await prisma.suggestionCache.findMany({
+      orderBy: { createdAt: 'desc' },
+      take: 100,
+      select: {
+        id: true, message: true, createdAt: true,
+        user: { select: { id: true, name: true, username: true, email: true } },
+      },
+    });
+    res.json({ suggestions });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// GET /meals — list recent meals with optional filters
 router.get('/meals', async (req, res, next) => {
   try {
     const limit = Math.min(parseInt(req.query.limit) || 50, 200);
     const cursor = req.query.cursor || null;
+    const source = req.query.source || null;
+    const search = req.query.search || null;
+
+    const where = {};
+    if (source) where.source = source;
+    if (search) where.name = { contains: search, mode: 'insensitive' };
 
     const meals = await prisma.meal.findMany({
+      where,
       orderBy: { createdAt: 'desc' },
       take: limit + 1,
       ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
