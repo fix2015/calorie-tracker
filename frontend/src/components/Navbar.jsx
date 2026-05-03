@@ -53,9 +53,17 @@ export default function Navbar() {
 
   const links = [
     { to: '/', label: 'Home', icon: icons.home },
-    { to: '/dashboard', label: 'Dashboard', icon: icons.dashboard },
+    { to: '/explore', label: 'Discover', icon: icons.explore },
+    { to: '/scan', label: 'Scan', icon: icons.scan, isScan: true },
+    { to: '/dashboard', label: 'Stats', icon: icons.dashboard },
+    { to: '/profile', label: 'Profile', icon: icons.profile },
+  ];
+
+  const sidebarLinks = [
+    { to: '/', label: 'Home', icon: icons.home },
+    { to: '/explore', label: 'Discover', icon: icons.explore },
     { to: '/scan', label: 'Scan', icon: icons.scan },
-    { to: '/explore', label: 'Explore', icon: icons.explore },
+    { to: '/dashboard', label: 'Stats', icon: icons.dashboard },
     { to: '/notifications', label: 'Alerts', icon: icons.notifications, badge: notifCount },
     { to: '/messages', label: 'Messages', icon: icons.messages, badge: msgCount },
     { to: '/profile', label: 'Profile', icon: icons.profile },
@@ -67,7 +75,7 @@ export default function Navbar() {
       <aside className="sidebar">
         <div className="logo">CalTracker</div>
         <nav>
-          {links.map((link) => (
+          {sidebarLinks.map((link) => (
             <NavLink key={link.to} to={link.to} end={link.to === '/'}>
               <span className="nav-icon">
                 {link.icon}
@@ -87,15 +95,17 @@ export default function Navbar() {
         </button>
       </aside>
 
-      {/* Mobile bottom nav: Home, Dashboard, Scan, Explore, Profile */}
+      {/* Mobile bottom nav: Home, Discover, +Scan, Stats, Profile */}
       <nav className="bottom-nav">
-        {[links[0], links[1], links[2], links[3], links[6]].map((link) => (
-          <NavLink key={link.to} to={link.to} end={link.to === '/'}>
+        {links.map((link) => (
+          <NavLink key={link.to} to={link.to} end={link.to === '/'} className={link.isScan ? 'scan-nav-btn' : ''}>
             <span className="nav-icon">
-              {link.icon}
+              {link.isScan ? (
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              ) : link.icon}
               {link.badge > 0 && <span className="unread-badge">{link.badge > 9 ? '9+' : link.badge}</span>}
             </span>
-            {link.label}
+            {!link.isScan && link.label}
           </NavLink>
         ))}
       </nav>
