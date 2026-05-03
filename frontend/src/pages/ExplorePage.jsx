@@ -1,11 +1,14 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { publicApi } from '../services/api';
+import { useAuth } from '../services/AuthContext';
 import { photoSrc } from '../services/photoUrl';
 import { useInfiniteScroll } from '../services/useInfiniteScroll';
 import PublicMealDetailModal from '../components/PublicMealDetailModal';
 
 export default function ExplorePage() {
+  const { user } = useAuth();
+  const navigate = useNavigate();
   const [query, setQuery] = useState('');
   const [results, setResults] = useState([]);
   const [searchLoading, setSearchLoading] = useState(false);
@@ -23,16 +26,19 @@ export default function ExplorePage() {
 
   // Load trending and suggestions on mount
   useEffect(() => {
-    Promise.all([
+    const promises = [
       publicApi.trending().catch(() => ({ meals: [], nextCursor: null })),
-      publicApi.suggestions().catch(() => ({ users: [] })),
-    ]).then(([t, s]) => {
+    ];
+    if (user) {
+      promises.push(publicApi.suggestions().catch(() => ({ users: [] })));
+    }
+    Promise.all(promises).then(([t, s]) => {
       setTrending(t.meals);
       setTrendingCursor(t.nextCursor);
-      setSuggestions(s.users);
+      if (s) setSuggestions(s.users);
       setTrendingLoading(false);
     });
-  }, []);
+  }, [user]);
 
   // Search
   const search = useCallback((q) => {
@@ -73,19 +79,30 @@ export default function ExplorePage() {
   const sentinelRef = useInfiniteScroll(fetchMoreTrending, !!trendingCursor && !loadingMore && !searched);
 
   const handleFollow = useCallback(async (username) => {
+    if (!user) { navigate('/login'); return; }
     try {
       const res = await publicApi.follow(username);
       if (res.following) {
         setFollowingSet((prev) => new Set([...prev, username]));
       }
     } catch {}
-  }, []);
+  }, [user, navigate]);
 
   const isSearching = query.trim().length >= 2;
 
   return (
     <div className="page">
       <h1 className="page-title">Explore</h1>
+
+      {!user && (
+        <div className="explore-auth-banner">
+          <p>Join CalTracker to like, comment, follow, and share your meals</p>
+          <div style={{ display: 'flex', gap: 'var(--space-sm)' }}>
+            <Link to="/login" className="action-btn action-btn-follow">Log In</Link>
+            <Link to="/register" className="action-btn action-btn-message">Sign Up</Link>
+          </div>
+        </div>
+      )}
 
       <div style={{ maxWidth: 700 }}>
         <div className="form-group" style={{ marginBottom: 'var(--space-lg)' }}>

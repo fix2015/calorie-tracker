@@ -1294,6 +1294,26 @@ a:hover { text-decoration: underline; }
   text-overflow: ellipsis;
 }
 
+/* Explore auth banner */
+.explore-auth-banner {
+  background: linear-gradient(135deg, #EEF2FF, #E0E7FF);
+  border: 1px solid #C7D2FE;
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
+  text-align: center;
+  margin-bottom: var(--space-lg);
+}
+
+.explore-auth-banner p {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  margin-bottom: var(--space-md);
+}
+
+.explore-auth-banner .action-btn {
+  text-decoration: none;
+}
+
 /* Scroll sentinel */
 .scroll-sentinel {
   height: 1px;

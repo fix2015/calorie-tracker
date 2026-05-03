@@ -171,6 +171,12 @@ export default function PublicProfilePage() {
               </button>
             </>
           )}
+          {!currentUser && (
+            <>
+              <Link to="/login" className="action-btn action-btn-follow">Follow</Link>
+              <Link to="/login" className="action-btn action-btn-message">Message</Link>
+            </>
+          )}
           {profile.linkUrl && (
             <a href={profile.linkUrl} target="_blank" rel="noopener noreferrer" className="action-btn action-btn-link">
               Visit Link

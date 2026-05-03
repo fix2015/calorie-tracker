@@ -23,7 +23,7 @@ function ProtectedLayout() {
   }
 
   if (!user) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/explore" replace />;
   }
 
   return (
@@ -62,7 +62,6 @@ function App() {
             <Route path="/" element={<FeedPage />} />
             <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/scan" element={<ScanPage />} />
-            <Route path="/explore" element={<ExplorePage />} />
             <Route path="/notifications" element={<NotificationsPage />} />
             <Route path="/messages" element={<MessagesPage />} />
             <Route path="/messages/:conversationId" element={<MessagesPage />} />
@@ -70,10 +69,11 @@ function App() {
             <Route path="/profile" element={<ProfilePage />} />
           </Route>
 
+          <Route path="/explore" element={<ExplorePage />} />
           <Route path="/u/:username" element={<PublicProfilePage />} />
           <Route path="/terms" element={<TermsPage />} />
           <Route path="/privacy" element={<PrivacyPage />} />
-          <Route path="*" element={<Navigate to="/" replace />} />
+          <Route path="*" element={<Navigate to="/explore" replace />} />
         </Routes>
       </AuthProvider>
     </BrowserRouter>
