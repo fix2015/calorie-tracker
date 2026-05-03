@@ -42,11 +42,19 @@ router.post('/register', authLimiter, async (req, res, next) => {
     const passwordHash = await bcrypt.hash(data.password, 10);
     const dailyCalorieTarget = computeDailyCalorieTarget(data);
 
+    // Auto-generate username from name
+    let username = data.name.toLowerCase().replace(/[^a-z0-9_]/g, '').slice(0, 20);
+    if (username.length < 3) username = username + Math.random().toString(36).slice(2, 6);
+    const existingUsername = await prisma.user.findUnique({ where: { username } });
+    if (existingUsername) username = username + Math.random().toString(36).slice(2, 5);
+
     const user = await prisma.user.create({
       data: {
         email: data.email,
         passwordHash,
         name: data.name,
+        username,
+        isPublic: true,
         age: data.age,
         gender: data.gender,
         heightCm: data.heightCm,
