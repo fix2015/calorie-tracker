@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../services/AuthContext';
 import { reports, users } from '../services/api';
-import { calcMacroTargets, MOTIVATION_QUOTES } from '../services/macroCalc';
+import { calcMacroTargets } from '../services/macroCalc';
 import { photoSrc } from '../services/photoUrl';
 import { requestNotificationPermission, startNotificationScheduler } from '../services/notifications';
 import AddMealModal from '../components/AddMealModal';
@@ -22,6 +22,7 @@ export default function DashboardPage() {
   const [aiLoading, setAiLoading] = useState(false);
   const [showAnalysis, setShowAnalysis] = useState(false);
   const [weeklyData, setWeeklyData] = useState([]);
+  const [weightHistory, setWeightHistory] = useState([]);
 
   const target = user?.dailyCalorieTarget || 2000;
   const macroTargets = calcMacroTargets(user);
@@ -53,6 +54,7 @@ export default function DashboardPage() {
     }).catch(() => {}).finally(() => {
       reports.weekly().then((data) => setWeeklyData(data.days || [])).catch(() => {});
     });
+    reports.weightHistory().then((data) => setWeightHistory(data.logs || [])).catch(() => {});
   }, []);
 
   const handleMealUpdated = () => {
@@ -71,6 +73,7 @@ export default function DashboardPage() {
     try {
       await users.updateProfile({ weightKg: Number(weighInValue) });
       await refreshUser();
+      reports.weightHistory().then((data) => setWeightHistory(data.logs || [])).catch(() => {});
       setShowWeighIn(false);
       setWeighInValue('');
     } catch (err) {
@@ -93,9 +96,9 @@ export default function DashboardPage() {
   if (loading) return <div className="page"><div className="spinner" /></div>;
 
   const macros = [
-    { label: 'Protein', eaten: Math.round(totals.proteinG), target: macroTargets?.proteinG || 0, color: '#3B82F6' },
-    { label: 'Carbs', eaten: Math.round(totals.carbsG), target: macroTargets?.carbsG || 0, color: '#F59E0B' },
-    { label: 'Fats', eaten: Math.round(totals.fatG), target: macroTargets?.fatG || 0, color: '#22C55E' },
+    { label: 'Protein', eaten: Math.round(totals.proteinG), target: macroTargets?.proteinG || 0, color: 'var(--color-primary)' },
+    { label: 'Carbs', eaten: Math.round(totals.carbsG), target: macroTargets?.carbsG || 0, color: 'var(--color-primary)' },
+    { label: 'Fats', eaten: Math.round(totals.fatG), target: macroTargets?.fatG || 0, color: 'var(--color-primary)' },
   ];
 
   return (
@@ -140,8 +143,8 @@ export default function DashboardPage() {
           <div className="dash-ring-wrap">
             <div className="calorie-ring" style={{ width: 130, height: 130 }}>
               <svg viewBox="0 0 160 160">
-                <circle cx="80" cy="80" r={radius} fill="none" stroke="var(--color-bg)" strokeWidth="14" />
-                <circle cx="80" cy="80" r={radius} fill="none" stroke={ringColor} strokeWidth="14"
+                <circle cx="80" cy="80" r={radius} fill="none" stroke="var(--color-bg)" strokeWidth="10" />
+                <circle cx="80" cy="80" r={radius} fill="none" stroke={ringColor} strokeWidth="10"
                   strokeLinecap="round" strokeDasharray={circumference} strokeDashoffset={offset}
                 />
               </svg>
@@ -223,6 +226,81 @@ export default function DashboardPage() {
                 })}
               </div>
             </div>
+          </div>
+        );
+      })()}
+
+      {/* Weight progress */}
+      {user?.weightKg && user?.targetWeightKg && user?.goal !== 'maintain' && (() => {
+        const current = user.weightKg;
+        const goalW = user.targetWeightKg;
+        const startW = weightHistory.length > 0 ? weightHistory[0].weightKg : current;
+        const totalDiff = Math.abs(startW - goalW);
+        const remaining = Math.abs(current - goalW);
+        const progress = totalDiff > 0 ? Math.min(((totalDiff - remaining) / totalDiff) * 100, 100) : 0;
+        const isLosing = user.goal === 'lose';
+
+        return (
+          <div className="card" style={{ marginBottom: 'var(--space-md)' }}>
+            <div className="dash-today-header">
+              <h2 style={{ margin: 0, fontSize: 'var(--font-size-lg)' }}>Weight progress</h2>
+              <span style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-primary)', fontWeight: 600 }}>
+                {remaining.toFixed(1)} kg to go
+              </span>
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', margin: 'var(--space-md) 0 var(--space-sm)' }}>
+              <div style={{ textAlign: 'center' }}>
+                <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)' }}>Current</div>
+                <div style={{ fontSize: 'var(--font-size-lg)', fontWeight: 700 }}>{current} kg</div>
+              </div>
+              <div style={{ flex: 1, margin: '0 var(--space-md)', position: 'relative' }}>
+                <div style={{ height: 8, borderRadius: 4, background: 'var(--color-bg)', overflow: 'hidden' }}>
+                  <div style={{ height: '100%', width: `${Math.max(progress, 2)}%`, background: 'var(--color-primary)', borderRadius: 4, transition: 'width 0.5s ease' }} />
+                </div>
+                <div style={{ textAlign: 'center', fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)', marginTop: 4 }}>
+                  {Math.round(progress)}%
+                </div>
+              </div>
+              <div style={{ textAlign: 'center' }}>
+                <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)' }}>Goal</div>
+                <div style={{ fontSize: 'var(--font-size-lg)', fontWeight: 700, color: 'var(--color-primary)' }}>{goalW} kg</div>
+              </div>
+            </div>
+
+            {/* Weight history mini chart */}
+            {weightHistory.length >= 2 && (() => {
+              const weights = weightHistory.map(l => l.weightKg);
+              const minW = Math.min(...weights, goalW) - 1;
+              const maxW = Math.max(...weights) + 1;
+              const range = maxW - minW || 1;
+              const chartW = 100;
+              const chartH = 60;
+              const points = weightHistory.map((l, i) => {
+                const x = weightHistory.length > 1 ? (i / (weightHistory.length - 1)) * chartW : chartW / 2;
+                const y = chartH - ((l.weightKg - minW) / range) * chartH;
+                return `${x},${y}`;
+              }).join(' ');
+              const goalY = chartH - ((goalW - minW) / range) * chartH;
+
+              return (
+                <div style={{ marginTop: 'var(--space-sm)' }}>
+                  <svg viewBox={`-2 -2 ${chartW + 4} ${chartH + 4}`} style={{ width: '100%', height: 80 }} preserveAspectRatio="none">
+                    <line x1="0" y1={goalY} x2={chartW} y2={goalY} stroke="var(--color-primary)" strokeWidth="0.5" strokeDasharray="3,3" opacity="0.5" />
+                    <polyline points={points} fill="none" stroke="var(--color-primary)" strokeWidth="1.5" strokeLinejoin="round" strokeLinecap="round" />
+                    {weightHistory.map((l, i) => {
+                      const x = weightHistory.length > 1 ? (i / (weightHistory.length - 1)) * chartW : chartW / 2;
+                      const y = chartH - ((l.weightKg - minW) / range) * chartH;
+                      return <circle key={i} cx={x} cy={y} r="1.5" fill="var(--color-primary)" />;
+                    })}
+                  </svg>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)' }}>
+                    <span>{new Date(weightHistory[0].createdAt).toLocaleDateString([], { month: 'short', day: 'numeric' })}</span>
+                    <span>{new Date(weightHistory[weightHistory.length - 1].createdAt).toLocaleDateString([], { month: 'short', day: 'numeric' })}</span>
+                  </div>
+                </div>
+              );
+            })()}
           </div>
         );
       })()}

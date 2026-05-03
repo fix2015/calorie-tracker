@@ -209,17 +209,15 @@ export default function ProfilePage() {
             </select>
           </div>
 
-          {form.goal !== 'maintain' && (
-            <div className="form-group">
-              <label htmlFor="prof-target-weight">Target Weight (kg)</label>
-              <input id="prof-target-weight" type="number" step="0.1" value={form.targetWeightKg} onChange={set('targetWeightKg')} min="30" max="300" />
-              {weightDiff && (
-                <span style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-text-secondary)' }}>
-                  {Math.abs(Number(weightDiff))} kg to {Number(weightDiff) > 0 ? 'lose' : 'gain'}
-                </span>
-              )}
-            </div>
-          )}
+          <div className="form-group">
+            <label htmlFor="prof-target-weight">Goal Weight (kg)</label>
+            <input id="prof-target-weight" type="number" step="0.1" value={form.targetWeightKg} onChange={set('targetWeightKg')} min="30" max="300" />
+            {weightDiff && (
+              <span style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-text-secondary)' }}>
+                {Math.abs(Number(weightDiff))} kg to {Number(weightDiff) > 0 ? 'lose' : 'gain'}
+              </span>
+            )}
+          </div>
 
           <div className="form-group">
             <label htmlFor="prof-activity">Activity Level</label>
