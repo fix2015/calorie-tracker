@@ -6,6 +6,7 @@ import { useInfiniteScroll } from '../services/useInfiniteScroll';
 import { shareText } from '../services/share';
 import { photoSrc } from '../services/photoUrl';
 import PublicMealDetailModal from '../components/PublicMealDetailModal';
+import FollowListModal from '../components/FollowListModal';
 
 function formatDayLabel(dateStr) {
   const d = new Date(dateStr);
@@ -48,6 +49,7 @@ export default function PublicProfilePage() {
   const [shareMsg, setShareMsg] = useState('');
   const [isFollowing, setIsFollowing] = useState(false);
   const [followersCount, setFollowersCount] = useState(0);
+  const [followListType, setFollowListType] = useState(null);
 
   useEffect(() => {
     setLoading(true);
@@ -137,8 +139,12 @@ export default function PublicProfilePage() {
 
         <div className="profile-stats">
           <span><strong>{profile._count?.meals || 0}</strong> meals</span>
-          <span><strong>{followersCount}</strong> followers</span>
-          <span><strong>{profile._count?.following || 0}</strong> following</span>
+          <button className="profile-stat-btn" onClick={() => setFollowListType('followers')}>
+            <strong>{followersCount}</strong> followers
+          </button>
+          <button className="profile-stat-btn" onClick={() => setFollowListType('following')}>
+            <strong>{profile._count?.following || 0}</strong> following
+          </button>
         </div>
 
         {profile.bio && <p className="public-bio">{profile.bio}</p>}
@@ -240,6 +246,14 @@ export default function PublicProfilePage() {
           mealId={selectedMeal.id}
           username={profile.username}
           onClose={() => setSelectedMeal(null)}
+        />
+      )}
+
+      {followListType && (
+        <FollowListModal
+          username={profile.username}
+          type={followListType}
+          onClose={() => setFollowListType(null)}
         />
       )}
     </div>

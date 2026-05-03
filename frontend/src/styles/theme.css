@@ -1407,6 +1407,79 @@ a:hover { text-decoration: underline; }
   color: var(--color-text);
 }
 
+.profile-stat-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  padding: 0;
+}
+
+.profile-stat-btn:hover {
+  color: var(--color-text);
+}
+
+.profile-stat-btn strong {
+  color: var(--color-text);
+}
+
+/* Follow list modal */
+.follow-list-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  padding: var(--space-sm) 0;
+  border-bottom: 1px solid var(--color-border);
+  text-decoration: none;
+  color: var(--color-text);
+}
+
+.follow-list-item:last-child {
+  border-bottom: none;
+}
+
+.follow-list-item:hover {
+  text-decoration: none;
+}
+
+.follow-list-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.follow-list-avatar-placeholder {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-light));
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.follow-list-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.follow-list-name {
+  font-weight: 600;
+  font-size: var(--font-size-sm);
+}
+
+.follow-list-handle {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+}
+
 /* Action buttons — consistent across the app */
 .action-btn {
   display: inline-flex;

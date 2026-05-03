@@ -22,11 +22,14 @@ export default function Navbar() {
   const [msgCount, setMsgCount] = useState(0);
   const prevNotifRef = useRef(0);
   const prevMsgRef = useRef(0);
+  const locationRef = useRef(location.pathname);
+  locationRef.current = location.pathname;
+  const initialLoadRef = useRef(true);
 
   useEffect(() => {
     const check = () => {
       notificationsApi.unreadCount().then((data) => {
-        if (data.count > prevNotifRef.current && !location.pathname.startsWith('/notifications')) {
+        if (!initialLoadRef.current && data.count > prevNotifRef.current && !locationRef.current.startsWith('/notifications')) {
           playNotificationSound();
         }
         prevNotifRef.current = data.count;
@@ -35,17 +38,18 @@ export default function Navbar() {
 
       messagesApi.list().then((data) => {
         const total = data.conversations.reduce((sum, c) => sum + (c.unreadCount || 0), 0);
-        if (total > prevMsgRef.current && !location.pathname.startsWith('/messages')) {
+        if (!initialLoadRef.current && total > prevMsgRef.current && !locationRef.current.startsWith('/messages')) {
           playNotificationSound();
         }
         prevMsgRef.current = total;
         setMsgCount(total);
+        initialLoadRef.current = false;
       }).catch(() => {});
     };
     check();
     const interval = setInterval(check, 15000);
     return () => clearInterval(interval);
-  }, [location.pathname]);
+  }, []);
 
   const links = [
     { to: '/', label: 'Home', icon: icons.home },
