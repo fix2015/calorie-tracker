@@ -1527,6 +1527,15 @@ a:hover { text-decoration: underline; }
   background: var(--color-bg);
 }
 
+.action-btn-block {
+  background: transparent;
+  color: var(--color-danger);
+  border: 2px solid var(--color-danger);
+}
+.action-btn-block:hover {
+  background: rgba(239, 68, 68, 0.06);
+}
+
 .action-btn-link {
   background: transparent;
   color: var(--color-success);

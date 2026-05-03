@@ -149,6 +149,12 @@ export default function PublicMealDetailModal({ mealId, username, onClose }) {
               </div>
             )}
 
+            {meal.description && (
+              <div style={{ marginBottom: 'var(--space-md)', padding: 'var(--space-sm) var(--space-md)', background: 'var(--color-bg)', borderRadius: 'var(--radius-md)', fontSize: 'var(--font-size-sm)', lineHeight: 1.6, whiteSpace: 'pre-wrap' }}>
+                {meal.description}
+              </div>
+            )}
+
             <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-sm)', marginBottom: 'var(--space-md)', borderTop: '1px solid var(--color-border)', borderBottom: '1px solid var(--color-border)', padding: 'var(--space-sm) 0' }}>
               <button
                 className={`feed-action-btn feed-action-like${liked ? ' liked' : ''}`}

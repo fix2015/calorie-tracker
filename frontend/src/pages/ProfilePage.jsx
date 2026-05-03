@@ -50,6 +50,7 @@ export default function ProfilePage() {
     bio: '',
     linkUrl: '',
     isPublic: false,
+    followersOnly: false,
   });
 
   useEffect(() => {
@@ -67,6 +68,7 @@ export default function ProfilePage() {
         bio: user.bio || '',
         linkUrl: user.linkUrl || '',
         isPublic: user.isPublic || false,
+        followersOnly: user.followersOnly || false,
       });
     }
   }, [user]);
@@ -92,6 +94,7 @@ export default function ProfilePage() {
         activityLevel: form.activityLevel,
         goal: form.goal,
         isPublic: form.isPublic,
+        followersOnly: form.followersOnly,
         username: form.username || null,
         bio: form.bio || null,
         linkUrl: form.linkUrl || null,
@@ -248,6 +251,22 @@ export default function ProfilePage() {
 
           {form.isPublic && (
             <>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <div>
+                  <strong style={{ fontSize: 'var(--font-size-sm)' }}>Followers Only</strong>
+                  <p style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)', margin: 0 }}>
+                    Only followers can see your meals
+                  </p>
+                </div>
+                <label className="toggle-switch">
+                  <input
+                    type="checkbox"
+                    checked={form.followersOnly}
+                    onChange={(e) => { setForm({ ...form, followersOnly: e.target.checked }); setSuccess(''); }}
+                  />
+                  <span className="toggle-slider"></span>
+                </label>
+              </div>
               <div className="form-group">
                 <label htmlFor="prof-username">Username</label>
                 <input

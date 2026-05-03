@@ -147,6 +147,9 @@ router.patch('/:id', authenticate, async (req, res, next) => {
     if (typeof req.body.isPublic === 'boolean') {
       updateData.isPublic = req.body.isPublic;
     }
+    if (typeof req.body.description === 'string') {
+      updateData.description = req.body.description || null;
+    }
     const updated = await prisma.meal.update({
       where: { id: req.params.id },
       data: updateData,

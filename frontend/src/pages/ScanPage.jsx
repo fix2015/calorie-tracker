@@ -243,11 +243,26 @@ export default function ScanPage() {
                   <span className="macro-label">Fat</span>
                 </div>
               </div>
+              <div className="form-group" style={{ marginBottom: 'var(--space-md)' }}>
+                <label>Recipe / Notes (visible on public profile)</label>
+                <textarea
+                  value={result.description || ''}
+                  onChange={(e) => setResult({ ...result, description: e.target.value })}
+                  placeholder="Add a recipe, ingredients, or notes about this meal..."
+                  rows={3}
+                  style={{ resize: 'vertical' }}
+                />
+              </div>
               <div style={{ display: 'flex', gap: 'var(--space-sm)' }}>
                 <button className="btn btn-secondary" style={{ flex: 1 }} onClick={() => setEditing(true)}>
                   Edit
                 </button>
-                <button className="btn btn-primary" style={{ flex: 1 }} onClick={() => navigate('/')}>
+                <button className="btn btn-primary" style={{ flex: 1 }} onClick={async () => {
+                  if (result.description && result.id) {
+                    try { await meals.update(result.id, { name: result.name, calories: result.calories, proteinG: result.proteinG, carbsG: result.carbsG, fatG: result.fatG, description: result.description }); } catch {}
+                  }
+                  navigate('/dashboard');
+                }}>
                   Done ✓
                 </button>
               </div>

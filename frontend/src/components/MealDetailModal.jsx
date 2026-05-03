@@ -117,6 +117,12 @@ export default function MealDetailModal({ meal, onClose, onUpdated }) {
               </div>
             </div>
 
+            {meal.description && (
+              <div style={{ marginBottom: 'var(--space-md)', padding: 'var(--space-sm) var(--space-md)', background: 'var(--color-bg)', borderRadius: 'var(--radius-md)', fontSize: 'var(--font-size-sm)', lineHeight: 1.6, whiteSpace: 'pre-wrap' }}>
+                {meal.description}
+              </div>
+            )}
+
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 'var(--space-sm)', padding: 'var(--space-sm) 0', borderTop: '1px solid var(--color-border)' }}>
               <span style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-text-secondary)' }}>
                 {mealPublic ? 'Visible on public profile' : 'Hidden from public profile'}

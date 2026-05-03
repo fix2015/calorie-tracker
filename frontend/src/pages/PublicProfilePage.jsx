@@ -50,6 +50,7 @@ export default function PublicProfilePage() {
   const [isFollowing, setIsFollowing] = useState(false);
   const [followersCount, setFollowersCount] = useState(0);
   const [followListType, setFollowListType] = useState(null);
+  const [canSeeMeals, setCanSeeMeals] = useState(true);
 
   useEffect(() => {
     setLoading(true);
@@ -60,6 +61,7 @@ export default function PublicProfilePage() {
       setProfile(data);
       setIsFollowing(data.isFollowing || false);
       setFollowersCount(data._count?.followers || 0);
+      setCanSeeMeals(data.canSeeMeals !== false);
       return publicApi.getMeals(username, null, 18);
     }).then((data) => {
       setMeals(data.meals);
@@ -191,11 +193,30 @@ export default function PublicProfilePage() {
           <button className="action-btn action-btn-share" onClick={handleShare}>
             Share
           </button>
+          {currentUser && currentUser.id !== profile.id && (
+            <button
+              className="action-btn action-btn-block"
+              onClick={async () => {
+                if (!window.confirm('Block this user? They won\'t be able to see your profile.')) return;
+                try {
+                  await publicApi.blockUser(profile.username);
+                } catch {}
+              }}
+            >
+              Block
+            </button>
+          )}
         </div>
         {shareMsg && <p style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-success)', marginTop: 'var(--space-sm)' }}>{shareMsg}</p>}
       </div>
 
-      {meals.length === 0 && !loadingMore ? (
+      {!canSeeMeals ? (
+        <div style={{ textAlign: 'center', padding: 'var(--space-2xl) 0', color: 'var(--color-text-secondary)' }}>
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" style={{ opacity: 0.4, marginBottom: 'var(--space-md)' }}><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          <p style={{ fontWeight: 600 }}>This account is private</p>
+          <p style={{ fontSize: 'var(--font-size-sm)' }}>Follow to see their meals</p>
+        </div>
+      ) : meals.length === 0 && !loadingMore ? (
         <p style={{ textAlign: 'center', color: 'var(--color-text-secondary)', padding: 'var(--space-xl) 0' }}>
           No meals yet
         </p>

@@ -186,13 +186,21 @@ router.get('/u/:username', optionalAuth, async (req, res, next) => {
       where: { username: req.params.username },
       select: {
         id: true, name: true, username: true, bio: true,
-        avatarUrl: true, linkUrl: true, createdAt: true, isPublic: true,
+        avatarUrl: true, linkUrl: true, createdAt: true, isPublic: true, followersOnly: true,
         _count: { select: { followers: true, following: true, meals: true } },
       },
     });
 
     if (!user || !user.isPublic) {
       return res.status(404).json({ error: 'Profile not found' });
+    }
+
+    // Check if viewer is blocked
+    if (req.userId && req.userId !== user.id) {
+      const blocked = await prisma.blockedUser.findUnique({
+        where: { blockerId_blockedId: { blockerId: user.id, blockedId: req.userId } },
+      });
+      if (blocked) return res.status(404).json({ error: 'Profile not found' });
     }
 
     let isFollowing = false;
@@ -203,8 +211,12 @@ router.get('/u/:username', optionalAuth, async (req, res, next) => {
       isFollowing = !!follow;
     }
 
+    // If followers-only and viewer is not following, restrict meals
+    const isOwner = req.userId === user.id;
+    const canSeeMeals = !user.followersOnly || isFollowing || isOwner;
+
     const { isPublic, ...profile } = user;
-    res.json({ ...profile, isFollowing });
+    res.json({ ...profile, isFollowing, canSeeMeals });
   } catch (err) {
     next(err);
   }
@@ -305,16 +317,85 @@ router.get('/u/:username/following', async (req, res, next) => {
   }
 });
 
+// POST /u/:username/block — toggle block user
+router.post('/u/:username/block', authenticate, async (req, res, next) => {
+  try {
+    const target = await prisma.user.findUnique({
+      where: { username: req.params.username },
+      select: { id: true },
+    });
+    if (!target) return res.status(404).json({ error: 'User not found' });
+    if (target.id === req.userId) return res.status(400).json({ error: 'Cannot block yourself' });
+
+    const existing = await prisma.blockedUser.findUnique({
+      where: { blockerId_blockedId: { blockerId: req.userId, blockedId: target.id } },
+    });
+
+    if (existing) {
+      await prisma.blockedUser.delete({ where: { id: existing.id } });
+    } else {
+      await prisma.blockedUser.create({
+        data: { blockerId: req.userId, blockedId: target.id },
+      });
+      // Also unfollow both directions
+      await prisma.follow.deleteMany({
+        where: { OR: [
+          { followerId: req.userId, followingId: target.id },
+          { followerId: target.id, followingId: req.userId },
+        ] },
+      });
+    }
+
+    res.json({ blocked: !existing });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// GET /blocked — list blocked users
+router.get('/blocked', authenticate, async (req, res, next) => {
+  try {
+    const blocks = await prisma.blockedUser.findMany({
+      where: { blockerId: req.userId },
+      include: { blocked: { select: { id: true, name: true, username: true, avatarUrl: true } } },
+      orderBy: { createdAt: 'desc' },
+    });
+    res.json({ users: blocks.map(b => b.blocked) });
+  } catch (err) {
+    next(err);
+  }
+});
+
 // GET /u/:username/meals — public meals with cursor pagination
-router.get('/u/:username/meals', async (req, res, next) => {
+router.get('/u/:username/meals', optionalAuth, async (req, res, next) => {
   try {
     const user = await prisma.user.findUnique({
       where: { username: req.params.username },
-      select: { id: true, isPublic: true },
+      select: { id: true, isPublic: true, followersOnly: true },
     });
 
     if (!user || !user.isPublic) {
       return res.status(404).json({ error: 'Profile not found' });
+    }
+
+    // Check blocked
+    if (req.userId && req.userId !== user.id) {
+      const blocked = await prisma.blockedUser.findUnique({
+        where: { blockerId_blockedId: { blockerId: user.id, blockedId: req.userId } },
+      });
+      if (blocked) return res.status(404).json({ error: 'Profile not found' });
+    }
+
+    // Check followers-only
+    if (user.followersOnly && req.userId !== user.id) {
+      let isFollower = false;
+      if (req.userId) {
+        const follow = await prisma.follow.findUnique({
+          where: { followerId_followingId: { followerId: req.userId, followingId: user.id } },
+        });
+        isFollower = !!follow;
+      }
+      if (!isFollower) return res.json({ meals: [], nextCursor: null });
     }
 
     const limit = Math.min(parseInt(req.query.limit) || 12, 48);

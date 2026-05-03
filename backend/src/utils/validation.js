@@ -31,6 +31,7 @@ const updateProfileSchema = z.object({
   bio: z.string().max(300).optional().nullable(),
   linkUrl: z.string().url().optional().nullable(),
   isPublic: z.boolean().optional(),
+  followersOnly: z.boolean().optional(),
 });
 
 const commentSchema = z.object({

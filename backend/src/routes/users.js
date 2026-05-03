@@ -43,7 +43,7 @@ router.patch('/me', authenticate, async (req, res, next) => {
         id: true, email: true, name: true, age: true, gender: true,
         heightCm: true, weightKg: true, targetWeightKg: true, weightUpdatedAt: true,
         activityLevel: true, goal: true, dailyCalorieTarget: true,
-        username: true, bio: true, avatarUrl: true, linkUrl: true, isPublic: true,
+        username: true, bio: true, avatarUrl: true, linkUrl: true, isPublic: true, followersOnly: true,
       },
     });
 

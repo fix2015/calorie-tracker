@@ -52,6 +52,7 @@ model User {
   avatarUrl           String?        @map("avatar_url")
   linkUrl             String?        @map("link_url")
   isPublic            Boolean        @default(false) @map("is_public")
+  followersOnly       Boolean        @default(false) @map("followers_only")
   createdAt           DateTime       @default(now()) @map("created_at")
   updatedAt           DateTime       @updatedAt @map("updated_at")
 
@@ -62,6 +63,8 @@ model User {
   comments            Comment[]
   followers           Follow[]               @relation("following")
   following           Follow[]               @relation("followers")
+  blockedUsers        BlockedUser[]           @relation("blocker")
+  blockedBy           BlockedUser[]           @relation("blocked")
   conversations       ConversationParticipant[]
   sentMessages        Message[]
   notifications       Notification[]         @relation("notifications")
@@ -78,6 +81,7 @@ model Meal {
   proteinG      Float      @map("protein_g")
   carbsG        Float      @map("carbs_g")
   fatG          Float      @map("fat_g")
+  description   String?
   source        MealSource @default(manual)
   photoUrl      String?    @map("photo_url")
   aiConfidence  Float?     @map("ai_confidence")
@@ -213,4 +217,18 @@ model Notification {
 
   @@index([userId, read, createdAt])
   @@map("notifications")
+}
+
+model BlockedUser {
+  id        String   @id @default(cuid())
+  blockerId String   @map("blocker_id")
+  blockedId String   @map("blocked_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  blocker   User     @relation("blocker", fields: [blockerId], references: [id], onDelete: Cascade)
+  blocked   User     @relation("blocked", fields: [blockedId], references: [id], onDelete: Cascade)
+
+  @@unique([blockerId, blockedId])
+  @@index([blockedId])
+  @@map("blocked_users")
 }

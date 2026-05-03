@@ -120,6 +120,8 @@ export const publicApi = {
     if (cursor) params.set('cursor', cursor);
     return request(`/public/u/${username}/following?${params}`);
   },
+  blockUser: (username) => request(`/public/u/${username}/block`, { method: 'POST' }),
+  blockedList: () => request('/public/blocked'),
   getProfile: (username) => request(`/public/u/${username}`),
   getMeals: (username, cursor, limit = 12, date) => {
     const params = new URLSearchParams();
