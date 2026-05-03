@@ -121,9 +121,19 @@ export default function RegisterPage() {
     : null;
 
   return (
-    <div className="page" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <div className="card" style={{ width: '100%', maxWidth: 480 }}>
-        <h1 className="page-title" style={{ textAlign: 'center' }}>Create Account</h1>
+    <div className="auth-page">
+      <div className="auth-card" style={{ maxWidth: 480 }}>
+        <div className="auth-logo">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+            <path d="M2 17l10 5 10-5"/>
+            <path d="M2 12l10 5 10-5"/>
+          </svg>
+          <span className="auth-logo-text">CalTracker</span>
+        </div>
+
+        <h1 className="auth-title">Create Account</h1>
+        <p className="auth-subtitle">Set up your profile to start tracking</p>
 
         <div className="steps">
           <div className={`step ${step >= 1 ? 'active' : ''}`} />
@@ -134,7 +144,7 @@ export default function RegisterPage() {
 
         <p className={`error-text${error ? ' visible' : ''}`} style={{ marginBottom: error ? 'var(--space-md)' : 0 }}><span>{error}</span></p>
 
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-md)' }}>
+        <form onSubmit={handleSubmit} className="auth-form">
           {step === 1 && (
             <>
               <div style={{ textAlign: 'center', marginBottom: 'var(--space-sm)' }}>
@@ -272,7 +282,7 @@ export default function RegisterPage() {
           )}
         </form>
 
-        <p style={{ textAlign: 'center', marginTop: 'var(--space-md)', color: 'var(--color-text-secondary)' }}>
+        <p className="auth-switch">
           Already have an account? <Link to="/login">Sign in</Link>
         </p>
 

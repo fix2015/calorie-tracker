@@ -2234,6 +2234,7 @@ a:hover { text-decoration: underline; }
   transition: all 0.2s;
   min-height: 38px;
   text-decoration: none;
+  color: var(--color-text);
 }
 
 .action-btn-follow {
@@ -2251,10 +2252,10 @@ a:hover { text-decoration: underline; }
 }
 
 .action-btn-message {
-  background: var(--color-accent-blue);
-  color: white;
+  background: var(--color-border);
+  color: var(--color-text);
 }
-.action-btn-message:hover { background: var(--color-accent-blue-dark); }
+.action-btn-message:hover { background: var(--color-border-hover); }
 
 .action-btn-share {
   background: transparent;
