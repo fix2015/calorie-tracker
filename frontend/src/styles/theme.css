@@ -2212,6 +2212,16 @@ a:hover { text-decoration: underline; }
   margin: 0 auto;
 }
 
+@media (max-width: 767px) {
+  .feed-page {
+    margin-left: calc(-1 * var(--space-md));
+    margin-right: calc(-1 * var(--space-md));
+  }
+  .feed-page .feed-tabs-row {
+    padding: 0 var(--space-md);
+  }
+}
+
 /* Global top bar */
 .top-bar {
   position: sticky;
