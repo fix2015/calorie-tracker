@@ -16,6 +16,7 @@ import FeedPage from './pages/FeedPage';
 import SavedPage from './pages/SavedPage';
 import NotificationsPage from './pages/NotificationsPage';
 import MessagesPage from './pages/MessagesPage';
+import AdminPage from './pages/AdminPage';
 
 const PAGE_TITLES = {
   '/': null,
@@ -111,6 +112,7 @@ function App() {
             <Route path="/profile" element={<ProfilePage />} />
           </Route>
 
+          <Route path="/admin" element={<AdminPage />} />
           <Route path="/explore" element={<ExploreWrapper />} />
           <Route path="/u/:username" element={<PublicProfilePage />} />
           <Route path="/terms" element={<TermsPage />} />
