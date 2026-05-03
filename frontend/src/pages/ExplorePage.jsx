@@ -30,21 +30,26 @@ export default function ExplorePage() {
 
   const [followingSet, setFollowingSet] = useState(new Set());
 
+  const filterUser = (items, key = 'id') => {
+    if (!user) return items;
+    return items.filter((item) => (key === 'userId' ? item.user?.id : item[key]) !== user.id);
+  };
+
   // Load initial data
   useEffect(() => {
     publicApi.popularUsers(0, 6).then((data) => {
-      setPopularUsers(data.users);
+      setPopularUsers(filterUser(data.users));
       setUsersHasMore(data.hasMore);
       setUsersOffset(data.nextOffset);
       setUsersLoading(false);
     }).catch(() => setUsersLoading(false));
 
     publicApi.trending(null, 12).then((data) => {
-      setTrending(data.meals);
+      setTrending(filterUser(data.meals, 'userId'));
       setTrendingCursor(data.nextCursor);
       setTrendingLoading(false);
     }).catch(() => setTrendingLoading(false));
-  }, []);
+  }, [user]);
 
   // Search
   const search = useCallback((q) => {
@@ -57,7 +62,7 @@ export default function ExplorePage() {
     setSearchLoading(true);
     setSearched(true);
     publicApi.search(trimmed).then((data) => {
-      setResults(data.users);
+      setResults(filterUser(data.users));
       setSearchLoading(false);
     }).catch(() => {
       setResults([]);
@@ -76,7 +81,7 @@ export default function ExplorePage() {
     if (!usersHasMore) return;
     setUsersLoading(true);
     publicApi.popularUsers(usersOffset, 6).then((data) => {
-      setPopularUsers((prev) => [...prev, ...data.users]);
+      setPopularUsers((prev) => [...prev, ...filterUser(data.users)]);
       setUsersHasMore(data.hasMore);
       setUsersOffset(data.nextOffset);
       setUsersLoading(false);
@@ -88,7 +93,7 @@ export default function ExplorePage() {
     if (!trendingCursor || loadingMore) return;
     setLoadingMore(true);
     publicApi.trending(trendingCursor, 12).then((data) => {
-      setTrending((prev) => [...prev, ...data.meals]);
+      setTrending((prev) => [...prev, ...filterUser(data.meals, 'userId')]);
       setTrendingCursor(data.nextCursor);
       setLoadingMore(false);
     }).catch(() => setLoadingMore(false));

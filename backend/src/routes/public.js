@@ -7,20 +7,23 @@ const { createNotification } = require('../utils/notifications');
 const router = Router();
 
 // GET /search — search public profiles
-router.get('/search', async (req, res, next) => {
+router.get('/search', optionalAuth, async (req, res, next) => {
   try {
     const q = (req.query.q || '').trim();
     if (!q || q.length < 2) return res.json({ users: [] });
 
+    const where = {
+      isPublic: true,
+      username: { not: null },
+      OR: [
+        { username: { contains: q, mode: 'insensitive' } },
+        { name: { contains: q, mode: 'insensitive' } },
+      ],
+    };
+    if (req.userId) where.id = { not: req.userId };
+
     const users = await prisma.user.findMany({
-      where: {
-        isPublic: true,
-        username: { not: null },
-        OR: [
-          { username: { contains: q, mode: 'insensitive' } },
-          { name: { contains: q, mode: 'insensitive' } },
-        ],
-      },
+      where,
       select: {
         id: true, name: true, username: true, bio: true, avatarUrl: true,
         _count: { select: { followers: true } },
