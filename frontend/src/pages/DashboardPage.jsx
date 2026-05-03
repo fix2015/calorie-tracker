@@ -128,16 +128,17 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {/* Today card — ring + macros */}
+      {/* Today card — ring + macros side by side */}
       <div className="card dash-today-card">
         <div className="dash-today-header">
           <h2 style={{ margin: 0, fontSize: 'var(--font-size-lg)' }}>Today</h2>
+          <button className="dash-edit-goal" onClick={() => navigate('/profile')}>Edit goal</button>
         </div>
 
         <div className="dash-today-content">
-          {/* Calorie ring */}
+          {/* Calorie ring — left side */}
           <div className="dash-ring-wrap">
-            <div className="calorie-ring" style={{ width: 140, height: 140 }}>
+            <div className="calorie-ring" style={{ width: 130, height: 130 }}>
               <svg viewBox="0 0 160 160">
                 <circle cx="80" cy="80" r={radius} fill="none" stroke="var(--color-bg)" strokeWidth="14" />
                 <circle cx="80" cy="80" r={radius} fill="none" stroke={ringColor} strokeWidth="14"
@@ -145,24 +146,24 @@ export default function DashboardPage() {
                 />
               </svg>
               <div className="calorie-ring-center">
-                <div className="amount" style={{ fontSize: 'var(--font-size-xl)' }}>{consumed}</div>
+                <div className="amount">{consumed}</div>
                 <div className="label">/ {target} kcal</div>
-                <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)' }}>Consumed</div>
+                <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)', marginTop: 2 }}>Consumed</div>
               </div>
             </div>
           </div>
 
-          {/* Macro bars */}
+          {/* Macro bars — right side */}
           <div className="dash-macros">
             {macros.map(({ label, eaten, target: t, color }) => (
               <div key={label} className="dash-macro-row">
-                <div className="dash-macro-label">{label}</div>
-                <div className="dash-macro-bar-wrap">
-                  <div className="dash-macro-bar-bg">
-                    <div className="dash-macro-bar-fill" style={{ width: `${t > 0 ? Math.min((eaten / t) * 100, 100) : 0}%`, background: color }} />
-                  </div>
+                <div className="dash-macro-top">
+                  <span className="dash-macro-label">{label}</span>
+                  <span className="dash-macro-value"><strong>{eaten}</strong> / {t}g</span>
                 </div>
-                <div className="dash-macro-value">{eaten} <span>/ {t}g</span></div>
+                <div className="dash-macro-bar-bg">
+                  <div className="dash-macro-bar-fill" style={{ width: `${t > 0 ? Math.min((eaten / t) * 100, 100) : 0}%`, background: color }} />
+                </div>
               </div>
             ))}
           </div>

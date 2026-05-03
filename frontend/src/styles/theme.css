@@ -794,16 +794,20 @@ a:hover { text-decoration: underline; }
   margin-bottom: var(--space-md);
 }
 
+.dash-edit-goal {
+  background: none;
+  border: none;
+  color: var(--color-primary);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+}
+
 .dash-today-content {
   display: flex;
   align-items: center;
   gap: var(--space-lg);
-}
-
-@media (max-width: 480px) {
-  .dash-today-content {
-    flex-direction: column;
-  }
 }
 
 .dash-ring-wrap {
@@ -820,20 +824,29 @@ a:hover { text-decoration: underline; }
 
 .dash-macro-row {
   display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.dash-macro-top {
+  display: flex;
+  justify-content: space-between;
   align-items: center;
-  gap: var(--space-sm);
 }
 
 .dash-macro-label {
   font-size: var(--font-size-sm);
   color: var(--color-text-secondary);
-  width: 56px;
-  flex-shrink: 0;
 }
 
-.dash-macro-bar-wrap {
-  flex: 1;
-  min-width: 0;
+.dash-macro-value {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+}
+
+.dash-macro-value strong {
+  color: var(--color-text);
 }
 
 .dash-macro-bar-bg {
@@ -847,19 +860,6 @@ a:hover { text-decoration: underline; }
   height: 100%;
   border-radius: var(--radius-full);
   transition: width 0.6s ease;
-}
-
-.dash-macro-value {
-  font-size: var(--font-size-sm);
-  font-weight: 600;
-  white-space: nowrap;
-  min-width: 70px;
-  text-align: right;
-}
-
-.dash-macro-value span {
-  font-weight: 400;
-  color: var(--color-text-secondary);
 }
 
 .dash-quick-stats {
