@@ -2214,19 +2214,6 @@ a:hover { text-decoration: underline; }
   margin: 0 auto;
 }
 
-@media (max-width: 767px) {
-  .feed-page {
-    margin-left: calc(-1 * var(--space-md));
-    margin-right: calc(-1 * var(--space-md));
-    padding-left: 0;
-    padding-right: 0;
-  }
-  .feed-page .feed-tabs-row,
-  .feed-page .stories-row {
-    padding-left: var(--space-md);
-    padding-right: var(--space-md);
-  }
-}
 
 /* Global top bar */
 .top-bar {
@@ -2491,7 +2478,6 @@ a:hover { text-decoration: underline; }
   cursor: pointer;
   position: relative;
   overflow: hidden;
-  border-radius: var(--radius-lg);
 }
 
 .feed-photo {
