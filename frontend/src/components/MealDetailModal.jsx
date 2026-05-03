@@ -11,6 +11,7 @@ export default function MealDetailModal({ meal, onClose, onUpdated }) {
     proteinG: meal.proteinG,
     carbsG: meal.carbsG,
     fatG: meal.fatG,
+    description: meal.description || '',
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -29,6 +30,7 @@ export default function MealDetailModal({ meal, onClose, onUpdated }) {
         proteinG: Number(form.proteinG),
         carbsG: Number(form.carbsG),
         fatG: Number(form.fatG),
+        description: form.description,
       });
       onUpdated();
     } catch (err) {
@@ -195,6 +197,16 @@ export default function MealDetailModal({ meal, onClose, onUpdated }) {
                   <label>Fat (g)</label>
                   <input type="number" value={form.fatG} onChange={set('fatG')} min="0" />
                 </div>
+              </div>
+              <div className="form-group">
+                <label>Recipe / Notes</label>
+                <textarea
+                  value={form.description}
+                  onChange={set('description')}
+                  placeholder="Add a recipe, ingredients, or notes..."
+                  rows={3}
+                  style={{ resize: 'vertical' }}
+                />
               </div>
               <div style={{ display: 'flex', gap: 'var(--space-sm)' }}>
                 <button type="button" className="btn btn-secondary" style={{ flex: 1 }} onClick={() => setEditing(false)}>
