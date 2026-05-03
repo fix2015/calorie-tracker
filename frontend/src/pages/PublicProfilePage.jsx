@@ -62,10 +62,10 @@ export default function PublicProfilePage() {
       setIsFollowing(data.isFollowing || false);
       setFollowersCount(data._count?.followers || 0);
       setCanSeeMeals(data.canSeeMeals !== false);
-      return publicApi.getMeals(username, null, 18);
-    }).then((data) => {
-      setMeals(data.meals);
-      setNextCursor(data.nextCursor);
+      publicApi.getMeals(username, null, 18).then((mealsData) => {
+        setMeals(mealsData.meals);
+        setNextCursor(mealsData.nextCursor);
+      }).catch(() => {});
       setLoading(false);
     }).catch(() => {
       setNotFound(true);
