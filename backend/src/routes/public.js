@@ -17,7 +17,10 @@ router.post('/meals/:mealId/save', authenticate, async (req, res, next) => {
     if (!meal || !meal.user.isPublic) return res.status(404).json({ error: 'Meal not found' });
 
     const svc = await ms.toggleSave(req.userId, meal.id);
-    res.json(svc);
+    if (svc) return res.json(svc);
+    const existing = await prisma.savedMeal.findUnique({ where: { userId_mealId: { userId: req.userId, mealId: meal.id } } });
+    if (existing) { await prisma.savedMeal.delete({ where: { id: existing.id } }); } else { await prisma.savedMeal.create({ data: { userId: req.userId, mealId: meal.id } }); }
+    res.json({ saved: !existing });
   } catch (err) {
     next(err);
   }
@@ -151,7 +154,7 @@ router.get('/suggestions', authenticate, async (req, res, next) => {
   try {
     // Try social service for following list
     const svcFollowing = await ms.getFollowing(req.userId);
-    const followingIds = svcFollowing?.users || [];
+    const followingIds = svcFollowing ? svcFollowing.users : (await prisma.follow.findMany({ where: { followerId: req.userId }, select: { followingId: true } })).map(f => f.followingId);
     const excludeIds = [req.userId, ...followingIds];
 
     const users = await prisma.user.findMany({
@@ -173,7 +176,7 @@ router.get('/suggestions', authenticate, async (req, res, next) => {
 router.get('/feed', authenticate, async (req, res, next) => {
   try {
     const svcFollowing = await ms.getFollowing(req.userId);
-    const ids = svcFollowing?.users || [];
+    const ids = svcFollowing ? svcFollowing.users : (await prisma.follow.findMany({ where: { followerId: req.userId }, select: { followingId: true } })).map(f => f.followingId);
 
     if (ids.length === 0) return res.json({ meals: [], nextCursor: null });
 
@@ -225,13 +228,14 @@ router.get('/u/:username', optionalAuth, async (req, res, next) => {
     // Check blocked via service or fallback
     if (req.userId && req.userId !== user.id) {
       const svcBlocked = await ms.checkBlocked(user.id, req.userId);
-      if (svcBlocked?.blocked) return res.status(404).json({ error: 'Profile not found' });
+      const blocked = svcBlocked ? svcBlocked.blocked : !!(await prisma.blockedUser.findUnique({ where: { blockerId_blockedId: { blockerId: user.id, blockedId: req.userId } } }));
+      if (blocked) return res.status(404).json({ error: 'Profile not found' });
     }
 
     let isFollowing = false;
     if (req.userId && req.userId !== user.id) {
       const svcFollow = await ms.getUserFollowStats(user.id, req.userId);
-      isFollowing = svcFollow?.isFollowing || false;
+      isFollowing = svcFollow ? svcFollow.isFollowing : !!(await prisma.follow.findUnique({ where: { followerId_followingId: { followerId: req.userId, followingId: user.id } } }));
     }
 
     const isOwner = req.userId === user.id;
@@ -251,8 +255,14 @@ router.post('/u/:username/follow', authenticate, async (req, res, next) => {
     if (target.id === req.userId) return res.status(400).json({ error: 'Cannot follow yourself' });
 
     const svc = await ms.toggleFollow(req.userId, target.id);
-    if (svc.following) createNotification(target.id, req.userId, 'follow');
-    res.json(svc);
+    if (svc) {
+      if (svc.following) createNotification(target.id, req.userId, 'follow');
+      return res.json(svc);
+    }
+    const existing = await prisma.follow.findUnique({ where: { followerId_followingId: { followerId: req.userId, followingId: target.id } } });
+    if (existing) { await prisma.follow.delete({ where: { id: existing.id } }); } else { await prisma.follow.create({ data: { followerId: req.userId, followingId: target.id } }); createNotification(target.id, req.userId, 'follow'); }
+    const followersCount = await prisma.follow.count({ where: { followingId: target.id } });
+    res.json({ following: !existing, followersCount });
   } catch (err) {
     next(err);
   }
@@ -318,7 +328,10 @@ router.post('/u/:username/block', authenticate, async (req, res, next) => {
     if (target.id === req.userId) return res.status(400).json({ error: 'Cannot block yourself' });
 
     const svc = await ms.toggleBlock(req.userId, target.id);
-    res.json(svc);
+    if (svc) return res.json(svc);
+    const existing = await prisma.blockedUser.findUnique({ where: { blockerId_blockedId: { blockerId: req.userId, blockedId: target.id } } });
+    if (existing) { await prisma.blockedUser.delete({ where: { id: existing.id } }); } else { await prisma.blockedUser.create({ data: { blockerId: req.userId, blockedId: target.id } }); await prisma.follow.deleteMany({ where: { OR: [{ followerId: req.userId, followingId: target.id }, { followerId: target.id, followingId: req.userId }] } }); }
+    res.json({ blocked: !existing });
   } catch (err) {
     next(err);
   }
@@ -349,14 +362,15 @@ router.get('/u/:username/meals', optionalAuth, async (req, res, next) => {
 
     if (req.userId && req.userId !== user.id) {
       const svcBlocked = await ms.checkBlocked(user.id, req.userId);
-      if (svcBlocked?.blocked) return res.status(404).json({ error: 'Profile not found' });
+      const blocked = svcBlocked ? svcBlocked.blocked : !!(await prisma.blockedUser.findUnique({ where: { blockerId_blockedId: { blockerId: user.id, blockedId: req.userId } } }));
+      if (blocked) return res.status(404).json({ error: 'Profile not found' });
     }
 
     if (user.followersOnly && req.userId !== user.id) {
       let isFollower = false;
       if (req.userId) {
         const svcFollow = await ms.getUserFollowStats(user.id, req.userId);
-        isFollower = svcFollow?.isFollowing || false;
+        isFollower = svcFollow ? svcFollow.isFollowing : !!(await prisma.follow.findUnique({ where: { followerId_followingId: { followerId: req.userId, followingId: user.id } } }));
       }
       if (!isFollower) return res.json({ meals: [], nextCursor: null });
     }
@@ -445,8 +459,14 @@ router.post('/meals/:mealId/like', authenticate, async (req, res, next) => {
     if (!meal || !meal.user.isPublic) return res.status(404).json({ error: 'Meal not found' });
 
     const svc = await ms.toggleLike(req.userId, meal.id);
-    if (svc.liked) createNotification(meal.user.id, req.userId, 'like', { mealId: meal.id });
-    res.json(svc);
+    if (svc) {
+      if (svc.liked) createNotification(meal.user.id, req.userId, 'like', { mealId: meal.id });
+      return res.json(svc);
+    }
+    const existing = await prisma.like.findUnique({ where: { userId_mealId: { userId: req.userId, mealId: meal.id } } });
+    if (existing) { await prisma.like.delete({ where: { id: existing.id } }); } else { await prisma.like.create({ data: { userId: req.userId, mealId: meal.id } }); createNotification(meal.user.id, req.userId, 'like', { mealId: meal.id }); }
+    const likesCount = await prisma.like.count({ where: { mealId: meal.id } });
+    res.json({ liked: !existing, likesCount });
   } catch (err) {
     next(err);
   }
@@ -493,7 +513,13 @@ router.post('/meals/:mealId/comments', authenticate, async (req, res, next) => {
 router.post('/comments/:commentId/like', authenticate, async (req, res, next) => {
   try {
     const svc = await ms.toggleCommentLike(req.userId, req.params.commentId);
-    res.json(svc);
+    if (svc) return res.json(svc);
+    const comment = await prisma.comment.findUnique({ where: { id: req.params.commentId } });
+    if (!comment) return res.status(404).json({ error: 'Comment not found' });
+    const existing = await prisma.commentLike.findUnique({ where: { userId_commentId: { userId: req.userId, commentId: comment.id } } });
+    if (existing) { await prisma.commentLike.delete({ where: { id: existing.id } }); } else { await prisma.commentLike.create({ data: { userId: req.userId, commentId: comment.id } }); }
+    const likesCount = await prisma.commentLike.count({ where: { commentId: comment.id } });
+    res.json({ liked: !existing, likesCount });
   } catch (err) {
     next(err);
   }

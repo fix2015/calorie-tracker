@@ -14,25 +14,30 @@ const SERVICES = {
 
 async function serviceCall(service, path, opts = {}) {
   const baseUrl = SERVICES[service];
-  if (!baseUrl) return null; // Service not configured — caller should fallback
+  if (!baseUrl) return null; // Service not configured — caller should fallback to Prisma
 
-  const url = `${baseUrl}${path}`;
-  const res = await fetch(url, {
-    ...opts,
-    headers: {
-      'Content-Type': 'application/json',
-      'X-Service-Key': SERVICE_KEY,
-      ...opts.headers,
-    },
-    body: opts.body ? JSON.stringify(opts.body) : undefined,
-  });
+  try {
+    const url = `${baseUrl}${path}`;
+    const res = await fetch(url, {
+      ...opts,
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Service-Key': SERVICE_KEY,
+        ...opts.headers,
+      },
+      body: opts.body ? JSON.stringify(opts.body) : undefined,
+    });
 
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    throw new Error(err.error || `Service ${service} error: ${res.status}`);
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || `Service ${service} error: ${res.status}`);
+    }
+
+    return res.json();
+  } catch (err) {
+    console.error(`[microservice] ${service}${path} failed:`, err.message);
+    return null; // Service unreachable — caller should fallback
   }
-
-  return res.json();
 }
 
 // ─── Notification Service ───

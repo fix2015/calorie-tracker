@@ -9,15 +9,31 @@ const router = Router();
 router.get('/', authenticate, async (req, res, next) => {
   try {
     const svc = await ms.getNotifications(req.userId, req.query.cursor, parseInt(req.query.limit) || 30);
-    // Enrich with actor user details from local DB
-    const actorIds = [...new Set(svc.notifications.map(n => n.actorId))];
-    const actors = await prisma.user.findMany({
-      where: { id: { in: actorIds } },
-      select: { id: true, name: true, username: true, avatarUrl: true },
+    if (svc) {
+      const actorIds = [...new Set(svc.notifications.map(n => n.actorId))];
+      const actors = await prisma.user.findMany({
+        where: { id: { in: actorIds } },
+        select: { id: true, name: true, username: true, avatarUrl: true },
+      });
+      const actorMap = Object.fromEntries(actors.map(a => [a.id, a]));
+      const enriched = svc.notifications.map(n => ({ ...n, actor: actorMap[n.actorId] || null }));
+      return res.json({ notifications: enriched, nextCursor: svc.nextCursor });
+    }
+
+    // Fallback to local DB
+    const limit = Math.min(parseInt(req.query.limit) || 30, 50);
+    const cursor = req.query.cursor || null;
+    const notifications = await prisma.notification.findMany({
+      where: { userId: req.userId },
+      orderBy: { createdAt: 'desc' },
+      take: limit + 1,
+      ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
+      include: { actor: { select: { id: true, name: true, username: true, avatarUrl: true } } },
     });
-    const actorMap = Object.fromEntries(actors.map(a => [a.id, a]));
-    const enriched = svc.notifications.map(n => ({ ...n, actor: actorMap[n.actorId] || null }));
-    res.json({ notifications: enriched, nextCursor: svc.nextCursor });
+    const hasMore = notifications.length > limit;
+    if (hasMore) notifications.pop();
+    const nextCursor = hasMore ? notifications[notifications.length - 1].id : null;
+    res.json({ notifications, nextCursor });
   } catch (err) {
     next(err);
   }
@@ -27,7 +43,9 @@ router.get('/', authenticate, async (req, res, next) => {
 router.get('/unread-count', authenticate, async (req, res, next) => {
   try {
     const svc = await ms.getUnreadCount(req.userId);
-    res.json(svc);
+    if (svc) return res.json(svc);
+    const count = await prisma.notification.count({ where: { userId: req.userId, read: false } });
+    res.json({ count });
   } catch (err) {
     next(err);
   }
@@ -36,7 +54,9 @@ router.get('/unread-count', authenticate, async (req, res, next) => {
 // PATCH /read-all
 router.patch('/read-all', authenticate, async (req, res, next) => {
   try {
-    await ms.markAllNotificationsRead(req.userId);
+    const svc = await ms.markAllNotificationsRead(req.userId);
+    if (svc) return res.json({ ok: true });
+    await prisma.notification.updateMany({ where: { userId: req.userId, read: false }, data: { read: true } });
     res.json({ ok: true });
   } catch (err) {
     next(err);
@@ -46,7 +66,9 @@ router.patch('/read-all', authenticate, async (req, res, next) => {
 // PATCH /:id/read
 router.patch('/:id/read', authenticate, async (req, res, next) => {
   try {
-    await ms.markNotificationRead(req.params.id);
+    const svc = await ms.markNotificationRead(req.params.id);
+    if (svc) return res.json({ ok: true });
+    await prisma.notification.updateMany({ where: { id: req.params.id, userId: req.userId }, data: { read: true } });
     res.json({ ok: true });
   } catch (err) {
     next(err);
