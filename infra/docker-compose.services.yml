@@ -1,0 +1,98 @@
+services:
+  # ─── Image Service ───
+  service-image:
+    image: ghcr.io/fix2015/service-image:latest
+    ports:
+      - "127.0.0.1:3021:3021"
+    environment:
+      - PORT=3021
+      - SERVICE_API_KEY=${SERVICE_API_KEY}
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - AWS_S3_BUCKET=${AWS_S3_BUCKET}
+      - AWS_S3_REGION=${AWS_S3_REGION:-eu-central-1}
+    volumes:
+      - image-uploads:/tmp/uploads
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3021/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  # ─── Notification Service ───
+  service-notification:
+    image: ghcr.io/fix2015/service-notification:latest
+    ports:
+      - "127.0.0.1:3022:3022"
+    environment:
+      - PORT=3022
+      - SERVICE_API_KEY=${SERVICE_API_KEY}
+      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@services-postgres:5432/notifications
+    depends_on:
+      services-postgres:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3022/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  # ─── Messaging Service ───
+  service-messaging:
+    image: ghcr.io/fix2015/service-messaging:latest
+    ports:
+      - "127.0.0.1:3023:3023"
+    environment:
+      - PORT=3023
+      - SERVICE_API_KEY=${SERVICE_API_KEY}
+      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@services-postgres:5432/messaging
+    depends_on:
+      services-postgres:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3023/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  # ─── Social Service ───
+  service-social:
+    image: ghcr.io/fix2015/service-social:latest
+    ports:
+      - "127.0.0.1:3024:3024"
+    environment:
+      - PORT=3024
+      - SERVICE_API_KEY=${SERVICE_API_KEY}
+      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@services-postgres:5432/social
+    depends_on:
+      services-postgres:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3024/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  # ─── Shared PostgreSQL for services ───
+  services-postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-services_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-services_pass}
+    volumes:
+      - services-pgdata:/var/lib/postgresql/data
+      - ./init-services-db.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-services_user}"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    restart: unless-stopped
+
+volumes:
+  image-uploads:
+  services-pgdata:
