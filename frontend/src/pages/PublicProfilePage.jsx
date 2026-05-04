@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useParams, Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { publicApi, messagesApi } from '../services/api';
 import { useAuth } from '../services/AuthContext';
 import { useInfiniteScroll } from '../services/useInfiniteScroll';
@@ -37,6 +37,7 @@ function groupMealsByDay(meals) {
 
 export default function PublicProfilePage() {
   const { username } = useParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { user: currentUser } = useAuth();
   const navigate = useNavigate();
   const [profile, setProfile] = useState(null);
@@ -67,6 +68,9 @@ export default function PublicProfilePage() {
         setNextCursor(mealsData.nextCursor);
       }).catch(() => {});
       setLoading(false);
+      // Deep link: open meal modal from URL param
+      const mealParam = searchParams.get('meal');
+      if (mealParam) setSelectedMeal({ id: mealParam });
     }).catch(() => {
       setNotFound(true);
       setLoading(false);
@@ -266,7 +270,8 @@ export default function PublicProfilePage() {
         <PublicMealDetailModal
           mealId={selectedMeal.id}
           username={profile.username}
-          onClose={() => setSelectedMeal(null)}
+          onClose={() => { setSelectedMeal(null); searchParams.delete('meal'); setSearchParams(searchParams); }}
+          onDeleted={(id) => setMeals((prev) => prev.filter(m => m.id !== id))}
         />
       )}
 

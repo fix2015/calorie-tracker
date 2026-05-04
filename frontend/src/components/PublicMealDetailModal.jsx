@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { publicApi } from '../services/api';
+import { publicApi, meals } from '../services/api';
 import { useAuth } from '../services/AuthContext';
 import { photoSrc } from '../services/photoUrl';
 import { shareText } from '../services/share';
@@ -73,7 +73,7 @@ function timeAgo(dateStr) {
   return formatDate(dateStr);
 }
 
-export default function PublicMealDetailModal({ mealId, username, onClose }) {
+export default function PublicMealDetailModal({ mealId, username, onClose, onDeleted }) {
   const { user } = useAuth();
   const [meal, setMeal] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -124,7 +124,7 @@ export default function PublicMealDetailModal({ mealId, username, onClose }) {
       `${meal.name} \u2014 ${meal.calories} kcal`,
       `P: ${Math.round(meal.proteinG)}g \u00B7 C: ${Math.round(meal.carbsG)}g \u00B7 F: ${Math.round(meal.fatG)}g`,
       '',
-      `${window.location.origin}/u/${username}`,
+      `${window.location.origin}/u/${username}?meal=${mealId}`,
     ].join('\n');
     const result = await shareText(text, meal.name, meal.photoUrl ? photoSrc(meal.photoUrl) : null);
     if (result === 'copied') {
@@ -218,6 +218,22 @@ export default function PublicMealDetailModal({ mealId, username, onClose }) {
               <button className="action-btn action-btn-share" style={{ padding: 'var(--space-xs) var(--space-md)' }} onClick={handleShare}>
                 Share
               </button>
+              {user && meal.owner?.id === user.id && (
+                <button
+                  className="action-btn"
+                  style={{ padding: 'var(--space-xs) var(--space-md)', background: 'var(--color-danger-bg)', color: 'var(--color-danger)', marginLeft: 'auto' }}
+                  onClick={async () => {
+                    if (!confirm('Delete this meal?')) return;
+                    try {
+                      await meals.remove(mealId);
+                      if (onDeleted) onDeleted(mealId);
+                      onClose();
+                    } catch {}
+                  }}
+                >
+                  Delete
+                </button>
+              )}
             </div>
 
             {shareMsg && <p style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-success)', marginBottom: 'var(--space-sm)' }}>{shareMsg}</p>}

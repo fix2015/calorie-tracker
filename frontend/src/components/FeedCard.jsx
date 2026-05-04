@@ -40,7 +40,8 @@ export default function FeedCard({ meal, onOpenDetail }) {
   }, [meal.id]);
 
   const handleShare = useCallback(async () => {
-    const text = `${meal.name} — ${meal.calories} kcal\n${window.location.origin}/u/${meal.user?.username}`;
+    const mealUrl = `${window.location.origin}/u/${meal.user?.username}?meal=${meal.id}`;
+    const text = `${meal.name} — ${meal.calories} kcal\nP: ${Math.round(meal.proteinG)}g · C: ${Math.round(meal.carbsG)}g · F: ${Math.round(meal.fatG)}g\n\n${mealUrl}`;
     await shareText(text, meal.name, meal.photoUrl ? photoSrc(meal.photoUrl) : null);
   }, [meal]);
 
