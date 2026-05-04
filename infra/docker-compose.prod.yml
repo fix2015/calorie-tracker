@@ -36,6 +36,7 @@ services:
       - uploads:/app/uploads
     networks:
       - calorie_net
+      - caltrack-services
 
   frontend:
     image: ghcr.io/fix2015/calorie-tracker/frontend:latest
@@ -52,3 +53,5 @@ volumes:
 networks:
   calorie_net:
     driver: bridge
+  caltrack-services:
+    external: true

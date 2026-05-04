@@ -3,7 +3,7 @@ services:
   service-image:
     image: ghcr.io/fix2015/service-image:latest
     ports:
-      - "127.0.0.1:3021:3021"
+      - "3021:3021"
     environment:
       - PORT=3021
       - SERVICE_API_KEY=${SERVICE_API_KEY}
@@ -24,7 +24,7 @@ services:
   service-notification:
     image: ghcr.io/fix2015/service-notification:latest
     ports:
-      - "127.0.0.1:3022:3022"
+      - "3022:3022"
     environment:
       - PORT=3022
       - SERVICE_API_KEY=${SERVICE_API_KEY}
@@ -43,7 +43,7 @@ services:
   service-messaging:
     image: ghcr.io/fix2015/service-messaging:latest
     ports:
-      - "127.0.0.1:3023:3023"
+      - "3023:3023"
     environment:
       - PORT=3023
       - SERVICE_API_KEY=${SERVICE_API_KEY}
@@ -62,7 +62,7 @@ services:
   service-social:
     image: ghcr.io/fix2015/service-social:latest
     ports:
-      - "127.0.0.1:3024:3024"
+      - "3024:3024"
     environment:
       - PORT=3024
       - SERVICE_API_KEY=${SERVICE_API_KEY}
@@ -92,6 +92,11 @@ services:
       timeout: 3s
       retries: 5
     restart: unless-stopped
+
+networks:
+  default:
+    name: caltrack-services
+    driver: bridge
 
 volumes:
   image-uploads:
