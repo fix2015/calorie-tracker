@@ -1,0 +1,64 @@
+services:
+  service-image:
+    build: ../service-image
+    ports:
+      - "3021:3021"
+    environment:
+      - PORT=3021
+      - SERVICE_API_KEY=local-dev-key
+
+  service-notification:
+    build: ../service-notification
+    ports:
+      - "3022:3022"
+    environment:
+      - PORT=3022
+      - SERVICE_API_KEY=local-dev-key
+      - DATABASE_URL=postgresql://services:services@services-db:5432/notifications
+    depends_on:
+      services-db:
+        condition: service_healthy
+
+  service-messaging:
+    build: ../service-messaging
+    ports:
+      - "3023:3023"
+    environment:
+      - PORT=3023
+      - SERVICE_API_KEY=local-dev-key
+      - DATABASE_URL=postgresql://services:services@services-db:5432/messaging
+    depends_on:
+      services-db:
+        condition: service_healthy
+
+  service-social:
+    build: ../service-social
+    ports:
+      - "3024:3024"
+    environment:
+      - PORT=3024
+      - SERVICE_API_KEY=local-dev-key
+      - DATABASE_URL=postgresql://services:services@services-db:5432/social
+    depends_on:
+      services-db:
+        condition: service_healthy
+
+  services-db:
+    image: postgres:16-alpine
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_USER: services
+      POSTGRES_PASSWORD: services
+      POSTGRES_DB: services
+    volumes:
+      - services-pgdata:/var/lib/postgresql/data
+      - ./infra/init-services-db.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U services"]
+      interval: 3s
+      timeout: 2s
+      retries: 10
+
+volumes:
+  services-pgdata:
