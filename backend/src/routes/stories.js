@@ -1,7 +1,7 @@
 const { Router } = require('express');
 const prisma = require('../utils/prisma');
 const { authenticate } = require('../middleware/auth');
-const { upload } = require('../middleware/upload');
+const { uploadVideo } = require('../middleware/upload');
 const ms = require('../services/microservices');
 
 const router = Router();
@@ -10,7 +10,7 @@ const SERVICE_KEY = process.env.SERVICE_API_KEY || 'dev-key-change-me';
 const VIDEO_URL = process.env.SERVICE_VIDEO_URL;
 
 // POST / — upload a story
-router.post('/', authenticate, upload.single('video'), async (req, res, next) => {
+router.post('/', authenticate, uploadVideo.single('video'), async (req, res, next) => {
   try {
     if (!req.file) return res.status(400).json({ error: 'No video uploaded' });
     if (!VIDEO_URL) return res.status(503).json({ error: 'Video service not available' });

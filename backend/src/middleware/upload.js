@@ -15,7 +15,7 @@ const storage = multer.diskStorage({
   },
 });
 
-const fileFilter = (req, file, cb) => {
+const imageFilter = (req, file, cb) => {
   const allowed = ['image/jpeg', 'image/png', 'image/webp'];
   if (allowed.includes(file.mimetype)) {
     cb(null, true);
@@ -24,10 +24,25 @@ const fileFilter = (req, file, cb) => {
   }
 };
 
+const videoFilter = (req, file, cb) => {
+  const allowed = ['video/mp4', 'video/quicktime', 'video/webm'];
+  if (allowed.includes(file.mimetype)) {
+    cb(null, true);
+  } else {
+    cb(new Error('Only MP4, MOV, and WebM videos are allowed'), false);
+  }
+};
+
 const upload = multer({
   storage,
-  fileFilter,
+  fileFilter: imageFilter,
   limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
 });
 
-module.exports = { upload };
+const uploadVideo = multer({
+  storage,
+  fileFilter: videoFilter,
+  limits: { fileSize: 50 * 1024 * 1024 }, // 50MB
+});
+
+module.exports = { upload, uploadVideo };

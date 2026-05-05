@@ -9,6 +9,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 docker-compose up          # starts postgres, backend (3001), frontend (5173)
 ```
 
+### Optional microservices (image, notification, messaging, social)
+```bash
+docker-compose -f docker-compose.services-local.yml up   # ports 3021-3024, separate postgres on 5433
+```
+
 ### Backend (without Docker)
 ```bash
 cd backend
@@ -26,8 +31,13 @@ npm install
 npm run dev                 # Vite dev server on port 5173
 npm run build               # production build
 npm run lint                # ESLint
-npm run build:cap           # build for Capacitor (mobile)
-npx cap sync                # sync web assets to native projects
+```
+
+### Mobile (Capacitor)
+```bash
+cd frontend
+npm run cap:ios              # build + sync + open Xcode
+npm run cap:android          # build + sync + open Android Studio
 ```
 
 ### Tests
@@ -35,7 +45,7 @@ npx cap sync                # sync web assets to native projects
 cd backend && npm test                              # all tests
 cd backend && node --test src/tests/foo.test.js     # single test file
 ```
-Uses Node.js built-in test runner (no framework). Test directory: `backend/src/tests/` (currently empty — tests need to be added).
+Uses Node.js built-in test runner (no framework). Test directory: `backend/src/tests/`.
 
 ### Production deployment
 ```bash
@@ -45,34 +55,54 @@ Uses Node.js built-in test runner (no framework). Test directory: `backend/src/t
 
 ## Architecture
 
-**Monorepo with two apps:** `backend/` (Express API) and `frontend/` (React SPA).
+**Monorepo with two apps:** `backend/` (Express API) and `frontend/` (React SPA), plus optional external microservices.
 
 ### Backend (CommonJS, Node.js)
 - **Entry:** `src/index.js` — Express app with CORS, static uploads, route mounting. Health check at `GET /api/health`.
-- **Routes:** `src/routes/{auth,users,meals,reports}.js` — REST endpoints under `/api/`. Notable rate limits: photo scan (20/hr), AI suggestions (20/hr), nutrition analysis (10/day).
-- **Services:** `src/services/vision.js` — calls OpenAI GPT-4o for photo meal scanning. Provider configurable via `AI_PROVIDER` env var. `src/services/s3.js` — image resize (sharp) + S3 upload with local fallback when S3 is not configured.
-- **Middleware:** `src/middleware/auth.js` (JWT verify), `upload.js` (multer for photo uploads), `errorHandler.js`
-- **Rate limiting:** `express-rate-limit` applied to auth routes and AI-powered endpoints (photo scan, suggestions)
-- **Database:** PostgreSQL via Prisma ORM. Schema at `prisma/schema.prisma`
-  - Models: User, Meal, RefreshToken, SuggestionCache
-  - Prisma uses `@map` to snake_case DB columns while keeping camelCase in JS
-  - All models use `onDelete: Cascade` from User
-- **Auth flow:** JWT access + refresh tokens. Refresh tokens stored hashed in DB.
+- **Routes:** `src/routes/` — REST endpoints under `/api/`:
+  - `auth.js` — register, login, refresh, logout, me
+  - `meals.js` — manual/photo meal logging, list, delete
+  - `reports.js` — daily/weekly totals, AI suggestion
+  - `users.js` — profile update, follow/unfollow, block
+  - `messages.js` — conversations and direct messages
+  - `notifications.js` — notification list, mark-read
+  - `stories.js` — video stories (upload, view, 24h expiry)
+  - `public.js` — public profiles and explore feed
+  - `admin.js` — admin endpoints
+- **Services:** `src/services/vision.js` (OpenAI GPT-4o photo scanning, configurable via `AI_PROVIDER`), `s3.js` (image resize via sharp + S3 upload with local fallback), `microservices.js` (HTTP client for external microservices)
+- **Middleware:** `auth.js` (JWT verify), `upload.js` (multer for photo uploads), `errorHandler.js`
+- **Rate limiting:** `express-rate-limit` on auth routes and AI endpoints (photo scan 20/hr, suggestions 20/hr, nutrition analysis 10/day)
 - **Validation:** Zod schemas in route handlers
+
+### Database (PostgreSQL + Prisma)
+Schema at `backend/prisma/schema.prisma`. Prisma uses `@map` to snake_case DB columns while keeping camelCase in JS. All models cascade-delete from User.
+
+Core models: User, Meal, RefreshToken, SuggestionCache
+
+Social models: Like, Comment, CommentLike, Follow, Conversation, ConversationParticipant, Message, Notification, SavedMeal, BlockedUser
+
+Tracking models: WeightLog, DailyStat
 
 ### Frontend (React 19, Vite, ES modules)
 - **Routing:** React Router v7 in `App.jsx`. Protected routes use `<ProtectedLayout>` with `<Outlet>`. Public routes (`/login`, `/register`) redirect authenticated users to `/`.
 - **Auth state:** `services/AuthContext.jsx` — React context with auto-refresh on mount
 - **API client:** `services/api.js` — fetch wrapper with automatic JWT refresh on 401
-- **Pages:** Dashboard (calorie ring + meal list), Scan (camera/upload → AI), Reports (Recharts), Profile (Mifflin-St Jeor calorie target auto-calculation)
+- **Pages:** Dashboard (calorie ring + meal list), Scan (camera/upload → AI), Reports (Recharts), Profile, Explore, Feed, Messages, Notifications, Saved, Admin, PublicProfile
+- **Components:** `components/` — AddMealModal, MealDetailModal, MealGrid, Navbar, TopBar, StoryRing, FeedCard, AvatarUpload, FollowListModal
 - **Styling:** Plain CSS in `styles/` directory, no CSS framework
-- **Image handling:** Client-side resize before upload (`services/imageResize.js`)
-- **Other services:** `macroCalc.js` (macro calculations), `notifications.js` (push notifications for meal reminders), `share.js` (share functionality), `photoUrl.js` (photo URL resolution)
+- **Other services:** `imageResize.js` (client-side resize before upload), `macroCalc.js`, `notifications.js` (push notifications), `share.js`, `photoUrl.js`, `useInfiniteScroll.js`
 
 ### Mobile (Capacitor)
-- Capacitor 8 wraps the Vite SPA for iOS/Android (`frontend/capacitor.config.json`, app ID: `com.calorietracker.app`)
-- Native projects in `frontend/ios/` and `frontend/android/`
-- Build flow: `npm run build:cap` → `npx cap sync` → open in Xcode/Android Studio
+Capacitor 8 wraps the Vite SPA for iOS/Android (`frontend/capacitor.config.json`, app ID: `com.calorietracker.app`). Build flow: `npm run build:cap` → `npx cap sync` → open in Xcode/Android Studio.
+
+### Microservices (optional, external repos)
+Configured in `docker-compose.services-local.yml`. The backend communicates with these via `src/services/microservices.js`:
+- `service-image` (port 3021) — image processing
+- `service-notification` (port 3022) — push notifications
+- `service-messaging` (port 3023) — messaging
+- `service-social` (port 3024) — social features
+
+Each microservice has its own database; all share a postgres instance on port 5433 with databases initialized via `infra/init-services-db.sql`.
 
 ### Key env vars
 - `VITE_API_URL` — frontend API base (default `http://localhost:3001/api`)
