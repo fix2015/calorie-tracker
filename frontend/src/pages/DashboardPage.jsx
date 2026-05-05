@@ -278,12 +278,14 @@ export default function DashboardPage() {
           {/* Calorie intake chart */}
           {weeklyData.length > 0 && (() => {
             const maxCal = Math.max(...weeklyData.map(d => d.totals?.calories || 0), target, 1);
-            const today = new Date().toDateString();
+            const todayStr = new Date().toISOString().split('T')[0];
             const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
             return (
               <div className="card" style={{ marginBottom: 'var(--space-md)' }}>
                 <div className="dash-today-header">
-                  <h2 style={{ margin: 0, fontSize: 'var(--font-size-lg)' }}>Calorie intake</h2>
+                  <div>
+                    <h2 style={{ margin: 0, fontSize: 'var(--font-size-lg)' }}>Calorie intake</h2>
+                  </div>
                   <button className="dash-edit-goal" onClick={() => navigate('/reports')}>View more</button>
                 </div>
                 <div className="dash-chart">
@@ -295,10 +297,10 @@ export default function DashboardPage() {
                   <div className="dash-chart-bars">
                     <div className="dash-chart-target" style={{ bottom: `${(target / maxCal) * 100}%` }} />
                     {weeklyData.map((d) => {
-                      const isToday = new Date(d.date).toDateString() === today;
+                      const isToday = d.date === todayStr;
                       const cal = d.totals?.calories || 0;
                       const height = maxCal > 0 ? (cal / maxCal) * 100 : 0;
-                      const dayName = dayNames[new Date(d.date).getDay()];
+                      const dayName = dayNames[new Date(d.date + 'T12:00:00').getDay()];
                       return (
                         <div key={d.date} className="dash-chart-col">
                           <div className="dash-chart-bar-wrap">
@@ -313,6 +315,24 @@ export default function DashboardPage() {
                     })}
                   </div>
                 </div>
+                {/* Daily breakdown */}
+              <div style={{ marginTop: 'var(--space-md)', borderTop: '1px solid var(--color-border)', paddingTop: 'var(--space-md)' }}>
+                {weeklyData.slice().reverse().map((d) => {
+                  const cal = d.totals?.calories || 0;
+                  const ratio = target > 0 ? Math.min(cal / target, 1) : 0;
+                  const isT = d.date === todayStr;
+                  const label = isT ? 'Today' : new Date(d.date + 'T12:00:00').toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric' });
+                  return (
+                    <div key={d.date} style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-sm)', marginBottom: 'var(--space-sm)' }}>
+                      <span style={{ fontSize: 'var(--font-size-xs)', color: isT ? 'var(--color-text)' : 'var(--color-text-secondary)', width: 80, fontWeight: isT ? 600 : 400 }}>{label}</span>
+                      <div style={{ flex: 1, height: 6, borderRadius: 3, background: 'var(--color-border)', overflow: 'hidden' }}>
+                        <div style={{ height: '100%', width: `${Math.max(ratio * 100, 1)}%`, background: cal > target ? 'var(--color-danger)' : 'var(--color-primary)', borderRadius: 3 }} />
+                      </div>
+                      <span style={{ fontSize: 'var(--font-size-xs)', fontWeight: 600, minWidth: 55, textAlign: 'right', color: cal > target ? 'var(--color-danger)' : 'var(--color-text)' }}>{cal} kcal</span>
+                    </div>
+                  );
+                })}
+              </div>
               </div>
             );
           })()}
