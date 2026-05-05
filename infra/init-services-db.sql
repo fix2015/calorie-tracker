@@ -2,3 +2,4 @@
 CREATE DATABASE notifications;
 CREATE DATABASE messaging;
 CREATE DATABASE social;
+CREATE DATABASE video;

@@ -93,6 +93,32 @@ services:
       retries: 5
     restart: unless-stopped
 
+  # ─── Video/Stories Service ───
+  service-video:
+    image: ghcr.io/fix2015/service-video:latest
+    ports:
+      - "3025:3025"
+    environment:
+      - PORT=3025
+      - SERVICE_API_KEY=${SERVICE_API_KEY}
+      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@services-postgres:5432/video
+      - STORY_TTL_HOURS=24
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - AWS_S3_BUCKET=${AWS_S3_BUCKET}
+      - AWS_S3_REGION=${AWS_S3_REGION:-eu-central-1}
+    depends_on:
+      services-postgres:
+        condition: service_healthy
+    volumes:
+      - video-uploads:/tmp/uploads
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3025/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
 networks:
   default:
     name: caltrack-services
@@ -100,4 +126,5 @@ networks:
 
 volumes:
   image-uploads:
+  video-uploads:
   services-pgdata:
