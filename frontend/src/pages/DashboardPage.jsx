@@ -304,6 +304,7 @@ export default function DashboardPage() {
                       return (
                         <div key={d.date} className="dash-chart-col">
                           <div className="dash-chart-bar-wrap">
+                            {cal > 0 && <span className="dash-chart-bar-label">{cal}</span>}
                             <div
                               className={`dash-chart-bar${isToday ? ' today' : ''}`}
                               style={{ height: `${Math.max(height, 2)}%` }}
@@ -315,24 +316,6 @@ export default function DashboardPage() {
                     })}
                   </div>
                 </div>
-                {/* Daily breakdown */}
-              <div style={{ marginTop: 'var(--space-md)', borderTop: '1px solid var(--color-border)', paddingTop: 'var(--space-md)' }}>
-                {weeklyData.slice().reverse().map((d) => {
-                  const cal = d.totals?.calories || 0;
-                  const ratio = target > 0 ? Math.min(cal / target, 1) : 0;
-                  const isT = d.date === todayStr;
-                  const label = isT ? 'Today' : new Date(d.date + 'T12:00:00').toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric' });
-                  return (
-                    <div key={d.date} style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-sm)', marginBottom: 'var(--space-sm)' }}>
-                      <span style={{ fontSize: 'var(--font-size-xs)', color: isT ? 'var(--color-text)' : 'var(--color-text-secondary)', width: 80, fontWeight: isT ? 600 : 400 }}>{label}</span>
-                      <div style={{ flex: 1, height: 6, borderRadius: 3, background: 'var(--color-border)', overflow: 'hidden' }}>
-                        <div style={{ height: '100%', width: `${Math.max(ratio * 100, 1)}%`, background: cal > target ? 'var(--color-danger)' : 'var(--color-primary)', borderRadius: 3 }} />
-                      </div>
-                      <span style={{ fontSize: 'var(--font-size-xs)', fontWeight: 600, minWidth: 55, textAlign: 'right', color: cal > target ? 'var(--color-danger)' : 'var(--color-text)' }}>{cal} kcal</span>
-                    </div>
-                  );
-                })}
-              </div>
               </div>
             );
           })()}
