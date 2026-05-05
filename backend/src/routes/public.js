@@ -259,11 +259,10 @@ router.get('/u/:username/followers', async (req, res, next) => {
     if (!user || !user.isPublic) return res.status(404).json({ error: 'Not found' });
 
     const svc = await ms.getFollowers(user.id);
-    if (!svc) return res.json({ users: [], nextCursor: null });
+    if (!svc || !svc.users?.length) return res.json({ users: [], nextCursor: null });
 
-    const userIds = svc.users.map(f => f.followerId);
     const users = await prisma.user.findMany({
-      where: { id: { in: userIds } },
+      where: { id: { in: svc.users } },
       select: { id: true, name: true, username: true, avatarUrl: true, bio: true },
     });
     res.json({ users, nextCursor: null });
@@ -279,11 +278,10 @@ router.get('/u/:username/following', async (req, res, next) => {
     if (!user || !user.isPublic) return res.status(404).json({ error: 'Not found' });
 
     const svc = await ms.getFollowing(user.id);
-    if (!svc) return res.json({ users: [], nextCursor: null });
+    if (!svc || !svc.users?.length) return res.json({ users: [], nextCursor: null });
 
-    const userIds = svc.users;
     const users = await prisma.user.findMany({
-      where: { id: { in: userIds } },
+      where: { id: { in: svc.users } },
       select: { id: true, name: true, username: true, avatarUrl: true, bio: true },
     });
     res.json({ users, nextCursor: null });
