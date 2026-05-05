@@ -52,11 +52,12 @@ async function refreshDailyStat(userId, date) {
  * Get cached daily stats for a date range.
  * Fills missing days with zeros.
  */
-async function getDailyStats(userId, days = 7) {
+async function getDailyStats(userId, days = 7, offset = 0) {
   const result = [];
+  const startOffset = offset * days;
   for (let i = days - 1; i >= 0; i--) {
     const d = new Date();
-    d.setDate(d.getDate() - i);
+    d.setDate(d.getDate() - i - startOffset);
     const dateStr = d.toISOString().slice(0, 10);
     result.push(dateStr);
   }

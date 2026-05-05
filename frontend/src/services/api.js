@@ -88,7 +88,7 @@ export const meals = {
 
 export const reports = {
   daily: (date) => request(`/reports/daily${date ? `?date=${date}` : ''}`),
-  weekly: () => request('/reports/weekly'),
+  weekly: (offset = 0) => request(`/reports/weekly?offset=${offset}`),
   suggestion: () => request('/reports/suggestion'),
   analyze: () => request('/reports/analyze'),
   weightHistory: () => request('/reports/weight-history'),

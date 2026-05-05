@@ -25,6 +25,7 @@ export default function DashboardPage() {
   const [weightHistory, setWeightHistory] = useState([]);
   const [dashTab, setDashTab] = useState('meals');
   const [selectedDate, setSelectedDate] = useState(() => new Date().toISOString().split('T')[0]);
+  const [weekOffset, setWeekOffset] = useState(0);
 
   const target = user?.dailyCalorieTarget || 2000;
   const macroTargets = calcMacroTargets(user);
@@ -57,13 +58,14 @@ export default function DashboardPage() {
   };
 
   useEffect(() => { fetchData(); }, [selectedDate]);
+  useEffect(() => { reports.weekly(weekOffset).then((data) => setWeeklyData(data.days || [])).catch(() => {}); }, [weekOffset]);
 
   useEffect(() => {
     fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3001/api'}/reports/backfill-stats`, {
       method: 'POST',
       headers: { 'Authorization': `Bearer ${localStorage.getItem('accessToken')}` },
     }).catch(() => {}).finally(() => {
-      reports.weekly().then((data) => setWeeklyData(data.days || [])).catch(() => {});
+      reports.weekly(weekOffset).then((data) => setWeeklyData(data.days || [])).catch(() => {});
     });
     reports.weightHistory().then((data) => setWeightHistory(data.logs || [])).catch(() => {});
   }, []);
@@ -275,50 +277,58 @@ export default function DashboardPage() {
       {/* Tab: Reports */}
       {dashTab === 'reports' && (
         <>
-          {/* Calorie intake chart */}
-          {weeklyData.length > 0 && (() => {
-            const maxCal = Math.max(...weeklyData.map(d => d.totals?.calories || 0), target, 1);
-            const todayStr = new Date().toISOString().split('T')[0];
-            const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-            return (
-              <div className="card" style={{ marginBottom: 'var(--space-md)' }}>
-                <div className="dash-today-header">
-                  <div>
-                    <h2 style={{ margin: 0, fontSize: 'var(--font-size-lg)' }}>Calorie intake</h2>
-                  </div>
-                  <button className="dash-edit-goal" onClick={() => navigate('/reports')}>View more</button>
-                </div>
-                <div className="dash-chart">
-                  <div className="dash-chart-y">
-                    <span>{Math.round(maxCal / 1000)}k</span>
-                    <span>{Math.round(maxCal / 2000)}k</span>
-                    <span>0</span>
-                  </div>
-                  <div className="dash-chart-bars">
-                    <div className="dash-chart-target" style={{ bottom: `${(target / maxCal) * 100}%` }} />
-                    {weeklyData.map((d) => {
-                      const isToday = d.date === todayStr;
-                      const cal = d.totals?.calories || 0;
-                      const height = maxCal > 0 ? (cal / maxCal) * 100 : 0;
-                      const dayName = dayNames[new Date(d.date + 'T12:00:00').getDay()];
-                      return (
-                        <div key={d.date} className="dash-chart-col">
-                          <div className="dash-chart-bar-wrap">
-                            {cal > 0 && <span className="dash-chart-bar-label">{cal}</span>}
-                            <div
-                              className={`dash-chart-bar${isToday ? ' today' : ''}`}
-                              style={{ height: `${Math.max(height, 2)}%` }}
-                            />
-                          </div>
-                          <span className={`dash-chart-label${isToday ? ' today' : ''}`}>{dayName}</span>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
+          {/* Calorie history */}
+          <div className="card" style={{ marginBottom: 'var(--space-md)' }}>
+            <div className="dash-today-header">
+              <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-sm)' }}>
+                <button onClick={() => setWeekOffset(weekOffset + 1)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4, color: 'var(--color-text-secondary)' }}>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M15 18l-6-6 6-6"/></svg>
+                </button>
+                <h2 style={{ margin: 0, fontSize: 'var(--font-size-lg)' }}>
+                  {weekOffset === 0 ? 'This week' : weekOffset === 1 ? 'Last week' : `${weekOffset} weeks ago`}
+                </h2>
+                <button onClick={() => setWeekOffset(Math.max(0, weekOffset - 1))} disabled={weekOffset === 0} style={{ background: 'none', border: 'none', cursor: weekOffset === 0 ? 'default' : 'pointer', padding: 4, color: weekOffset === 0 ? 'var(--color-border)' : 'var(--color-text-secondary)' }}>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 18l6-6-6-6"/></svg>
+                </button>
               </div>
-            );
-          })()}
+              <button className="dash-edit-goal" onClick={() => navigate('/reports')}>View more</button>
+            </div>
+
+            {weeklyData.length > 0 && (() => {
+              const todayStr = new Date().toISOString().split('T')[0];
+              const totalCal = weeklyData.reduce((s, d) => s + (d.totals?.calories || 0), 0);
+              const avgCal = Math.round(totalCal / weeklyData.length);
+
+              return (
+                <>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', padding: 'var(--space-sm) 0', fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)', borderBottom: '1px solid var(--color-border)' }}>
+                    <span>Total: <strong style={{ color: 'var(--color-text)' }}>{totalCal} kcal</strong></span>
+                    <span>Avg: <strong style={{ color: 'var(--color-text)' }}>{avgCal} kcal/day</strong></span>
+                    <span>Target: <strong style={{ color: 'var(--color-primary)' }}>{target}</strong></span>
+                  </div>
+                  {weeklyData.map((d) => {
+                    const cal = d.totals?.calories || 0;
+                    const ratio = target > 0 ? Math.min(cal / target, 1.2) : 0;
+                    const isT = d.date === todayStr;
+                    const over = cal > target;
+                    const dateObj = new Date(d.date + 'T12:00:00');
+                    const label = isT ? 'Today' : dateObj.toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric' });
+                    return (
+                      <div key={d.date} style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-sm)', padding: 'var(--space-sm) 0', borderBottom: '1px solid var(--color-bg)' }}>
+                        <span style={{ fontSize: 'var(--font-size-xs)', color: isT ? 'var(--color-text)' : 'var(--color-text-secondary)', width: 90, fontWeight: isT ? 700 : 400 }}>{label}</span>
+                        <div style={{ flex: 1, height: 8, borderRadius: 4, background: 'var(--color-bg)', overflow: 'hidden' }}>
+                          <div style={{ height: '100%', width: `${Math.min(ratio / 1.2 * 100, 100)}%`, background: over ? 'var(--color-danger)' : 'var(--color-primary)', borderRadius: 4, transition: 'width 0.3s' }} />
+                        </div>
+                        <span style={{ fontSize: 'var(--font-size-sm)', fontWeight: 700, minWidth: 60, textAlign: 'right', color: over ? 'var(--color-danger)' : cal > 0 ? 'var(--color-text)' : 'var(--color-text-secondary)' }}>
+                          {cal > 0 ? `${cal}` : '—'}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </>
+              );
+            })()}
+          </div>
 
           {/* Weight progress */}
           {user?.weightKg && user?.targetWeightKg && (() => {

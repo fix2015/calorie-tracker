@@ -56,7 +56,8 @@ router.get('/daily', authenticate, async (req, res, next) => {
 
 router.get('/weekly', authenticate, async (req, res, next) => {
   try {
-    const days = await getDailyStats(req.userId, 7);
+    const offset = parseInt(req.query.offset) || 0;
+    const days = await getDailyStats(req.userId, 7, offset);
 
     const user = await prisma.user.findUnique({
       where: { id: req.userId },
