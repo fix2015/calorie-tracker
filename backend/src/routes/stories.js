@@ -47,11 +47,9 @@ router.post('/', authenticate, uploadVideo.single('video'), async (req, res, nex
 // GET /feed — stories for followed users + own
 router.get('/feed', authenticate, async (req, res, next) => {
   try {
-    // Get following list
+    // Get following list from social service
     const svcFollowing = await ms.getFollowing(req.userId);
-    const followingIds = svcFollowing
-      ? svcFollowing.users
-      : (await prisma.follow.findMany({ where: { followerId: req.userId }, select: { followingId: true } })).map(f => f.followingId);
+    const followingIds = svcFollowing ? svcFollowing.users : [];
 
     const userIds = [req.userId, ...followingIds];
 
