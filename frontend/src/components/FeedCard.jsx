@@ -110,7 +110,7 @@ export default function FeedCard({ meal, onOpenDetail }) {
 
         <p className="feed-meal-name">
           <Link to={`/u/${meal.user?.username}`} className="feed-caption-user">{meal.user?.username || meal.user?.name}</Link>
-          {' '}{meal.name} — {meal.calories} kcal
+          {' '}{meal.name}
         </p>
 
         {meal.description && (

@@ -3,6 +3,7 @@ import { NavLink, useLocation } from 'react-router-dom';
 import { useAuth } from '../services/AuthContext';
 import { notificationsApi, messagesApi } from '../services/api';
 import { playNotificationSound } from '../services/notificationSound';
+import { photoSrc } from '../services/photoUrl';
 
 const icons = {
   home: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>,
@@ -57,7 +58,7 @@ export default function Navbar() {
     { to: '/explore', label: 'Discover', icon: icons.explore },
     { to: '/scan', label: 'Scan', icon: icons.scan, isScan: true },
     { to: '/dashboard', label: 'Stats', icon: icons.dashboard },
-    { to: '/profile', label: 'Profile', icon: icons.profile },
+    { to: user?.username ? `/u/${user.username}` : '/profile', label: 'Me', icon: icons.profile, isAvatar: true },
   ];
 
   const sidebarLinks = [
@@ -97,13 +98,21 @@ export default function Navbar() {
         </button>
       </aside>
 
-      {/* Mobile bottom nav: Home, Discover, +Scan, Stats, Profile */}
+      {/* Mobile bottom nav: Home, Discover, +Scan, Stats, Avatar->Profile */}
       <nav className="bottom-nav">
         {links.map((link) => (
           <NavLink key={link.to} to={link.to} end={link.to === '/'} className={link.isScan ? 'scan-nav-btn' : ''}>
             <span className="nav-icon">
               {link.isScan ? (
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              ) : link.isAvatar ? (
+                user?.avatarUrl ? (
+                  <img src={photoSrc(user.avatarUrl)} alt="" style={{ width: 24, height: 24, borderRadius: '50%', objectFit: 'cover' }} />
+                ) : (
+                  <div style={{ width: 24, height: 24, borderRadius: '50%', background: 'var(--color-primary)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700 }}>
+                    {user?.name?.charAt(0)?.toUpperCase() || '?'}
+                  </div>
+                )
               ) : link.icon}
               {link.badge > 0 && <span className="unread-badge">{link.badge > 9 ? '9+' : link.badge}</span>}
             </span>

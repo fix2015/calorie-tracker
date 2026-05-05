@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../services/AuthContext';
 import { publicApi, notificationsApi } from '../services/api';
-import { photoSrc } from '../services/photoUrl';
 
 export default function TopBar({ title }) {
   const { user } = useAuth();
@@ -20,15 +19,6 @@ export default function TopBar({ title }) {
     <div className="top-bar">
       {title && <h1 className="top-bar-title">{title}</h1>}
       <div className="top-bar-actions">
-        {user?.username && user?.isPublic && (
-          <Link to={`/u/${user.username}`} className="feed-my-profile">
-            {user.avatarUrl ? (
-              <img src={photoSrc(user.avatarUrl)} alt="" className="feed-my-avatar" />
-            ) : (
-              <div className="feed-my-avatar-placeholder">{user.name?.charAt(0)?.toUpperCase() || '?'}</div>
-            )}
-          </Link>
-        )}
         {hasSaved && (
           <Link to="/saved" className="feed-top-btn">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
@@ -40,6 +30,9 @@ export default function TopBar({ title }) {
         </Link>
         <Link to="/messages" className="feed-top-btn">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+        </Link>
+        <Link to="/profile" className="feed-top-btn">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
         </Link>
       </div>
     </div>

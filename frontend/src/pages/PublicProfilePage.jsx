@@ -226,9 +226,32 @@ export default function PublicProfilePage() {
         </p>
       ) : (
         <>
-          {dayGroups.map((group) => (
+          {dayGroups.map((group) => {
+            const dayKcal = group.meals.reduce((sum, m) => sum + (m.calories || 0), 0);
+            const dayProtein = group.meals.reduce((sum, m) => sum + (m.proteinG || 0), 0);
+            const dayCarbs = group.meals.reduce((sum, m) => sum + (m.carbsG || 0), 0);
+            const dayFat = group.meals.reduce((sum, m) => sum + (m.fatG || 0), 0);
+            const isOwn = currentUser && profile && currentUser.id === profile.id;
+            const target = isOwn ? (currentUser.dailyCalorieTarget || 2000) : null;
+            const ratio = target ? Math.min(dayKcal / target, 1) : null;
+
+            return (
             <div key={group.key} className="day-group">
-              <div className="day-group-header">{formatDayLabel(group.date)}</div>
+              <div className="day-group-header">
+                <span>{formatDayLabel(group.date)}</span>
+                <span style={{ fontWeight: 600, color: 'var(--color-primary)' }}>{dayKcal} kcal</span>
+              </div>
+              <div style={{ display: 'flex', gap: 'var(--space-md)', fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)', marginBottom: 'var(--space-sm)', padding: '0 var(--space-xs)' }}>
+                <span>P: {Math.round(dayProtein)}g</span>
+                <span>C: {Math.round(dayCarbs)}g</span>
+                <span>F: {Math.round(dayFat)}g</span>
+                <span>{group.meals.length} meal{group.meals.length !== 1 ? 's' : ''}</span>
+              </div>
+              {ratio !== null && (
+                <div style={{ height: 4, borderRadius: 2, background: 'var(--color-border)', marginBottom: 'var(--space-sm)', overflow: 'hidden' }}>
+                  <div style={{ height: '100%', width: `${ratio * 100}%`, background: ratio >= 1 ? 'var(--color-danger)' : 'var(--color-primary)', borderRadius: 2, transition: 'width 0.3s' }} />
+                </div>
+              )}
               <div className="meal-grid">
                 {group.meals.map((meal) => (
                   <div key={meal.id} className="meal-tile" onClick={() => setSelectedMeal(meal)}>
@@ -256,7 +279,8 @@ export default function PublicProfilePage() {
                 ))}
               </div>
             </div>
-          ))}
+          );
+          })}
           {loadingMore && (
             <div style={{ textAlign: 'center', padding: 'var(--space-lg)' }}>
               <div className="spinner"></div>

@@ -164,9 +164,6 @@ export default function ExplorePage() {
                           <span className="discover-card-name">{meal.name}</span>
                           <span className="discover-card-kcal">{meal.calories} kcal</span>
                         </div>
-                        <button className="discover-card-more" onClick={(e) => e.stopPropagation()}>
-                          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg>
-                        </button>
                       </div>
                     ) : (
                       <div className="discover-card-placeholder">

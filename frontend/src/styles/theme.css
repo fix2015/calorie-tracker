@@ -1554,6 +1554,9 @@ a:hover { text-decoration: underline; }
 }
 
 .day-group-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   font-size: var(--font-size-sm);
   font-weight: 600;
   color: var(--color-text-secondary);

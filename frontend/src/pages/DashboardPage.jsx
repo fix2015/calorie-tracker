@@ -24,9 +24,20 @@ export default function DashboardPage() {
   const [weeklyData, setWeeklyData] = useState([]);
   const [weightHistory, setWeightHistory] = useState([]);
   const [dashTab, setDashTab] = useState('meals');
+  const [selectedDate, setSelectedDate] = useState(() => new Date().toISOString().split('T')[0]);
 
   const target = user?.dailyCalorieTarget || 2000;
   const macroTargets = calcMacroTargets(user);
+
+  const isToday = selectedDate === new Date().toISOString().split('T')[0];
+
+  const changeDate = (offset) => {
+    const d = new Date(selectedDate);
+    d.setDate(d.getDate() + offset);
+    if (d <= new Date()) {
+      setSelectedDate(d.toISOString().split('T')[0]);
+    }
+  };
 
   useEffect(() => {
     requestNotificationPermission().then((granted) => {
@@ -36,8 +47,7 @@ export default function DashboardPage() {
 
   const fetchData = async () => {
     try {
-      const today = new Date().toISOString().split('T')[0];
-      const report = await reports.daily(today);
+      const report = await reports.daily(selectedDate);
       setDaily(report);
     } catch (err) {
       console.error('Failed to load dashboard:', err);
@@ -46,8 +56,9 @@ export default function DashboardPage() {
     }
   };
 
+  useEffect(() => { fetchData(); }, [selectedDate]);
+
   useEffect(() => {
-    fetchData();
     fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3001/api'}/reports/backfill-stats`, {
       method: 'POST',
       headers: { 'Authorization': `Bearer ${localStorage.getItem('accessToken')}` },
@@ -132,7 +143,17 @@ export default function DashboardPage() {
       {/* Today card — ring + macros side by side */}
       <div className="card dash-today-card">
         <div className="dash-today-header">
-          <h2 style={{ margin: 0, fontSize: 'var(--font-size-lg)' }}>Today</h2>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-sm)' }}>
+            <button onClick={() => changeDate(-1)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4, color: 'var(--color-text-secondary)' }}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M15 18l-6-6 6-6"/></svg>
+            </button>
+            <h2 style={{ margin: 0, fontSize: 'var(--font-size-lg)' }}>
+              {isToday ? 'Today' : new Date(selectedDate + 'T12:00:00').toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric' })}
+            </h2>
+            <button onClick={() => changeDate(1)} disabled={isToday} style={{ background: 'none', border: 'none', cursor: isToday ? 'default' : 'pointer', padding: 4, color: isToday ? 'var(--color-border)' : 'var(--color-text-secondary)' }}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 18l6-6-6-6"/></svg>
+            </button>
+          </div>
           <button className="dash-edit-goal" onClick={() => navigate('/profile')}>Edit goal</button>
         </div>
 
