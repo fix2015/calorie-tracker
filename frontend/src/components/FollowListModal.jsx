@@ -3,8 +3,10 @@ import { Link } from 'react-router-dom';
 import { publicApi } from '../services/api';
 import { photoSrc } from '../services/photoUrl';
 import { useInfiniteScroll } from '../services/useInfiniteScroll';
+import { useTranslation } from '../i18n';
 
 export default function FollowListModal({ username, type, onClose }) {
+  const { t } = useTranslation();
   const [users, setUsers] = useState([]);
   const [nextCursor, setNextCursor] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -42,7 +44,7 @@ export default function FollowListModal({ username, type, onClose }) {
           <div style={{ textAlign: 'center', padding: 'var(--space-xl)' }}><div className="spinner"></div></div>
         ) : users.length === 0 ? (
           <p style={{ textAlign: 'center', color: 'var(--color-text-secondary)', padding: 'var(--space-lg) 0' }}>
-            No {type} yet
+            {type === 'followers' ? t('followList.noFollowers') : t('followList.noFollowing')}
           </p>
         ) : (
           <div style={{ overflowY: 'auto', flex: 1 }}>

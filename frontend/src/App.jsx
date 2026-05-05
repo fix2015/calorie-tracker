@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate, Outlet, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './services/AuthContext';
+import { LanguageProvider, useTranslation } from './i18n';
 import Navbar from './components/Navbar';
 import TopBar from './components/TopBar';
 import LoginPage from './pages/LoginPage';
@@ -18,21 +19,22 @@ import NotificationsPage from './pages/NotificationsPage';
 import MessagesPage from './pages/MessagesPage';
 import AdminPage from './pages/AdminPage';
 
-const PAGE_TITLES = {
-  '/': null,
-  '/dashboard': 'My stats',
-  '/scan': 'Scan',
-  '/notifications': 'Notifications',
-  '/messages': 'Messages',
-  '/saved': 'Saved',
-  '/reports': 'Reports',
-  '/profile': 'Profile',
-  '/explore': 'Discover',
-};
-
 function ProtectedLayout() {
   const { user, loading } = useAuth();
   const location = useLocation();
+  const { t } = useTranslation();
+
+  const PAGE_TITLES = {
+    '/': null,
+    '/dashboard': t('nav.stats'),
+    '/scan': t('nav.scan'),
+    '/notifications': t('nav.notifications'),
+    '/messages': t('nav.messages'),
+    '/saved': t('nav.saved'),
+    '/reports': t('nav.reports'),
+    '/profile': t('nav.profile'),
+    '/explore': t('nav.discover'),
+  };
 
   if (loading) {
     return <div className="page"><div className="spinner" /></div>;
@@ -72,6 +74,7 @@ function PublicRoute({ children }) {
 
 function ExploreWrapper() {
   const { user, loading } = useAuth();
+  const { t } = useTranslation();
 
   if (loading) {
     return <div className="page"><div className="spinner" /></div>;
@@ -82,7 +85,7 @@ function ExploreWrapper() {
       <div className="app-layout">
         <Navbar />
         <div className="main-content">
-          <TopBar title="Discover" />
+          <TopBar title={t('nav.discover')} />
           <ExplorePage />
         </div>
       </div>
@@ -95,31 +98,33 @@ function ExploreWrapper() {
 function App() {
   return (
     <BrowserRouter basename={import.meta.env.VITE_BASE_PATH || '/'}>
-      <AuthProvider>
-        <Routes>
-          <Route path="/login" element={<PublicRoute><LoginPage /></PublicRoute>} />
-          <Route path="/register" element={<PublicRoute><RegisterPage /></PublicRoute>} />
+      <LanguageProvider>
+        <AuthProvider>
+          <Routes>
+            <Route path="/login" element={<PublicRoute><LoginPage /></PublicRoute>} />
+            <Route path="/register" element={<PublicRoute><RegisterPage /></PublicRoute>} />
 
-          <Route element={<ProtectedLayout />}>
-            <Route path="/" element={<FeedPage />} />
-            <Route path="/dashboard" element={<DashboardPage />} />
-            <Route path="/scan" element={<ScanPage />} />
-            <Route path="/notifications" element={<NotificationsPage />} />
-            <Route path="/messages" element={<MessagesPage />} />
-            <Route path="/messages/:conversationId" element={<MessagesPage />} />
-            <Route path="/saved" element={<SavedPage />} />
-            <Route path="/reports" element={<ReportsPage />} />
-            <Route path="/profile" element={<ProfilePage />} />
-          </Route>
+            <Route element={<ProtectedLayout />}>
+              <Route path="/" element={<FeedPage />} />
+              <Route path="/dashboard" element={<DashboardPage />} />
+              <Route path="/scan" element={<ScanPage />} />
+              <Route path="/notifications" element={<NotificationsPage />} />
+              <Route path="/messages" element={<MessagesPage />} />
+              <Route path="/messages/:conversationId" element={<MessagesPage />} />
+              <Route path="/saved" element={<SavedPage />} />
+              <Route path="/reports" element={<ReportsPage />} />
+              <Route path="/profile" element={<ProfilePage />} />
+            </Route>
 
-          <Route path="/admin" element={<AdminPage />} />
-          <Route path="/explore" element={<ExploreWrapper />} />
-          <Route path="/u/:username" element={<PublicProfilePage />} />
-          <Route path="/terms" element={<TermsPage />} />
-          <Route path="/privacy" element={<PrivacyPage />} />
-          <Route path="*" element={<Navigate to="/explore" replace />} />
-        </Routes>
-      </AuthProvider>
+            <Route path="/admin" element={<AdminPage />} />
+            <Route path="/explore" element={<ExploreWrapper />} />
+            <Route path="/u/:username" element={<PublicProfilePage />} />
+            <Route path="/terms" element={<TermsPage />} />
+            <Route path="/privacy" element={<PrivacyPage />} />
+            <Route path="*" element={<Navigate to="/explore" replace />} />
+          </Routes>
+        </AuthProvider>
+      </LanguageProvider>
     </BrowserRouter>
   );
 }

@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { storiesApi } from '../services/api';
 import { useAuth } from '../services/AuthContext';
 import { photoSrc } from '../services/photoUrl';
+import { useTranslation } from '../i18n';
 
 function StoryViewer({ userStories, startIndex, onClose }) {
   const [currentUser, setCurrentUser] = useState(startIndex);
@@ -99,6 +100,7 @@ function StoryViewer({ userStories, startIndex, onClose }) {
 
 export default function StoryRing() {
   const { user } = useAuth();
+  const { t } = useTranslation();
   const [storyUsers, setStoryUsers] = useState([]);
   const [viewerOpen, setViewerOpen] = useState(null);
   const fileRef = useRef(null);
@@ -117,7 +119,7 @@ export default function StoryRing() {
       const data = await storiesApi.feed();
       setStoryUsers(data.users || []);
     } catch (err) {
-      alert(err.error || 'Upload failed');
+      alert(err.error || t('stories.uploadFailed'));
     } finally {
       setUploading(false);
       if (fileRef.current) fileRef.current.value = '';
@@ -140,7 +142,7 @@ export default function StoryRing() {
             )}
             {!hasMyStory && <div className="story-add-badge">+</div>}
           </div>
-          <span className="story-name">{hasMyStory ? 'Your story' : 'Add story'}</span>
+          <span className="story-name">{hasMyStory ? t('stories.yourStory') : t('stories.addStory')}</span>
           {uploading && <div className="spinner" style={{ width: 16, height: 16 }} />}
         </div>
 

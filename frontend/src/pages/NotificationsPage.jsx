@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { notificationsApi } from '../services/api';
 import { photoSrc } from '../services/photoUrl';
 import { useInfiniteScroll } from '../services/useInfiniteScroll';
+import { useTranslation } from '../i18n';
 
 function timeAgo(dateStr) {
   const diff = Date.now() - new Date(dateStr).getTime();
@@ -15,14 +16,14 @@ function timeAgo(dateStr) {
   return `${days}d`;
 }
 
-function notifText(n) {
+function notifText(n, t) {
   switch (n.type) {
-    case 'like': return 'liked your meal';
-    case 'comment': return 'commented on your meal';
-    case 'follow': return 'started following you';
-    case 'message': return 'sent you a message';
-    case 'mention': return 'mentioned you in a comment';
-    default: return 'interacted with you';
+    case 'like': return t('notifications.likedYourMeal');
+    case 'comment': return t('notifications.commentedOnMeal');
+    case 'follow': return t('notifications.startedFollowing');
+    case 'message': return t('notifications.sentMessage');
+    case 'mention': return t('notifications.mentionedYou');
+    default: return t('notifications.interacted');
   }
 }
 
@@ -34,6 +35,7 @@ function notifLink(n) {
 }
 
 export default function NotificationsPage() {
+  const { t } = useTranslation();
   const [notifications, setNotifications] = useState([]);
   const [nextCursor, setNextCursor] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -70,7 +72,7 @@ export default function NotificationsPage() {
     <div className="page">
       {notifications.length === 0 ? (
         <p style={{ textAlign: 'center', color: 'var(--color-text-secondary)', padding: 'var(--space-xl) 0' }}>
-          No notifications yet
+          {t('notifications.noNotifications')}
         </p>
       ) : (
         <div style={{ maxWidth: 560 }}>
@@ -89,7 +91,7 @@ export default function NotificationsPage() {
                 )}
                 <div className="notif-content">
                   <p className="notif-text">
-                    <strong>{n.actor.name}</strong> {notifText(n)}
+                    <strong>{n.actor.name}</strong> {notifText(n, t)}
                   </p>
                   <span className="notif-time">{timeAgo(n.createdAt)}</span>
                 </div>

@@ -5,10 +5,12 @@ import { reports, users } from '../services/api';
 import { calcMacroTargets } from '../services/macroCalc';
 import { photoSrc } from '../services/photoUrl';
 import { requestNotificationPermission, startNotificationScheduler } from '../services/notifications';
+import { useTranslation } from '../i18n';
 import AddMealModal from '../components/AddMealModal';
 import MealDetailModal from '../components/MealDetailModal';
 
 export default function DashboardPage() {
+  const { t } = useTranslation();
   const { user, refreshUser } = useAuth();
   const navigate = useNavigate();
   const [daily, setDaily] = useState(null);
@@ -109,9 +111,9 @@ export default function DashboardPage() {
   if (loading) return <div className="page"><div className="spinner" /></div>;
 
   const macros = [
-    { label: 'Protein', eaten: Math.round(totals.proteinG), target: macroTargets?.proteinG || 0, color: 'var(--color-primary)' },
-    { label: 'Carbs', eaten: Math.round(totals.carbsG), target: macroTargets?.carbsG || 0, color: 'var(--color-primary)' },
-    { label: 'Fats', eaten: Math.round(totals.fatG), target: macroTargets?.fatG || 0, color: 'var(--color-primary)' },
+    { label: t('common.protein'), eaten: Math.round(totals.proteinG), target: macroTargets?.proteinG || 0, color: 'var(--color-primary)' },
+    { label: t('common.carbs'), eaten: Math.round(totals.carbsG), target: macroTargets?.carbsG || 0, color: 'var(--color-primary)' },
+    { label: t('common.fats'), eaten: Math.round(totals.fatG), target: macroTargets?.fatG || 0, color: 'var(--color-primary)' },
   ];
 
   return (
@@ -121,8 +123,8 @@ export default function DashboardPage() {
         <div className="dash-weighin-prompt" onClick={() => { setShowWeighIn(true); setWeighInValue(user?.weightKg?.toString() || ''); }}>
           <span style={{ fontSize: 20 }}>⚖️</span>
           <div style={{ flex: 1 }}>
-            <strong style={{ fontSize: 'var(--font-size-sm)' }}>Weekly weigh-in</strong>
-            <p style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)', margin: 0 }}>Tap to update your weight</p>
+            <strong style={{ fontSize: 'var(--font-size-sm)' }}>{t('dashboard.weeklyWeighIn')}</strong>
+            <p style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)', margin: 0 }}>{t('dashboard.tapToUpdateWeight')}</p>
           </div>
           <span style={{ color: 'var(--color-text-secondary)' }}>›</span>
         </div>
@@ -130,14 +132,14 @@ export default function DashboardPage() {
 
       {showWeighIn && (
         <div className="card" style={{ marginBottom: 'var(--space-md)' }}>
-          <h3 style={{ marginBottom: 'var(--space-sm)' }}>Update Weight</h3>
+          <h3 style={{ marginBottom: 'var(--space-sm)' }}>{t('dashboard.updateWeight')}</h3>
           <form onSubmit={handleWeighIn} style={{ display: 'flex', gap: 'var(--space-sm)', alignItems: 'flex-end' }}>
             <div className="form-group" style={{ flex: 1 }}>
-              <label htmlFor="weigh-in">Weight (kg)</label>
+              <label htmlFor="weigh-in">{t('dashboard.weightKg')}</label>
               <input id="weigh-in" type="number" step="0.1" min="20" max="500" value={weighInValue} onChange={e => setWeighInValue(e.target.value)} required />
             </div>
-            <button type="submit" className="btn btn-primary" disabled={weighInLoading}>{weighInLoading ? '...' : 'Save'}</button>
-            <button type="button" className="btn btn-secondary" onClick={() => setShowWeighIn(false)}>Cancel</button>
+            <button type="submit" className="btn btn-primary" disabled={weighInLoading}>{weighInLoading ? '...' : t('common.save')}</button>
+            <button type="button" className="btn btn-secondary" onClick={() => setShowWeighIn(false)}>{t('common.cancel')}</button>
           </form>
         </div>
       )}
@@ -150,13 +152,13 @@ export default function DashboardPage() {
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M15 18l-6-6 6-6"/></svg>
             </button>
             <h2 style={{ margin: 0, fontSize: 'var(--font-size-lg)' }}>
-              {isToday ? 'Today' : new Date(selectedDate + 'T12:00:00').toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric' })}
+              {isToday ? t('common.today') : new Date(selectedDate + 'T12:00:00').toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric' })}
             </h2>
             <button onClick={() => changeDate(1)} disabled={isToday} style={{ background: 'none', border: 'none', cursor: isToday ? 'default' : 'pointer', padding: 4, color: isToday ? 'var(--color-border)' : 'var(--color-text-secondary)' }}>
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 18l6-6-6-6"/></svg>
             </button>
           </div>
-          <button className="dash-edit-goal" onClick={() => navigate('/profile')}>Edit goal</button>
+          <button className="dash-edit-goal" onClick={() => navigate('/profile')}>{t('dashboard.editGoal')}</button>
         </div>
 
         <div className="dash-today-content">
@@ -170,8 +172,8 @@ export default function DashboardPage() {
               </svg>
               <div className="calorie-ring-center">
                 <div className="amount">{consumed}</div>
-                <div className="label">/ {target} kcal</div>
-                <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)', marginTop: 2 }}>Consumed</div>
+                <div className="label">/ {target} {t('common.kcal')}</div>
+                <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)', marginTop: 2 }}>{t('dashboard.consumed')}</div>
               </div>
             </div>
           </div>
@@ -195,20 +197,20 @@ export default function DashboardPage() {
           <div className="dash-stat">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="12" cy="12" r="3"/></svg>
             <strong>{todayMeals.length}</strong>
-            <span>Meals</span>
+            <span>{t('common.meals')}</span>
           </div>
           <div className="dash-stat">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
             <strong>{Math.max(0, target - consumed)}</strong>
-            <span>Remaining</span>
+            <span>{t('dashboard.remaining')}</span>
           </div>
         </div>
       </div>
 
       {/* Tabs */}
       <div className="dash-tabs">
-        <button className={`dash-tab${dashTab === 'meals' ? ' active' : ''}`} onClick={() => setDashTab('meals')}>Meals</button>
-        <button className={`dash-tab${dashTab === 'reports' ? ' active' : ''}`} onClick={() => setDashTab('reports')}>Reports</button>
+        <button className={`dash-tab${dashTab === 'meals' ? ' active' : ''}`} onClick={() => setDashTab('meals')}>{t('common.meals')}</button>
+        <button className={`dash-tab${dashTab === 'reports' ? ' active' : ''}`} onClick={() => setDashTab('reports')}>{t('dashboard.reports')}</button>
       </div>
 
       {/* Tab: Meals */}
@@ -216,10 +218,10 @@ export default function DashboardPage() {
         <>
           <div className="dash-actions">
             <button className="action-btn action-btn-follow" style={{ flex: 1 }} onClick={() => setShowAddMeal(true)}>
-              + Add Meal
+              {t('dashboard.addMeal')}
             </button>
             <button className="action-btn action-btn-share" style={{ flex: 1 }} onClick={() => navigate('/scan')}>
-              Scan Photo
+              {t('dashboard.scanPhoto')}
             </button>
           </div>
 
@@ -241,13 +243,13 @@ export default function DashboardPage() {
             disabled={aiLoading}
           >
             <span className="ai-analyze-icon">✦</span>
-            <span>AI Nutrition Analysis</span>
+            <span>{t('dashboard.aiNutritionAnalysis')}</span>
           </button>
 
           <div className="card">
-            <h2 style={{ marginBottom: 'var(--space-md)', fontSize: 'var(--font-size-lg)' }}>Recent meals</h2>
+            <h2 style={{ marginBottom: 'var(--space-md)', fontSize: 'var(--font-size-lg)' }}>{t('dashboard.recentMeals')}</h2>
             {todayMeals.length === 0 ? (
-              <p style={{ color: 'var(--color-text-secondary)', padding: 'var(--space-md) 0', textAlign: 'center' }}>No meals logged today</p>
+              <p style={{ color: 'var(--color-text-secondary)', padding: 'var(--space-md) 0', textAlign: 'center' }}>{t('dashboard.noMealsToday')}</p>
             ) : todayMeals.map((m) => (
               <div className="dash-meal-item" key={m.id} onClick={() => setSelectedMeal(m)}>
                 {m.photoUrl ? (
@@ -265,7 +267,7 @@ export default function DashboardPage() {
                   </span>
                 </div>
                 <div className="dash-meal-right">
-                  <span className="dash-meal-cals">{m.calories} kcal</span>
+                  <span className="dash-meal-cals">{m.calories} {t('common.kcal')}</span>
                   <span className="dash-meal-time">{new Date(m.consumedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                 </div>
               </div>
@@ -285,13 +287,13 @@ export default function DashboardPage() {
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M15 18l-6-6 6-6"/></svg>
                 </button>
                 <h2 style={{ margin: 0, fontSize: 'var(--font-size-lg)' }}>
-                  {weekOffset === 0 ? 'This week' : weekOffset === 1 ? 'Last week' : `${weekOffset} weeks ago`}
+                  {weekOffset === 0 ? t('dashboard.thisWeek') : weekOffset === 1 ? t('dashboard.lastWeek') : t('dashboard.weeksAgo', weekOffset)}
                 </h2>
                 <button onClick={() => setWeekOffset(Math.max(0, weekOffset - 1))} disabled={weekOffset === 0} style={{ background: 'none', border: 'none', cursor: weekOffset === 0 ? 'default' : 'pointer', padding: 4, color: weekOffset === 0 ? 'var(--color-border)' : 'var(--color-text-secondary)' }}>
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 18l6-6-6-6"/></svg>
                 </button>
               </div>
-              <button className="dash-edit-goal" onClick={() => navigate('/reports')}>View more</button>
+              <button className="dash-edit-goal" onClick={() => navigate('/reports')}>{t('dashboard.viewMore')}</button>
             </div>
 
             {weeklyData.length > 0 && (() => {
@@ -302,9 +304,9 @@ export default function DashboardPage() {
               return (
                 <>
                   <div style={{ display: 'flex', justifyContent: 'space-between', padding: 'var(--space-sm) 0', fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)', borderBottom: '1px solid var(--color-border)' }}>
-                    <span>Total: <strong style={{ color: 'var(--color-text)' }}>{totalCal} kcal</strong></span>
-                    <span>Avg: <strong style={{ color: 'var(--color-text)' }}>{avgCal} kcal/day</strong></span>
-                    <span>Target: <strong style={{ color: 'var(--color-primary)' }}>{target}</strong></span>
+                    <span>{t('dashboard.total')} <strong style={{ color: 'var(--color-text)' }}>{totalCal} {t('common.kcal')}</strong></span>
+                    <span>{t('dashboard.avg')} <strong style={{ color: 'var(--color-text)' }}>{avgCal} {t('common.kcal')}/day</strong></span>
+                    <span>{t('dashboard.targetLabel')} <strong style={{ color: 'var(--color-primary)' }}>{target}</strong></span>
                   </div>
                   {weeklyData.map((d) => {
                     const cal = d.totals?.calories || 0;
@@ -312,7 +314,7 @@ export default function DashboardPage() {
                     const isT = d.date === todayStr;
                     const over = cal > target;
                     const dateObj = new Date(d.date + 'T12:00:00');
-                    const label = isT ? 'Today' : dateObj.toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric' });
+                    const label = isT ? t('common.today') : dateObj.toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric' });
                     return (
                       <div key={d.date} style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-sm)', padding: 'var(--space-sm) 0', borderBottom: '1px solid var(--color-bg)' }}>
                         <span style={{ fontSize: 'var(--font-size-xs)', color: isT ? 'var(--color-text)' : 'var(--color-text-secondary)', width: 90, fontWeight: isT ? 700 : 400 }}>{label}</span>
@@ -342,15 +344,15 @@ export default function DashboardPage() {
             return (
               <div className="card" style={{ marginBottom: 'var(--space-md)' }}>
                 <div className="dash-today-header">
-                  <h2 style={{ margin: 0, fontSize: 'var(--font-size-lg)' }}>Weight progress</h2>
+                  <h2 style={{ margin: 0, fontSize: 'var(--font-size-lg)' }}>{t('dashboard.weightProgress')}</h2>
                   <span style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-primary)', fontWeight: 600 }}>
-                    {remaining.toFixed(1)} kg to go
+                    {t('dashboard.kgToGo', remaining.toFixed(1))}
                   </span>
                 </div>
 
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', margin: 'var(--space-md) 0 var(--space-sm)' }}>
                   <div style={{ textAlign: 'center' }}>
-                    <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)' }}>Current</div>
+                    <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)' }}>{t('dashboard.current')}</div>
                     <div style={{ fontSize: 'var(--font-size-lg)', fontWeight: 700 }}>{current} kg</div>
                   </div>
                   <div style={{ flex: 1, margin: '0 var(--space-md)', position: 'relative' }}>
@@ -362,7 +364,7 @@ export default function DashboardPage() {
                     </div>
                   </div>
                   <div style={{ textAlign: 'center' }}>
-                    <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)' }}>Goal</div>
+                    <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)' }}>{t('dashboard.goalLabel')}</div>
                     <div style={{ fontSize: 'var(--font-size-lg)', fontWeight: 700, color: 'var(--color-primary)' }}>{goalW} kg</div>
                   </div>
                 </div>
@@ -406,7 +408,7 @@ export default function DashboardPage() {
                   onClick={() => { setShowWeighIn(true); setWeighInValue(user?.weightKg?.toString() || ''); }}
                 >
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
-                  Update weight
+                  {t('dashboard.updateWeightBtn')}
                 </button>
               </div>
             );
@@ -419,13 +421,13 @@ export default function DashboardPage() {
         <div className="modal-overlay" onClick={() => setShowAnalysis(false)}>
           <div className="modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: 520 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-md)' }}>
-              <h2 style={{ margin: 0 }}>AI Analysis</h2>
+              <h2 style={{ margin: 0 }}>{t('dashboard.aiAnalysis')}</h2>
               <button onClick={() => setShowAnalysis(false)} style={{ background: 'none', border: 'none', fontSize: 20, cursor: 'pointer', color: 'var(--color-text-secondary)' }}>&times;</button>
             </div>
             {aiLoading ? (
               <div style={{ textAlign: 'center', padding: 'var(--space-xl) 0' }}>
                 <div className="spinner" />
-                <p style={{ color: 'var(--color-text-secondary)', fontSize: 'var(--font-size-sm)', marginTop: 'var(--space-md)' }}>Analyzing your nutrition...</p>
+                <p style={{ color: 'var(--color-text-secondary)', fontSize: 'var(--font-size-sm)', marginTop: 'var(--space-md)' }}>{t('dashboard.analyzingNutrition')}</p>
               </div>
             ) : (
               <div className="ai-analysis-content">

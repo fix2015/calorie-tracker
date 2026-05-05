@@ -3,6 +3,7 @@ import { publicApi, meals } from '../services/api';
 import { useAuth } from '../services/AuthContext';
 import { photoSrc } from '../services/photoUrl';
 import { shareText } from '../services/share';
+import { useTranslation } from '../i18n';
 
 function formatDate(dateStr) {
   return new Date(dateStr).toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' });
@@ -29,7 +30,7 @@ function CommentText({ text }) {
   );
 }
 
-function CommentItem({ comment: c, user }) {
+function CommentItem({ comment: c, user, t }) {
   const [liked, setLiked] = useState(c.isLiked || false);
   const [likesCount, setLikesCount] = useState(c._count?.likes || 0);
 
@@ -54,27 +55,28 @@ function CommentItem({ comment: c, user }) {
         </button>
       </div>
       <div className="comment-meta">
-        <span className="comment-time">{timeAgo(c.createdAt)}</span>
-        {likesCount > 0 && <span className="comment-likes">{likesCount} like{likesCount !== 1 ? 's' : ''}</span>}
+        <span className="comment-time">{timeAgo(c.createdAt, t)}</span>
+        {likesCount > 0 && <span className="comment-likes">{likesCount !== 1 ? t('feedCard.likes', likesCount) : t('feedCard.like', likesCount)}</span>}
       </div>
     </div>
   );
 }
 
-function timeAgo(dateStr) {
+function timeAgo(dateStr, t) {
   const diff = Date.now() - new Date(dateStr).getTime();
   const mins = Math.floor(diff / 60000);
-  if (mins < 1) return 'just now';
-  if (mins < 60) return `${mins}m ago`;
+  if (mins < 1) return t('publicMeal.justNow');
+  if (mins < 60) return t('publicMeal.minutesAgo', mins);
   const hrs = Math.floor(mins / 60);
-  if (hrs < 24) return `${hrs}h ago`;
+  if (hrs < 24) return t('publicMeal.hoursAgo', hrs);
   const days = Math.floor(hrs / 24);
-  if (days < 7) return `${days}d ago`;
+  if (days < 7) return t('publicMeal.daysAgo', days);
   return formatDate(dateStr);
 }
 
 export default function PublicMealDetailModal({ mealId, username, onClose, onDeleted }) {
   const { user } = useAuth();
+  const { t } = useTranslation();
   const [meal, setMeal] = useState(null);
   const [loading, setLoading] = useState(true);
   const [liked, setLiked] = useState(false);
@@ -128,10 +130,10 @@ export default function PublicMealDetailModal({ mealId, username, onClose, onDel
     ].join('\n');
     const result = await shareText(text, meal.name, meal.photoUrl ? photoSrc(meal.photoUrl) : null);
     if (result === 'copied') {
-      setShareMsg('Link copied!');
+      setShareMsg(t('common.linkCopied'));
       setTimeout(() => setShareMsg(''), 2000);
     }
-  }, [meal, username]);
+  }, [meal, username, t]);
 
   const totalMacros = meal ? meal.proteinG + meal.carbsG + meal.fatG : 0;
 
@@ -144,7 +146,7 @@ export default function PublicMealDetailModal({ mealId, username, onClose, onDel
         {loading ? (
           <div style={{ textAlign: 'center', padding: 'var(--space-xl)' }}><div className="spinner"></div></div>
         ) : !meal ? (
-          <div style={{ textAlign: 'center', padding: 'var(--space-xl)' }}>Meal not found</div>
+          <div style={{ textAlign: 'center', padding: 'var(--space-xl)' }}>{t('publicMeal.mealNotFound')}</div>
         ) : (
           <>
             {meal.photoUrl && (
@@ -180,7 +182,7 @@ export default function PublicMealDetailModal({ mealId, username, onClose, onDel
             </p>
 
             <div style={{ fontSize: 'var(--font-size-2xl)', fontWeight: 700, color: 'var(--color-primary)', marginBottom: 'var(--space-sm)' }}>
-              {meal.calories} kcal
+              {meal.calories} {t('common.kcal')}
             </div>
 
             {totalMacros > 0 && (
@@ -209,13 +211,13 @@ export default function PublicMealDetailModal({ mealId, username, onClose, onDel
                 className={`feed-action-btn feed-action-like${liked ? ' liked' : ''}`}
                 onClick={handleLike}
                 disabled={!user}
-                title={user ? (liked ? 'Unlike' : 'Like') : 'Login to like'}
+                title={user ? (liked ? t('publicMeal.unlike') : t('publicMeal.likeAction')) : t('publicMeal.loginToLike')}
               >
                 <svg width="22" height="22" viewBox="0 0 24 24" fill={liked ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
               </button>
               <span style={{ fontSize: 'var(--font-size-sm)', fontWeight: 600 }}>{likesCount}</span>
               <span style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-text-secondary)', marginLeft: 'auto' }}>
-                {meal._count.comments} comment{meal._count.comments !== 1 ? 's' : ''}
+                {meal._count.comments !== 1 ? t('feedCard.comments', meal._count.comments) : t('feedCard.comment', meal._count.comments)}
               </span>
               {user && (
                 <button
@@ -228,14 +230,14 @@ export default function PublicMealDetailModal({ mealId, username, onClose, onDel
                 </button>
               )}
               <button className="action-btn action-btn-share" style={{ padding: 'var(--space-xs) var(--space-md)' }} onClick={handleShare}>
-                Share
+                {t('common.share')}
               </button>
               {user && meal.owner?.id === user.id && (
                 <button
                   className="action-btn"
                   style={{ padding: 'var(--space-xs) var(--space-md)', background: 'var(--color-danger-bg)', color: 'var(--color-danger)', marginLeft: 'auto' }}
                   onClick={async () => {
-                    if (!confirm('Delete this meal?')) return;
+                    if (!confirm(t('publicMeal.deleteMealConfirm'))) return;
                     try {
                       await meals.remove(mealId);
                       if (onDeleted) onDeleted(mealId);
@@ -243,7 +245,7 @@ export default function PublicMealDetailModal({ mealId, username, onClose, onDel
                     } catch {}
                   }}
                 >
-                  Delete
+                  {t('common.delete')}
                 </button>
               )}
             </div>
@@ -253,11 +255,11 @@ export default function PublicMealDetailModal({ mealId, username, onClose, onDel
             <div className="comment-list">
               {comments.length === 0 && (
                 <p style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-text-secondary)', textAlign: 'center', padding: 'var(--space-md) 0' }}>
-                  No comments yet
+                  {t('publicMeal.noComments')}
                 </p>
               )}
               {comments.map((c) => (
-                <CommentItem key={c.id} comment={c} user={user} />
+                <CommentItem key={c.id} comment={c} user={user} t={t} />
               ))}
             </div>
 
@@ -267,16 +269,16 @@ export default function PublicMealDetailModal({ mealId, username, onClose, onDel
                   type="text"
                   value={commentText}
                   onChange={(e) => setCommentText(e.target.value)}
-                  placeholder="Add a comment..."
+                  placeholder={t('publicMeal.addComment')}
                   maxLength={500}
                 />
                 <button type="submit" className="btn btn-primary" disabled={posting || !commentText.trim()} style={{ padding: 'var(--space-xs) var(--space-md)', whiteSpace: 'nowrap' }}>
-                  {posting ? '...' : 'Post'}
+                  {posting ? t('common.posting') : t('common.post')}
                 </button>
               </form>
             ) : (
               <p style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-text-secondary)', textAlign: 'center', marginTop: 'var(--space-sm)' }}>
-                <a href="/login">Login</a> to like and comment
+                <a href="/login">{t('common.login')}</a> {t('publicMeal.loginToInteract')}
               </p>
             )}
           </>

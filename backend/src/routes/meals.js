@@ -84,7 +84,8 @@ router.post('/photo', authenticate, aiLimiter, upload.single('photo'), async (re
     const context = req.body.context || '';
     let result;
     try {
-      result = await analyzePhoto(req.file.path, user.weightKg, context);
+      const language = req.headers['x-language'] || 'en';
+      result = await analyzePhoto(req.file.path, user.weightKg, context, language);
     } catch (aiErr) {
       // Still upload the photo to S3 even if AI fails
       const s3Url = await uploadImage(req.file.path);

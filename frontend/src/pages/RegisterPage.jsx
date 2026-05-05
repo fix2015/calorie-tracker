@@ -2,19 +2,20 @@ import { useState, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../services/AuthContext';
 import { users } from '../services/api';
+import { useTranslation } from '../i18n';
 
-const ACTIVITY_LEVELS = [
-  { value: 'sedentary', label: 'Sedentary (little or no exercise)' },
-  { value: 'light', label: 'Lightly active (1-3 days/week)' },
-  { value: 'moderate', label: 'Moderately active (3-5 days/week)' },
-  { value: 'active', label: 'Very active (6-7 days/week)' },
-  { value: 'very_active', label: 'Extra active (physical job + exercise)' },
+const ACTIVITY_LEVEL_KEYS = [
+  { value: 'sedentary', key: 'activityLevel.sedentaryDesc' },
+  { value: 'light', key: 'activityLevel.lightDesc' },
+  { value: 'moderate', key: 'activityLevel.moderateDesc' },
+  { value: 'active', key: 'activityLevel.activeDesc' },
+  { value: 'very_active', key: 'activityLevel.veryActiveDesc' },
 ];
 
-const GOALS = [
-  { value: 'lose', label: 'Lose weight' },
-  { value: 'maintain', label: 'Maintain weight' },
-  { value: 'gain', label: 'Gain weight' },
+const GOAL_KEYS = [
+  { value: 'lose', key: 'goalType.lose' },
+  { value: 'maintain', key: 'goalType.maintain' },
+  { value: 'gain', key: 'goalType.gain' },
 ];
 
 export default function RegisterPage() {
@@ -23,6 +24,7 @@ export default function RegisterPage() {
   const [loading, setLoading] = useState(false);
   const { register } = useAuth();
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const [avatarFile, setAvatarFile] = useState(null);
   const [avatarPreview, setAvatarPreview] = useState(null);
@@ -47,27 +49,27 @@ export default function RegisterPage() {
     setError('');
     if (step === 1) {
       if (!form.name || !form.email || !form.password) {
-        setError('All fields are required');
+        setError(t('register.allFieldsRequired'));
         return;
       }
       if (form.password.length < 8) {
-        setError('Password must be at least 8 characters');
+        setError(t('register.passwordMin'));
         return;
       }
     }
     if (step === 2) {
       if (!form.age || !form.heightCm || !form.weightKg) {
-        setError('All fields are required');
+        setError(t('register.allFieldsRequired'));
         return;
       }
     }
     if (step === 3) {
       if (!form.goal) {
-        setError('Please select a goal');
+        setError(t('register.selectGoal'));
         return;
       }
       if (form.goal !== 'maintain' && !form.targetWeightKg) {
-        setError('Please enter your target weight');
+        setError(t('register.enterTargetWeight'));
         return;
       }
     }
@@ -110,7 +112,7 @@ export default function RegisterPage() {
       }
       navigate('/');
     } catch (err) {
-      setError(err.message || 'Registration failed');
+      setError(err.message || t('register.failed'));
     } finally {
       setLoading(false);
     }
@@ -129,11 +131,11 @@ export default function RegisterPage() {
             <path d="M2 17l10 5 10-5"/>
             <path d="M2 12l10 5 10-5"/>
           </svg>
-          <span className="auth-logo-text">CalTracker</span>
+          <span className="auth-logo-text">{t('common.appName')}</span>
         </div>
 
-        <h1 className="auth-title">Create Account</h1>
-        <p className="auth-subtitle">Set up your profile to start tracking</p>
+        <h1 className="auth-title">{t('register.createAccount')}</h1>
+        <p className="auth-subtitle">{t('register.subtitle')}</p>
 
         <div className="steps">
           <div className={`step ${step >= 1 ? 'active' : ''}`} />
@@ -165,49 +167,49 @@ export default function RegisterPage() {
                   </div>
                 </div>
                 <input ref={avatarRef} type="file" accept="image/jpeg,image/png,image/webp" onChange={handleAvatarChange} style={{ display: 'none' }} />
-                <p style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)', marginTop: 'var(--space-xs)' }}>Add photo (optional)</p>
+                <p style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)', marginTop: 'var(--space-xs)' }}>{t('register.addPhoto')}</p>
               </div>
               <div className="form-group">
-                <label htmlFor="name">Name</label>
-                <input id="name" type="text" value={form.name} onChange={set('name')} required placeholder="Your name" />
+                <label htmlFor="name">{t('common.name')}</label>
+                <input id="name" type="text" value={form.name} onChange={set('name')} required placeholder={t('register.yourName')} />
               </div>
               <div className="form-group">
-                <label htmlFor="reg-email">Email</label>
-                <input id="reg-email" type="email" value={form.email} onChange={set('email')} required placeholder="you@example.com" />
+                <label htmlFor="reg-email">{t('common.email')}</label>
+                <input id="reg-email" type="email" value={form.email} onChange={set('email')} required placeholder={t('login.emailPlaceholder')} />
               </div>
               <div className="form-group">
-                <label htmlFor="reg-password">Password</label>
-                <input id="reg-password" type="password" value={form.password} onChange={set('password')} required placeholder="Min 8 characters" />
+                <label htmlFor="reg-password">{t('common.password')}</label>
+                <input id="reg-password" type="password" value={form.password} onChange={set('password')} required placeholder={t('register.minChars')} />
               </div>
-              <button type="button" className="btn btn-primary btn-block" onClick={next}>Next</button>
+              <button type="button" className="btn btn-primary btn-block" onClick={next}>{t('common.next')}</button>
             </>
           )}
 
           {step === 2 && (
             <>
               <div className="form-group">
-                <label htmlFor="age">Age</label>
+                <label htmlFor="age">{t('profile.age')}</label>
                 <input id="age" type="number" value={form.age} onChange={set('age')} required min="10" max="120" />
               </div>
               <div className="form-group">
-                <label htmlFor="gender">Gender</label>
+                <label htmlFor="gender">{t('profile.gender')}</label>
                 <select id="gender" value={form.gender} onChange={set('gender')}>
-                  <option value="male">Male</option>
-                  <option value="female">Female</option>
-                  <option value="other">Other</option>
+                  <option value="male">{t('profile.male')}</option>
+                  <option value="female">{t('profile.female')}</option>
+                  <option value="other">{t('profile.other')}</option>
                 </select>
               </div>
               <div className="form-group">
-                <label htmlFor="heightCm">Height (cm)</label>
+                <label htmlFor="heightCm">{t('profile.heightCm')}</label>
                 <input id="heightCm" type="number" value={form.heightCm} onChange={set('heightCm')} required min="100" max="250" />
               </div>
               <div className="form-group">
-                <label htmlFor="weightKg">Current Weight (kg)</label>
+                <label htmlFor="weightKg">{t('profile.currentWeight')}</label>
                 <input id="weightKg" type="number" step="0.1" value={form.weightKg} onChange={set('weightKg')} required min="30" max="300" />
               </div>
               <div style={{ display: 'flex', gap: 'var(--space-sm)' }}>
-                <button type="button" className="btn btn-secondary" style={{ flex: 1 }} onClick={back}>Back</button>
-                <button type="button" className="btn btn-primary" style={{ flex: 1 }} onClick={next}>Next</button>
+                <button type="button" className="btn btn-secondary" style={{ flex: 1 }} onClick={back}>{t('common.back')}</button>
+                <button type="button" className="btn btn-primary" style={{ flex: 1 }} onClick={next}>{t('common.next')}</button>
               </div>
             </>
           )}
@@ -215,38 +217,38 @@ export default function RegisterPage() {
           {step === 3 && (
             <>
               <div className="form-group">
-                <label htmlFor="goal">What's your goal?</label>
+                <label htmlFor="goal">{t('register.whatsYourGoal')}</label>
                 <select id="goal" value={form.goal} onChange={set('goal')}>
-                  {GOALS.map((g) => (
-                    <option key={g.value} value={g.value}>{g.label}</option>
+                  {GOAL_KEYS.map((g) => (
+                    <option key={g.value} value={g.value}>{t(g.key)}</option>
                   ))}
                 </select>
               </div>
 
               {form.goal !== 'maintain' && (
                 <div className="form-group">
-                  <label htmlFor="targetWeightKg">Target Weight (kg)</label>
-                  <input id="targetWeightKg" type="number" step="0.1" value={form.targetWeightKg} onChange={set('targetWeightKg')} required min="30" max="300" placeholder={form.goal === 'lose' ? 'Your goal weight' : 'Your goal weight'} />
+                  <label htmlFor="targetWeightKg">{t('register.targetWeight')}</label>
+                  <input id="targetWeightKg" type="number" step="0.1" value={form.targetWeightKg} onChange={set('targetWeightKg')} required min="30" max="300" placeholder={t('register.yourGoalWeight')} />
                   {weightDiff && (
                     <span style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-text-secondary)' }}>
-                      {form.goal === 'lose' ? `${weightDiff} kg to lose` : `${weightDiff} kg to gain`}
+                      {form.goal === 'lose' ? t('register.kgToLose', weightDiff) : t('register.kgToGain', weightDiff)}
                     </span>
                   )}
                 </div>
               )}
 
               <div className="form-group">
-                <label htmlFor="activityLevel">Activity Level</label>
+                <label htmlFor="activityLevel">{t('register.activityLevel')}</label>
                 <select id="activityLevel" value={form.activityLevel} onChange={set('activityLevel')}>
-                  {ACTIVITY_LEVELS.map((a) => (
-                    <option key={a.value} value={a.value}>{a.label}</option>
+                  {ACTIVITY_LEVEL_KEYS.map((a) => (
+                    <option key={a.value} value={a.value}>{t(a.key)}</option>
                   ))}
                 </select>
               </div>
 
               <div style={{ display: 'flex', gap: 'var(--space-sm)' }}>
-                <button type="button" className="btn btn-secondary" style={{ flex: 1 }} onClick={back}>Back</button>
-                <button type="button" className="btn btn-primary" style={{ flex: 1 }} onClick={next}>Next</button>
+                <button type="button" className="btn btn-secondary" style={{ flex: 1 }} onClick={back}>{t('common.back')}</button>
+                <button type="button" className="btn btn-primary" style={{ flex: 1 }} onClick={next}>{t('common.next')}</button>
               </div>
             </>
           )}
@@ -259,23 +261,23 @@ export default function RegisterPage() {
                 padding: 'var(--space-lg)',
                 textAlign: 'center',
               }}>
-                <p style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-text-secondary)', marginBottom: 'var(--space-xs)' }}>Your daily calorie target will be</p>
-                <p style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-text-secondary)' }}>calculated based on your profile.</p>
+                <p style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-text-secondary)', marginBottom: 'var(--space-xs)' }}>{t('register.calorieTargetWillBe')}</p>
+                <p style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-text-secondary)' }}>{t('register.calculatedBasedOnProfile')}</p>
                 <div style={{ marginTop: 'var(--space-md)', fontSize: 'var(--font-size-sm)', color: 'var(--color-text-secondary)', textAlign: 'left' }}>
-                  <p>📊 Current: <strong>{form.weightKg} kg</strong></p>
-                  {form.goal !== 'maintain' && <p>🎯 Target: <strong>{form.targetWeightKg} kg</strong></p>}
-                  <p>🏃 Activity: <strong>{ACTIVITY_LEVELS.find(a => a.value === form.activityLevel)?.label}</strong></p>
-                  <p>📎 Goal: <strong>{GOALS.find(g => g.value === form.goal)?.label}</strong></p>
+                  <p>📊 {t('register.current')} <strong>{form.weightKg} kg</strong></p>
+                  {form.goal !== 'maintain' && <p>🎯 {t('register.target')} <strong>{form.targetWeightKg} kg</strong></p>}
+                  <p>🏃 {t('register.activity')} <strong>{t(ACTIVITY_LEVEL_KEYS.find(a => a.value === form.activityLevel)?.key)}</strong></p>
+                  <p>📎 {t('register.goal')} <strong>{t(GOAL_KEYS.find(g => g.value === form.goal)?.key)}</strong></p>
                 </div>
                 <p style={{ marginTop: 'var(--space-md)', fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)' }}>
-                  We'll ask you to weigh in periodically to keep your calories on track.
+                  {t('register.weighInNote')}
                 </p>
               </div>
 
               <div style={{ display: 'flex', gap: 'var(--space-sm)' }}>
-                <button type="button" className="btn btn-secondary" style={{ flex: 1 }} onClick={back}>Back</button>
+                <button type="button" className="btn btn-secondary" style={{ flex: 1 }} onClick={back}>{t('common.back')}</button>
                 <button type="submit" className="btn btn-primary" style={{ flex: 1 }} disabled={loading}>
-                  {loading ? 'Creating...' : 'Start Tracking'}
+                  {loading ? t('register.creating') : t('register.startTracking')}
                 </button>
               </div>
             </>
@@ -283,12 +285,12 @@ export default function RegisterPage() {
         </form>
 
         <p className="auth-switch">
-          Already have an account? <Link to="/login">Sign in</Link>
+          {t('register.alreadyHaveAccount')} <Link to="/login">{t('register.signIn')}</Link>
         </p>
 
         <p className="legal-links">
-          By signing up, you agree to our{' '}
-          <Link to="/terms">Terms</Link> and <Link to="/privacy">Privacy Policy</Link>
+          {t('register.agreeTerms')}{' '}
+          <Link to="/terms">{t('register.terms')}</Link> and <Link to="/privacy">{t('register.privacyPolicy')}</Link>
         </p>
       </div>
     </div>

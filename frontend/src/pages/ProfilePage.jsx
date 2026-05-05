@@ -3,23 +3,25 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../services/AuthContext';
 import { users, reports } from '../services/api';
 import AvatarUpload from '../components/AvatarUpload';
+import { useTranslation, LANGUAGES } from '../i18n';
 
-const ACTIVITY_LEVELS = [
-  { value: 'sedentary', label: 'Sedentary' },
-  { value: 'light', label: 'Lightly active' },
-  { value: 'moderate', label: 'Moderately active' },
-  { value: 'active', label: 'Very active' },
-  { value: 'very_active', label: 'Extra active' },
+const ACTIVITY_LEVEL_KEYS = [
+  { value: 'sedentary', key: 'activityLevel.sedentary' },
+  { value: 'light', key: 'activityLevel.light' },
+  { value: 'moderate', key: 'activityLevel.moderate' },
+  { value: 'active', key: 'activityLevel.active' },
+  { value: 'very_active', key: 'activityLevel.veryActive' },
 ];
 
-const GOALS = [
-  { value: 'lose', label: 'Lose weight' },
-  { value: 'maintain', label: 'Maintain weight' },
-  { value: 'gain', label: 'Gain weight' },
+const GOAL_KEYS = [
+  { value: 'lose', key: 'goalType.lose' },
+  { value: 'maintain', key: 'goalType.maintain' },
+  { value: 'gain', key: 'goalType.gain' },
 ];
 
 export default function ProfilePage() {
   const { user, refreshUser, logout, deleteAccount } = useAuth();
+  const { t, language, setLanguage } = useTranslation();
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState('');
@@ -31,13 +33,13 @@ export default function ProfilePage() {
   }, []);
 
   const handleDeleteAccount = async () => {
-    if (!window.confirm('Are you sure you want to delete your account? This cannot be undone.')) return;
-    if (!window.confirm('This will permanently delete all your data. Continue?')) return;
+    if (!window.confirm(t('profile.confirmDeleteAccount'))) return;
+    if (!window.confirm(t('profile.confirmDeleteData'))) return;
     setDeleting(true);
     try {
       await deleteAccount();
     } catch (err) {
-      setError(err.message || 'Failed to delete account');
+      setError(err.message || t('profile.failedDelete'));
       setDeleting(false);
     }
   };
@@ -105,10 +107,10 @@ export default function ProfilePage() {
         linkUrl: form.linkUrl || null,
       });
       await refreshUser();
-      setSuccess('Profile saved successfully!');
+      setSuccess(t('profile.savedSuccessfully'));
       setTimeout(() => setSuccess(''), 4000);
     } catch (err) {
-      setError(err.message || 'Update failed');
+      setError(err.message || t('common.failed'));
     } finally {
       setSaving(false);
     }
@@ -130,14 +132,14 @@ export default function ProfilePage() {
             textAlign: 'center',
           }}>
             <span style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-text-secondary)' }}>
-              Daily Calorie Target
+              {t('profile.dailyCalorieTarget')}
             </span>
             <div style={{ fontSize: 'var(--font-size-2xl)', fontWeight: 700, color: 'var(--color-primary)' }}>
-              {user.dailyCalorieTarget} kcal
+              {user.dailyCalorieTarget} {t('common.kcal')}
             </div>
             {user.weightKg && user.targetWeightKg && user.goal !== 'maintain' && (
               <p style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-text-secondary)', marginTop: 'var(--space-xs)' }}>
-                {user.weightKg} kg → {user.targetWeightKg} kg ({Math.abs(user.weightKg - user.targetWeightKg).toFixed(1)} kg to {user.goal === 'lose' ? 'lose' : 'gain'})
+                {user.weightKg} kg → {user.targetWeightKg} kg ({Math.abs(user.weightKg - user.targetWeightKg).toFixed(1)} {t('profile.kgTo')} {user.goal === 'lose' ? t('profile.lose') : t('profile.gain')})
               </p>
             )}
           </div>
@@ -150,10 +152,10 @@ export default function ProfilePage() {
             try {
               await users.uploadAvatar(file);
               await refreshUser();
-              setSuccess('Avatar updated!');
+              setSuccess(t('profile.avatarUpdated'));
               setTimeout(() => setSuccess(''), 3000);
             } catch (err) {
-              setError(err.message || 'Avatar upload failed');
+              setError(err.message || t('common.failed'));
             }
           }}
         />
@@ -173,32 +175,41 @@ export default function ProfilePage() {
 
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-md)' }}>
           <div className="form-group">
-            <label htmlFor="prof-name">Name</label>
+            <label>{t('profile.language')}</label>
+            <select value={language} onChange={(e) => setLanguage(e.target.value)}>
+              {Object.entries(LANGUAGES).map(([code, { nativeName }]) => (
+                <option key={code} value={code}>{nativeName}</option>
+              ))}
+            </select>
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="prof-name">{t('common.name')}</label>
             <input id="prof-name" type="text" value={form.name} onChange={set('name')} required />
           </div>
 
           <div className="grid-2">
             <div className="form-group">
-              <label htmlFor="prof-age">Age</label>
+              <label htmlFor="prof-age">{t('profile.age')}</label>
               <input id="prof-age" type="number" value={form.age} onChange={set('age')} required min="10" max="120" />
             </div>
             <div className="form-group">
-              <label htmlFor="prof-gender">Gender</label>
+              <label htmlFor="prof-gender">{t('profile.gender')}</label>
               <select id="prof-gender" value={form.gender} onChange={set('gender')}>
-                <option value="male">Male</option>
-                <option value="female">Female</option>
-                <option value="other">Other</option>
+                <option value="male">{t('profile.male')}</option>
+                <option value="female">{t('profile.female')}</option>
+                <option value="other">{t('profile.other')}</option>
               </select>
             </div>
           </div>
 
           <div className="grid-2">
             <div className="form-group">
-              <label htmlFor="prof-height">Height (cm)</label>
+              <label htmlFor="prof-height">{t('profile.heightCm')}</label>
               <input id="prof-height" type="number" value={form.heightCm} onChange={set('heightCm')} required min="100" max="250" />
             </div>
             <div className="form-group">
-              <label htmlFor="prof-weight">Current Weight (kg)</label>
+              <label htmlFor="prof-weight">{t('profile.currentWeight')}</label>
               <input id="prof-weight" type="number" step="0.1" value={form.weightKg} onChange={set('weightKg')} required min="30" max="300" />
             </div>
           </div>
@@ -214,9 +225,9 @@ export default function ProfilePage() {
             return (
               <div style={{ background: 'var(--color-bg)', borderRadius: 'var(--radius-md)', padding: 'var(--space-sm) var(--space-md)', marginBottom: 'var(--space-sm)' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)', marginBottom: 4 }}>
-                  <span>Start: {startW} kg</span>
-                  <span style={{ color: 'var(--color-primary)', fontWeight: 600 }}>{Math.round(progress)}% progress</span>
-                  <span>Goal: {goalW} kg</span>
+                  <span>{t('profile.start')} {startW} kg</span>
+                  <span style={{ color: 'var(--color-primary)', fontWeight: 600 }}>{t('profile.progress', Math.round(progress))}</span>
+                  <span>{t('profile.goalLabel')} {goalW} kg</span>
                 </div>
                 <div style={{ height: 6, borderRadius: 3, background: 'var(--color-border)', overflow: 'hidden' }}>
                   <div style={{ height: '100%', width: `${Math.max(progress, 2)}%`, background: 'var(--color-primary)', borderRadius: 3 }} />
@@ -226,29 +237,29 @@ export default function ProfilePage() {
           })()}
 
           <div className="form-group">
-            <label htmlFor="prof-goal">Goal</label>
+            <label htmlFor="prof-goal">{t('profile.goal')}</label>
             <select id="prof-goal" value={form.goal} onChange={set('goal')}>
-              {GOALS.map((g) => (
-                <option key={g.value} value={g.value}>{g.label}</option>
+              {GOAL_KEYS.map((g) => (
+                <option key={g.value} value={g.value}>{t(g.key)}</option>
               ))}
             </select>
           </div>
 
           <div className="form-group">
-            <label htmlFor="prof-target-weight">Goal Weight (kg)</label>
+            <label htmlFor="prof-target-weight">{t('profile.goalWeight')}</label>
             <input id="prof-target-weight" type="number" step="0.1" value={form.targetWeightKg} onChange={set('targetWeightKg')} min="30" max="300" />
             {weightDiff && (
               <span style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-text-secondary)' }}>
-                {Math.abs(Number(weightDiff))} kg to {Number(weightDiff) > 0 ? 'lose' : 'gain'}
+                {Math.abs(Number(weightDiff))} {t('profile.kgTo')} {Number(weightDiff) > 0 ? t('profile.lose') : t('profile.gain')}
               </span>
             )}
           </div>
 
           <div className="form-group">
-            <label htmlFor="prof-activity">Activity Level</label>
+            <label htmlFor="prof-activity">{t('profile.activityLevel')}</label>
             <select id="prof-activity" value={form.activityLevel} onChange={set('activityLevel')}>
-              {ACTIVITY_LEVELS.map((a) => (
-                <option key={a.value} value={a.value}>{a.label}</option>
+              {ACTIVITY_LEVEL_KEYS.map((a) => (
+                <option key={a.value} value={a.value}>{t(a.key)}</option>
               ))}
             </select>
           </div>
@@ -257,9 +268,9 @@ export default function ProfilePage() {
 
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div>
-              <strong>Public Profile</strong>
+              <strong>{t('profile.publicProfile')}</strong>
               <p style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-text-secondary)', margin: 0 }}>
-                Share your meals publicly
+                {t('profile.shareMealsPublicly')}
               </p>
             </div>
             <label className="toggle-switch">
@@ -276,9 +287,9 @@ export default function ProfilePage() {
             <>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <div>
-                  <strong style={{ fontSize: 'var(--font-size-sm)' }}>Followers Only</strong>
+                  <strong style={{ fontSize: 'var(--font-size-sm)' }}>{t('profile.followersOnly')}</strong>
                   <p style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)', margin: 0 }}>
-                    Only followers can see your meals
+                    {t('profile.onlyFollowersCanSee')}
                   </p>
                 </div>
                 <label className="toggle-switch">
@@ -291,51 +302,51 @@ export default function ProfilePage() {
                 </label>
               </div>
               <div className="form-group">
-                <label htmlFor="prof-username">Username</label>
+                <label htmlFor="prof-username">{t('profile.username')}</label>
                 <input
                   id="prof-username"
                   type="text"
                   value={form.username}
                   onChange={set('username')}
-                  placeholder="your_username"
+                  placeholder={t('profile.usernamePlaceholder')}
                   minLength={3}
                   maxLength={30}
                   pattern="^[a-zA-Z0-9_]+$"
-                  title="Letters, numbers and underscores only"
+                  title={t('profile.usernameHint')}
                   required
                 />
               </div>
               <div className="form-group">
-                <label htmlFor="prof-bio">Bio <span style={{ fontWeight: 400, color: 'var(--color-text-secondary)' }}>({form.bio.length}/300)</span></label>
+                <label htmlFor="prof-bio">{t('profile.bio')} <span style={{ fontWeight: 400, color: 'var(--color-text-secondary)' }}>({form.bio.length}/300)</span></label>
                 <textarea
                   id="prof-bio"
                   value={form.bio}
                   onChange={(e) => { if (e.target.value.length <= 300) { setForm({ ...form, bio: e.target.value }); setSuccess(''); } }}
-                  placeholder="Tell others about your nutrition journey..."
+                  placeholder={t('profile.bioPlaceholder')}
                   rows={3}
                   style={{ resize: 'vertical' }}
                 />
               </div>
               <div className="form-group">
-                <label htmlFor="prof-link">Link</label>
+                <label htmlFor="prof-link">{t('profile.link')}</label>
                 <input
                   id="prof-link"
                   type="url"
                   value={form.linkUrl}
                   onChange={set('linkUrl')}
-                  placeholder="https://example.com"
+                  placeholder={t('profile.linkPlaceholder')}
                 />
               </div>
               {form.username && (
                 <p style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-text-secondary)' }}>
-                  Your public profile: <a href={`/u/${form.username}`} target="_blank" rel="noopener noreferrer">{window.location.origin}/u/{form.username}</a>
+                  {t('profile.yourPublicProfile')} <a href={`/u/${form.username}`} target="_blank" rel="noopener noreferrer">{window.location.origin}/u/{form.username}</a>
                 </p>
               )}
             </>
           )}
 
           <button type="submit" className="btn btn-primary btn-block" disabled={saving}>
-            {saving ? 'Saving...' : 'Save & Recalculate'}
+            {saving ? t('profile.saving') : t('profile.saveAndRecalculate')}
           </button>
         </form>
 
@@ -343,7 +354,7 @@ export default function ProfilePage() {
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-sm)' }}>
           <button className="btn btn-secondary btn-block" onClick={logout}>
-            Logout
+            {t('common.logout')}
           </button>
           <button
             className="btn btn-block"
@@ -351,14 +362,14 @@ export default function ProfilePage() {
             onClick={handleDeleteAccount}
             disabled={deleting}
           >
-            {deleting ? 'Deleting...' : 'Delete Account'}
+            {deleting ? t('common.deleting') : t('profile.deleteAccount')}
           </button>
         </div>
 
         <p className="legal-links" style={{ marginTop: 'var(--space-lg)' }}>
-          <Link to="/terms">Terms of Service</Link>
+          <Link to="/terms">{t('terms.title')}</Link>
           <span className="legal-links-sep">&middot;</span>
-          <Link to="/privacy">Privacy Policy</Link>
+          <Link to="/privacy">{t('privacy.title')}</Link>
         </p>
       </div>
     </div>

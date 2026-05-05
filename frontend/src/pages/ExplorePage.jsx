@@ -4,11 +4,20 @@ import { publicApi } from '../services/api';
 import { useAuth } from '../services/AuthContext';
 import { photoSrc } from '../services/photoUrl';
 import { useInfiniteScroll } from '../services/useInfiniteScroll';
+import { useTranslation } from '../i18n';
 import PublicMealDetailModal from '../components/PublicMealDetailModal';
 
-const FILTER_TAGS = ['All', 'High protein', 'Low carb', 'Low fat', 'Light', 'Healthy'];
+const FILTER_KEYS = [
+  { key: 'All', label: 'explore.filterAll' },
+  { key: 'High protein', label: 'explore.filterHighProtein' },
+  { key: 'Low carb', label: 'explore.filterLowCarb' },
+  { key: 'Low fat', label: 'explore.filterLowFat' },
+  { key: 'Light', label: 'explore.filterLight' },
+  { key: 'Healthy', label: 'explore.filterHealthy' },
+];
 
 export default function ExplorePage() {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const navigate = useNavigate();
   const [query, setQuery] = useState('');
@@ -87,10 +96,10 @@ export default function ExplorePage() {
     <div className="page" style={!user ? { padding: 'var(--space-lg) var(--space-md)' } : undefined}>
       {!user && (
         <div className="explore-auth-banner">
-          <p>Join CalTracker to like, comment, follow, and share your meals</p>
+          <p>{t('explore.joinBanner')}</p>
           <div style={{ display: 'flex', gap: 'var(--space-sm)', justifyContent: 'center' }}>
-            <Link to="/login" className="action-btn action-btn-follow">Log In</Link>
-            <Link to="/register" className="action-btn action-btn-message">Sign Up</Link>
+            <Link to="/login" className="action-btn action-btn-follow">{t('common.logIn')}</Link>
+            <Link to="/register" className="action-btn action-btn-message">{t('common.signUp')}</Link>
           </div>
         </div>
       )}
@@ -102,7 +111,7 @@ export default function ExplorePage() {
           type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search meals, users, hashtags..."
+          placeholder={t('explore.searchPlaceholder')}
         />
       </div>
 
@@ -111,7 +120,7 @@ export default function ExplorePage() {
         <div style={{ marginBottom: 'var(--space-lg)' }}>
           {searchLoading && <div style={{ textAlign: 'center' }}><div className="spinner"></div></div>}
           {!searchLoading && searched && results.length === 0 && (
-            <p style={{ textAlign: 'center', color: 'var(--color-text-secondary)' }}>No results found</p>
+            <p style={{ textAlign: 'center', color: 'var(--color-text-secondary)' }}>{t('explore.noResults')}</p>
           )}
           {!searchLoading && results.length > 0 && (
             <div className="explore-results">
@@ -139,13 +148,13 @@ export default function ExplorePage() {
       {!isSearching && (
         <>
           <div className="discover-chips">
-            {FILTER_TAGS.map((tag) => (
+            {FILTER_KEYS.map(({ key, label }) => (
               <button
-                key={tag}
-                className={`discover-chip${activeTag === tag ? ' active' : ''}`}
-                onClick={() => setActiveTag(tag)}
+                key={key}
+                className={`discover-chip${activeTag === key ? ' active' : ''}`}
+                onClick={() => setActiveTag(key)}
               >
-                {tag}
+                {t(label)}
               </button>
             ))}
           </div>
@@ -162,13 +171,13 @@ export default function ExplorePage() {
                         <img src={photoSrc(meal.photoUrl)} alt={meal.name} loading="lazy" />
                         <div className="discover-card-overlay">
                           <span className="discover-card-name">{meal.name}</span>
-                          <span className="discover-card-kcal">{meal.calories} kcal</span>
+                          <span className="discover-card-kcal">{meal.calories} {t('common.kcal')}</span>
                         </div>
                       </div>
                     ) : (
                       <div className="discover-card-placeholder">
                         <span className="discover-card-name">{meal.name}</span>
-                        <span className="discover-card-kcal">{meal.calories} kcal</span>
+                        <span className="discover-card-kcal">{meal.calories} {t('common.kcal')}</span>
                       </div>
                     )}
                   </div>
@@ -179,7 +188,7 @@ export default function ExplorePage() {
             </>
           ) : (
             <p style={{ textAlign: 'center', color: 'var(--color-text-secondary)', padding: 'var(--space-xl) 0' }}>
-              {activeTag !== 'All' ? `No ${activeTag.toLowerCase()} meals found` : 'No meals yet'}
+              {activeTag !== 'All' ? t('explore.noMealsFound', activeTag.toLowerCase()) : t('explore.noMealsYet')}
             </p>
           )}
         </>

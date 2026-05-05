@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import { meals } from '../services/api';
+import { useTranslation } from '../i18n';
 
 export default function AddMealModal({ onClose, onSaved }) {
+  const { t } = useTranslation();
   const [form, setForm] = useState({
     name: '',
     calories: '',
@@ -19,7 +21,7 @@ export default function AddMealModal({ onClose, onSaved }) {
     setError('');
 
     if (!form.name || !form.calories) {
-      setError('Name and calories are required');
+      setError(t('addMeal.nameCalRequired'));
       return;
     }
 
@@ -34,7 +36,7 @@ export default function AddMealModal({ onClose, onSaved }) {
       });
       onSaved();
     } catch (err) {
-      setError(err.message || 'Failed to add meal');
+      setError(err.message || t('addMeal.failed'));
     } finally {
       setLoading(false);
     }
@@ -43,25 +45,25 @@ export default function AddMealModal({ onClose, onSaved }) {
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal" onClick={(e) => e.stopPropagation()}>
-        <h2>Add Meal</h2>
+        <h2>{t('addMeal.title')}</h2>
 
         <p className={`error-text${error ? ' visible' : ''}`} style={{ marginBottom: error ? 'var(--space-md)' : 0 }}><span>{error}</span></p>
 
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-md)' }}>
           <div className="form-group">
-            <label htmlFor="meal-name">Meal Name</label>
+            <label htmlFor="meal-name">{t('addMeal.mealName')}</label>
             <input
               id="meal-name"
               type="text"
               value={form.name}
               onChange={set('name')}
               required
-              placeholder="e.g. Grilled chicken salad"
+              placeholder={t('addMeal.mealNamePlaceholder')}
             />
           </div>
 
           <div className="form-group">
-            <label htmlFor="meal-cal">Calories</label>
+            <label htmlFor="meal-cal">{t('common.calories')}</label>
             <input
               id="meal-cal"
               type="number"
@@ -69,31 +71,31 @@ export default function AddMealModal({ onClose, onSaved }) {
               onChange={set('calories')}
               required
               min="0"
-              placeholder="kcal"
+              placeholder={t('common.kcal')}
             />
           </div>
 
           <div className="grid-3">
             <div className="form-group">
-              <label htmlFor="meal-protein">Protein (g)</label>
+              <label htmlFor="meal-protein">{t('common.proteinG')}</label>
               <input id="meal-protein" type="number" value={form.proteinG} onChange={set('proteinG')} min="0" />
             </div>
             <div className="form-group">
-              <label htmlFor="meal-carbs">Carbs (g)</label>
+              <label htmlFor="meal-carbs">{t('common.carbsG')}</label>
               <input id="meal-carbs" type="number" value={form.carbsG} onChange={set('carbsG')} min="0" />
             </div>
             <div className="form-group">
-              <label htmlFor="meal-fat">Fat (g)</label>
+              <label htmlFor="meal-fat">{t('common.fatG')}</label>
               <input id="meal-fat" type="number" value={form.fatG} onChange={set('fatG')} min="0" />
             </div>
           </div>
 
           <div style={{ display: 'flex', gap: 'var(--space-sm)' }}>
             <button type="button" className="btn btn-secondary" style={{ flex: 1 }} onClick={onClose}>
-              Cancel
+              {t('common.cancel')}
             </button>
             <button type="submit" className="btn btn-primary" style={{ flex: 1 }} disabled={loading}>
-              {loading ? 'Adding...' : 'Add Meal'}
+              {loading ? t('common.adding') : t('addMeal.title')}
             </button>
           </div>
         </form>

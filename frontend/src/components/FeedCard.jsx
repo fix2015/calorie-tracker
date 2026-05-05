@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { publicApi } from '../services/api';
 import { photoSrc } from '../services/photoUrl';
 import { shareText } from '../services/share';
+import { useTranslation } from '../i18n';
 
 function timeAgo(dateStr) {
   const diff = Date.now() - new Date(dateStr).getTime();
@@ -16,17 +17,18 @@ function timeAgo(dateStr) {
   return new Date(dateStr).toLocaleDateString([], { month: 'short', day: 'numeric' });
 }
 
-function getHealthTags(meal) {
+function getHealthTagKeys(meal) {
   const tags = [];
-  if (meal.proteinG >= 25) tags.push('High protein');
-  if (meal.carbsG <= 20) tags.push('Low carb');
-  if (meal.fatG <= 10) tags.push('Low fat');
-  if (meal.calories <= 400) tags.push('Light meal');
-  if (meal.calories >= 600) tags.push('Hearty');
+  if (meal.proteinG >= 25) tags.push('feedCard.highProtein');
+  if (meal.carbsG <= 20) tags.push('feedCard.lowCarb');
+  if (meal.fatG <= 10) tags.push('feedCard.lowFat');
+  if (meal.calories <= 400) tags.push('feedCard.lightMeal');
+  if (meal.calories >= 600) tags.push('feedCard.hearty');
   return tags.slice(0, 3);
 }
 
 export default function FeedCard({ meal, onOpenDetail }) {
+  const { t } = useTranslation();
   const [liked, setLiked] = useState(meal.isLiked || false);
   const [likesCount, setLikesCount] = useState(meal._count?.likes || 0);
   const [saved, setSaved] = useState(meal.isSaved || false);
@@ -45,7 +47,7 @@ export default function FeedCard({ meal, onOpenDetail }) {
     await shareText(text, meal.name, meal.photoUrl ? photoSrc(meal.photoUrl) : null);
   }, [meal]);
 
-  const tags = getHealthTags(meal);
+  const tagKeys = getHealthTagKeys(meal);
 
   return (
     <div className="feed-card">
@@ -71,12 +73,12 @@ export default function FeedCard({ meal, onOpenDetail }) {
       {meal.photoUrl ? (
         <div className="feed-photo-wrap" onClick={() => onOpenDetail(meal)}>
           <img src={photoSrc(meal.photoUrl)} alt={meal.name} className="feed-photo" loading="lazy" />
-          <div className="feed-calorie-badge">{meal.calories} kcal</div>
+          <div className="feed-calorie-badge">{meal.calories} {t('common.kcal')}</div>
         </div>
       ) : (
         <div className="feed-no-photo" onClick={() => onOpenDetail(meal)}>
           <span className="feed-no-photo-name">{meal.name}</span>
-          <span className="feed-calorie-badge-inline">{meal.calories} kcal</span>
+          <span className="feed-calorie-badge-inline">{meal.calories} {t('common.kcal')}</span>
         </div>
       )}
 
@@ -105,7 +107,7 @@ export default function FeedCard({ meal, onOpenDetail }) {
         </div>
 
         {likesCount > 0 && (
-          <p className="feed-likes">{likesCount} like{likesCount !== 1 ? 's' : ''}</p>
+          <p className="feed-likes">{likesCount !== 1 ? t('feedCard.likes', likesCount) : t('feedCard.like', likesCount)}</p>
         )}
 
         <p className="feed-meal-name">
@@ -118,17 +120,17 @@ export default function FeedCard({ meal, onOpenDetail }) {
         )}
 
         {/* Health tags */}
-        {tags.length > 0 && (
+        {tagKeys.length > 0 && (
           <div className="feed-tags">
-            {tags.map((tag) => (
-              <span key={tag} className="feed-tag">{tag}</span>
+            {tagKeys.map((key) => (
+              <span key={key} className="feed-tag">{t(key)}</span>
             ))}
           </div>
         )}
 
         {meal._count?.comments > 0 && (
           <button className="feed-view-comments" onClick={() => onOpenDetail(meal)}>
-            View all {meal._count.comments} comment{meal._count.comments !== 1 ? 's' : ''}
+            {t('feedCard.viewAll')} {meal._count.comments !== 1 ? t('feedCard.comments', meal._count.comments) : t('feedCard.comment', meal._count.comments)}
           </button>
         )}
       </div>

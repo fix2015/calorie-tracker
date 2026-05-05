@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../services/AuthContext';
+import { useTranslation } from '../i18n';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -9,6 +10,7 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -18,7 +20,7 @@ export default function LoginPage() {
       await login(email, password);
       navigate('/');
     } catch (err) {
-      setError(err.message || 'Login failed');
+      setError(err.message || t('login.failed'));
     } finally {
       setLoading(false);
     }
@@ -33,52 +35,52 @@ export default function LoginPage() {
             <path d="M2 17l10 5 10-5"/>
             <path d="M2 12l10 5 10-5"/>
           </svg>
-          <span className="auth-logo-text">CalTracker</span>
+          <span className="auth-logo-text">{t('common.appName')}</span>
         </div>
 
-        <h1 className="auth-title">Welcome back</h1>
-        <p className="auth-subtitle">Sign in to continue tracking your nutrition</p>
+        <h1 className="auth-title">{t('login.welcomeBack')}</h1>
+        <p className="auth-subtitle">{t('login.subtitle')}</p>
 
         <p className={`error-text${error ? ' visible' : ''}`} style={{ marginBottom: error ? 'var(--space-md)' : 0 }}><span>{error}</span></p>
 
         <form onSubmit={handleSubmit} className="auth-form">
           <div className="form-group">
-            <label htmlFor="email">Email</label>
+            <label htmlFor="email">{t('common.email')}</label>
             <input
               id="email"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              placeholder="you@example.com"
+              placeholder={t('login.emailPlaceholder')}
             />
           </div>
 
           <div className="form-group">
-            <label htmlFor="password">Password</label>
+            <label htmlFor="password">{t('common.password')}</label>
             <input
               id="password"
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              placeholder="Your password"
+              placeholder={t('login.passwordPlaceholder')}
             />
           </div>
 
           <button type="submit" className="btn btn-primary btn-block" disabled={loading}>
-            {loading ? 'Signing in...' : 'Sign In'}
+            {loading ? t('login.signingIn') : t('login.signIn')}
           </button>
         </form>
 
         <p className="auth-switch">
-          Don't have an account? <Link to="/register">Sign up</Link>
+          {t('login.noAccount')} <Link to="/register">{t('login.signUp')}</Link>
         </p>
 
         <p className="legal-links">
-          <Link to="/terms">Terms of Service</Link>
+          <Link to="/terms">{t('terms.title')}</Link>
           <span className="legal-links-sep">&middot;</span>
-          <Link to="/privacy">Privacy Policy</Link>
+          <Link to="/privacy">{t('privacy.title')}</Link>
         </p>
       </div>
     </div>

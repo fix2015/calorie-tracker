@@ -4,6 +4,7 @@ const prisma = require('../utils/prisma');
 const { authenticate } = require('../middleware/auth');
 const { getSuggestion } = require('../services/vision');
 const { getDailyStats } = require('../utils/dailyStats');
+const { getLanguageName } = require('../utils/languageName');
 
 const router = Router();
 
@@ -142,7 +143,7 @@ router.get('/analyze', authenticate, analysisLimiter, async (req, res, next) => 
       messages: [
         {
           role: 'system',
-          content: 'You are a friendly, knowledgeable nutrition coach. Give personalized, actionable advice. Use short paragraphs. Be encouraging but honest.',
+          content: `You are a friendly, knowledgeable nutrition coach. Give personalized, actionable advice. Use short paragraphs. Be encouraging but honest. Respond entirely in ${getLanguageName(req.headers['x-language'] || 'en')}.`,
         },
         {
           role: 'user',
@@ -213,6 +214,7 @@ router.get('/suggestion', authenticate, aiLimiter, async (req, res, next) => {
       protein: Math.round(totals.proteinG),
       carbs: Math.round(totals.carbsG),
       fat: Math.round(totals.fatG),
+      language: req.headers['x-language'] || 'en',
     });
 
     await prisma.suggestionCache.create({

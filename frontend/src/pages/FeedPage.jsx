@@ -4,6 +4,7 @@ import { publicApi } from '../services/api';
 import { useAuth } from '../services/AuthContext';
 import { useInfiniteScroll } from '../services/useInfiniteScroll';
 import { photoSrc } from '../services/photoUrl';
+import { useTranslation } from '../i18n';
 import FeedCard from '../components/FeedCard';
 import PublicMealDetailModal from '../components/PublicMealDetailModal';
 import StoryRing from '../components/StoryRing';
@@ -11,6 +12,7 @@ import StoryRing from '../components/StoryRing';
 // hasSaved/savedMeals state removed - saved is now in TopBar
 
 export default function FeedPage() {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const [tab, setTab] = useState('following');
   const [meals, setMeals] = useState([]);
@@ -105,10 +107,10 @@ export default function FeedPage() {
       {/* Tabs row */}
       <div className="feed-tabs-row">
         <button className={`feed-tab${tab === 'foryou' ? ' active' : ''}`} onClick={() => setTab('foryou')}>
-          For you
+          {t('feed.forYou')}
         </button>
         <button className={`feed-tab${tab === 'following' ? ' active' : ''}`} onClick={() => setTab('following')}>
-          Following
+          {t('feed.following')}
         </button>
       </div>
 
@@ -118,7 +120,7 @@ export default function FeedPage() {
       {/* Suggestions */}
       {suggestions.length > 0 && meals.length === 0 && (
         <div className="feed-suggestions-section">
-          <h3 className="feed-section-title">Suggested for you</h3>
+          <h3 className="feed-section-title">{t('feed.suggestedForYou')}</h3>
           <div className="feed-suggestions">
             {suggestions.map((u) => (
               <div key={u.id} className="suggestion-card-mini">
@@ -138,7 +140,7 @@ export default function FeedPage() {
                   onClick={() => handleFollow(u.username)}
                   disabled={followingSet.has(u.username)}
                 >
-                  {followingSet.has(u.username) ? 'Following' : 'Follow'}
+                  {followingSet.has(u.username) ? t('common.following') : t('common.follow')}
                 </button>
               </div>
             ))}
@@ -150,9 +152,9 @@ export default function FeedPage() {
       {meals.length === 0 ? (
         <div style={{ textAlign: 'center', padding: 'var(--space-2xl) 0', color: 'var(--color-text-secondary)' }}>
           <p style={{ fontSize: 'var(--font-size-lg)', marginBottom: 'var(--space-md)' }}>
-            {tab === 'following' ? 'Follow people to see their meals' : 'No meals yet'}
+            {tab === 'following' ? t('feed.followPeopleToSee') : t('feed.noMealsYet')}
           </p>
-          <Link to="/explore" className="action-btn action-btn-follow">Discover people</Link>
+          <Link to="/explore" className="action-btn action-btn-follow">{t('feed.discoverPeople')}</Link>
         </div>
       ) : (
         <div className="feed-list">

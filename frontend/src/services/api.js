@@ -26,6 +26,8 @@ async function request(path, options = {}) {
   if (!(options.body instanceof FormData)) {
     headers['Content-Type'] = 'application/json';
   }
+  const lang = localStorage.getItem('appLanguage');
+  if (lang) headers['X-Language'] = lang;
 
   let res = await fetch(`${API}${path}`, { ...options, headers });
 
@@ -102,7 +104,7 @@ export const storiesApi = {
     form.append('video', file);
     return fetch(`${API}/stories`, {
       method: 'POST',
-      headers: { Authorization: `Bearer ${localStorage.getItem('accessToken')}` },
+      headers: { Authorization: `Bearer ${localStorage.getItem('accessToken')}`, 'X-Language': localStorage.getItem('appLanguage') || 'en' },
       body: form,
     }).then(r => r.ok ? r.json() : r.json().then(e => Promise.reject(e)));
   },

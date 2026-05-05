@@ -4,6 +4,7 @@ import { useAuth } from '../services/AuthContext';
 import { notificationsApi, messagesApi } from '../services/api';
 import { playNotificationSound } from '../services/notificationSound';
 import { photoSrc } from '../services/photoUrl';
+import { useTranslation } from '../i18n';
 
 const icons = {
   home: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>,
@@ -19,6 +20,7 @@ const icons = {
 
 export default function Navbar() {
   const { user, logout } = useAuth();
+  const { t } = useTranslation();
   const location = useLocation();
   const [notifCount, setNotifCount] = useState(0);
   const [msgCount, setMsgCount] = useState(0);
@@ -54,29 +56,29 @@ export default function Navbar() {
   }, []);
 
   const links = [
-    { to: '/', label: 'Home', icon: icons.home },
-    { to: '/explore', label: 'Discover', icon: icons.explore },
-    { to: '/scan', label: 'Scan', icon: icons.scan, isScan: true },
-    { to: '/dashboard', label: 'Stats', icon: icons.dashboard },
-    { to: user?.username ? `/u/${user.username}` : '/profile', label: 'Me', icon: icons.profile, isAvatar: true },
+    { to: '/', label: t('nav.home'), icon: icons.home },
+    { to: '/explore', label: t('nav.discover'), icon: icons.explore },
+    { to: '/scan', label: t('nav.scan'), icon: icons.scan, isScan: true },
+    { to: '/dashboard', label: t('nav.stats'), icon: icons.dashboard },
+    { to: user?.username ? `/u/${user.username}` : '/profile', label: t('nav.me'), icon: icons.profile, isAvatar: true },
   ];
 
   const sidebarLinks = [
-    { to: '/', label: 'Home', icon: icons.home },
-    { to: '/explore', label: 'Discover', icon: icons.explore },
-    { to: '/scan', label: 'Scan', icon: icons.scan },
-    { to: '/dashboard', label: 'Stats', icon: icons.dashboard },
-    { to: '/saved', label: 'Saved', icon: icons.saved },
-    { to: '/notifications', label: 'Alerts', icon: icons.notifications, badge: notifCount },
-    { to: '/messages', label: 'Messages', icon: icons.messages, badge: msgCount },
-    { to: '/profile', label: 'Profile', icon: icons.profile },
+    { to: '/', label: t('nav.home'), icon: icons.home },
+    { to: '/explore', label: t('nav.discover'), icon: icons.explore },
+    { to: '/scan', label: t('nav.scan'), icon: icons.scan },
+    { to: '/dashboard', label: t('nav.stats'), icon: icons.dashboard },
+    { to: '/saved', label: t('nav.saved'), icon: icons.saved },
+    { to: '/notifications', label: t('nav.alerts'), icon: icons.notifications, badge: notifCount },
+    { to: '/messages', label: t('nav.messages'), icon: icons.messages, badge: msgCount },
+    { to: '/profile', label: t('nav.profile'), icon: icons.profile },
   ];
 
   return (
     <>
       {/* Desktop sidebar */}
       <aside className="sidebar">
-        <div className="logo"><img src="/logo.png" alt="CalTracker" style={{ width: 28, height: 28, borderRadius: 6 }} /> CalTracker</div>
+        <div className="logo"><img src="/logo.png" alt={t('common.appName')} style={{ width: 28, height: 28, borderRadius: 6 }} /> {t('common.appName')}</div>
         <nav>
           {sidebarLinks.map((link) => (
             <NavLink key={link.to} to={link.to} end={link.to === '/'}>
@@ -89,12 +91,12 @@ export default function Navbar() {
           ))}
           {user?.username && user?.isPublic && (
             <NavLink to={`/u/${user.username}`} className="public-profile-link">
-              <span className="nav-icon">{icons.publicProfile}</span> My Public Profile
+              <span className="nav-icon">{icons.publicProfile}</span> {t('nav.myPublicProfile')}
             </NavLink>
           )}
         </nav>
         <button className="btn btn-secondary logout-btn" onClick={logout}>
-          Logout
+          {t('common.logout')}
         </button>
       </aside>
 

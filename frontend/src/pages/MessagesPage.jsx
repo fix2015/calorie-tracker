@@ -3,6 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { messagesApi } from '../services/api';
 import { useAuth } from '../services/AuthContext';
 import { photoSrc } from '../services/photoUrl';
+import { useTranslation } from '../i18n';
 
 function timeAgo(dateStr) {
   const diff = Date.now() - new Date(dateStr).getTime();
@@ -15,6 +16,7 @@ function timeAgo(dateStr) {
 }
 
 function Inbox() {
+  const { t } = useTranslation();
   const [conversations, setConversations] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -31,7 +33,7 @@ function Inbox() {
     <>
       {conversations.length === 0 ? (
         <p style={{ textAlign: 'center', color: 'var(--color-text-secondary)', padding: 'var(--space-xl) 0' }}>
-          No conversations yet
+          {t('messages.noConversations')}
         </p>
       ) : (
         <div className="inbox-list">
@@ -47,7 +49,7 @@ function Inbox() {
               <div className="inbox-info">
                 <span className="inbox-name">{c.otherUser?.name}</span>
                 <span className="inbox-preview">
-                  {c.lastMessage?.text?.slice(0, 60) || 'No messages yet'}
+                  {c.lastMessage?.text?.slice(0, 60) || t('messages.noMessagesYet')}
                   {c.lastMessage?.text?.length > 60 ? '...' : ''}
                 </span>
               </div>
@@ -64,6 +66,7 @@ function Inbox() {
 }
 
 function ChatView({ conversationId }) {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const navigate = useNavigate();
   const [messages, setMessages] = useState([]);
@@ -147,11 +150,11 @@ function ChatView({ conversationId }) {
           type="text"
           value={text}
           onChange={(e) => setText(e.target.value)}
-          placeholder="Type a message..."
+          placeholder={t('messages.typePlaceholder')}
           maxLength={2000}
         />
         <button type="submit" className="btn btn-primary" disabled={sending || !text.trim()}>
-          Send
+          {t('messages.send')}
         </button>
       </form>
     </>

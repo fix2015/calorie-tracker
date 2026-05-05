@@ -2,9 +2,11 @@ import { useState, useEffect, useCallback } from 'react';
 import { publicApi } from '../services/api';
 import { photoSrc } from '../services/photoUrl';
 import { useInfiniteScroll } from '../services/useInfiniteScroll';
+import { useTranslation } from '../i18n';
 import PublicMealDetailModal from '../components/PublicMealDetailModal';
 
 export default function SavedPage() {
+  const { t } = useTranslation();
   const [meals, setMeals] = useState([]);
   const [nextCursor, setNextCursor] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -38,8 +40,8 @@ export default function SavedPage() {
       {meals.length === 0 ? (
         <div style={{ textAlign: 'center', padding: 'var(--space-2xl) 0', color: 'var(--color-text-secondary)' }}>
           <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" style={{ opacity: 0.3, marginBottom: 'var(--space-md)' }}><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
-          <p style={{ fontSize: 'var(--font-size-lg)', fontWeight: 600 }}>No saved meals yet</p>
-          <p style={{ fontSize: 'var(--font-size-sm)' }}>Tap the bookmark icon on any meal to save it here</p>
+          <p style={{ fontSize: 'var(--font-size-lg)', fontWeight: 600 }}>{t('saved.noSavedMeals')}</p>
+          <p style={{ fontSize: 'var(--font-size-sm)' }}>{t('saved.tapBookmark')}</p>
         </div>
       ) : (
         <>
@@ -51,13 +53,13 @@ export default function SavedPage() {
                     <img src={photoSrc(meal.photoUrl)} alt={meal.name} loading="lazy" />
                     <div className="discover-card-overlay">
                       <span className="discover-card-name">{meal.name}</span>
-                      <span className="discover-card-kcal">{meal.calories} kcal</span>
+                      <span className="discover-card-kcal">{meal.calories} {t('common.kcal')}</span>
                     </div>
                   </div>
                 ) : (
                   <div className="discover-card-placeholder">
                     <span className="discover-card-name">{meal.name}</span>
-                    <span className="discover-card-kcal">{meal.calories} kcal</span>
+                    <span className="discover-card-kcal">{meal.calories} {t('common.kcal')}</span>
                   </div>
                 )}
               </div>

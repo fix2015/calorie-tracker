@@ -3,8 +3,10 @@ import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recha
 import { reports } from '../services/api';
 import MealDetailModal from '../components/MealDetailModal';
 import { photoSrc } from '../services/photoUrl';
+import { useTranslation } from '../i18n';
 
 export default function ReportsPage() {
+  const { t } = useTranslation();
   const [date, setDate] = useState(() => new Date().toISOString().split('T')[0]);
   const [daily, setDaily] = useState(null);
   const [weekly, setWeekly] = useState([]);
@@ -55,7 +57,7 @@ export default function ReportsPage() {
       {/* Daily summary */}
       <div className="card" style={{ marginBottom: 'var(--space-md)' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-md)' }}>
-          <h2>Daily Summary</h2>
+          <h2>{t('reports.dailySummary')}</h2>
           <input
             type="date"
             value={date}
@@ -72,32 +74,32 @@ export default function ReportsPage() {
         <div className="macro-bar" style={{ marginBottom: 'var(--space-lg)' }}>
           <div className="macro-item">
             <span className="macro-value">{totals.calories}</span>
-            <span className="macro-label">Calories</span>
+            <span className="macro-label">{t('common.calories')}</span>
           </div>
           <div className="macro-item">
             <span className="macro-value">{Math.round(totals.proteinG)}g</span>
-            <span className="macro-label">Protein</span>
+            <span className="macro-label">{t('common.protein')}</span>
           </div>
           <div className="macro-item">
             <span className="macro-value">{Math.round(totals.carbsG)}g</span>
-            <span className="macro-label">Carbs</span>
+            <span className="macro-label">{t('common.carbs')}</span>
           </div>
           <div className="macro-item">
             <span className="macro-value">{Math.round(totals.fatG)}g</span>
-            <span className="macro-label">Fat</span>
+            <span className="macro-label">{t('common.fat')}</span>
           </div>
         </div>
 
         {daily?.target && (
           <p style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-text-secondary)', marginBottom: 'var(--space-md)' }}>
-            Target: {daily.target} kcal — {totals.calories > daily.target ? `Over by ${totals.calories - daily.target}` : `${daily.target - totals.calories} remaining`}
+            {t('reports.targetLabel')} {daily.target} {t('common.kcal')} — {totals.calories > daily.target ? t('reports.overBy', totals.calories - daily.target) : t('reports.remaining', daily.target - totals.calories)}
           </p>
         )}
 
         {/* Meals for selected day */}
         {dayMeals.length > 0 && (
           <div>
-            <h3 style={{ fontSize: 'var(--font-size-base)', marginBottom: 'var(--space-sm)' }}>Meals</h3>
+            <h3 style={{ fontSize: 'var(--font-size-base)', marginBottom: 'var(--space-sm)' }}>{t('reports.mealsLabel')}</h3>
             {dayMeals.map((m) => (
               <div className="meal-item" key={m.id} onClick={() => setSelectedMeal(m)} style={{ cursor: 'pointer' }}>
                 {m.photoUrl && (
@@ -128,13 +130,13 @@ export default function ReportsPage() {
         )}
 
         {dayMeals.length === 0 && (
-          <p style={{ color: 'var(--color-text-secondary)' }}>No meals logged for this date.</p>
+          <p style={{ color: 'var(--color-text-secondary)' }}>{t('reports.noMealsForDate')}</p>
         )}
       </div>
 
       {/* Weekly bar chart */}
       <div className="card" style={{ marginBottom: 'var(--space-md)' }}>
-        <h2 style={{ marginBottom: 'var(--space-md)' }}>Weekly Overview</h2>
+        <h2 style={{ marginBottom: 'var(--space-md)' }}>{t('reports.weeklyOverview')}</h2>
         {weekly.length > 0 ? (
           <ResponsiveContainer width="100%" height={260}>
             <BarChart data={weekly}>
@@ -148,20 +150,20 @@ export default function ReportsPage() {
               <YAxis />
               <Tooltip
                 labelFormatter={(d) => new Date(d + 'T00:00:00').toLocaleDateString()}
-                formatter={(value) => [`${value} kcal`, 'Calories']}
+                formatter={(value) => [`${value} ${t('common.kcal')}`, t('common.calories')]}
               />
               <Bar dataKey="calories" fill="var(--color-primary)" radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         ) : (
-          <p style={{ color: 'var(--color-text-secondary)' }}>No weekly data yet.</p>
+          <p style={{ color: 'var(--color-text-secondary)' }}>{t('reports.noWeeklyData')}</p>
         )}
       </div>
 
       {/* AI suggestion */}
       {suggestion && (
         <div className="suggestion-card">
-          <h3 style={{ marginBottom: 'var(--space-sm)' }}>💡 AI Suggestion</h3>
+          <h3 style={{ marginBottom: 'var(--space-sm)' }}>💡 {t('reports.aiSuggestion')}</h3>
           <p className="suggestion-text">{suggestion}</p>
         </div>
       )}

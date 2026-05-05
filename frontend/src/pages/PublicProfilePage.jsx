@@ -5,17 +5,18 @@ import { useAuth } from '../services/AuthContext';
 import { useInfiniteScroll } from '../services/useInfiniteScroll';
 import { shareText } from '../services/share';
 import { photoSrc } from '../services/photoUrl';
+import { useTranslation } from '../i18n';
 import PublicMealDetailModal from '../components/PublicMealDetailModal';
 import FollowListModal from '../components/FollowListModal';
 
-function formatDayLabel(dateStr) {
+function formatDayLabel(dateStr, t) {
   const d = new Date(dateStr);
   const today = new Date();
   const yesterday = new Date();
   yesterday.setDate(today.getDate() - 1);
 
-  if (d.toDateString() === today.toDateString()) return 'Today';
-  if (d.toDateString() === yesterday.toDateString()) return 'Yesterday';
+  if (d.toDateString() === today.toDateString()) return t('common.today');
+  if (d.toDateString() === yesterday.toDateString()) return t('common.yesterday');
   return d.toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' });
 }
 
@@ -36,6 +37,7 @@ function groupMealsByDay(meals) {
 }
 
 export default function PublicProfilePage() {
+  const { t } = useTranslation();
   const { username } = useParams();
   const [searchParams, setSearchParams] = useSearchParams();
   const { user: currentUser } = useAuth();
@@ -101,7 +103,7 @@ export default function PublicProfilePage() {
     ].filter(Boolean).join('\n');
     const result = await shareText(text, `${profile.name}'s Profile`);
     if (result === 'copied') {
-      setShareMsg('Link copied!');
+      setShareMsg(t('common.linkCopied'));
       setTimeout(() => setShareMsg(''), 2000);
     }
   }, [profile]);
@@ -117,9 +119,9 @@ export default function PublicProfilePage() {
   if (notFound) {
     return (
       <div className="page" style={{ textAlign: 'center', paddingTop: 'var(--space-xl)' }}>
-        <h2>Profile not found</h2>
-        <p style={{ color: 'var(--color-text-secondary)' }}>This user doesn't exist or their profile is private.</p>
-        <Link to="/" className="btn btn-primary" style={{ marginTop: 'var(--space-md)', display: 'inline-block' }}>Go Home</Link>
+        <h2>{t('publicProfile.notFound')}</h2>
+        <p style={{ color: 'var(--color-text-secondary)' }}>{t('publicProfile.privateOrNotExist')}</p>
+        <Link to="/" className="btn btn-primary" style={{ marginTop: 'var(--space-md)', display: 'inline-block' }}>{t('publicProfile.goHome')}</Link>
       </div>
     );
   }
@@ -130,7 +132,7 @@ export default function PublicProfilePage() {
     <div className="page public-profile-page" style={{ maxWidth: 700, margin: '0 auto' }}>
       {currentUser && (
         <div style={{ marginBottom: 'var(--space-md)' }}>
-          <Link to="/" style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-primary)' }}>&larr; Back to app</Link>
+          <Link to="/" style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-primary)' }}>&larr; {t('publicProfile.backToApp')}</Link>
         </div>
       )}
 
@@ -144,12 +146,12 @@ export default function PublicProfilePage() {
         <p style={{ margin: 0, fontSize: 'var(--font-size-sm)', color: 'var(--color-text-secondary)' }}>@{profile.username}</p>
 
         <div className="profile-stats">
-          <span><strong>{profile._count?.meals || 0}</strong> meals</span>
+          <span><strong>{profile._count?.meals || 0}</strong> {t('publicProfile.mealsCount')}</span>
           <button className="profile-stat-btn" onClick={() => setFollowListType('followers')}>
-            <strong>{followersCount}</strong> followers
+            <strong>{followersCount}</strong> {t('publicProfile.followersCount')}
           </button>
           <button className="profile-stat-btn" onClick={() => setFollowListType('following')}>
-            <strong>{profile._count?.following || 0}</strong> following
+            <strong>{profile._count?.following || 0}</strong> {t('publicProfile.followingCount')}
           </button>
         </div>
 
@@ -168,7 +170,7 @@ export default function PublicProfilePage() {
                   } catch {}
                 }}
               >
-                {isFollowing ? 'Following' : 'Follow'}
+                {isFollowing ? t('common.following') : t('common.follow')}
               </button>
               <button
                 className="action-btn action-btn-message"
@@ -179,35 +181,35 @@ export default function PublicProfilePage() {
                   } catch {}
                 }}
               >
-                Message
+                {t('publicProfile.message')}
               </button>
             </>
           )}
           {!currentUser && (
             <>
-              <Link to="/login" className="action-btn action-btn-follow">Follow</Link>
-              <Link to="/login" className="action-btn action-btn-message">Message</Link>
+              <Link to="/login" className="action-btn action-btn-follow">{t('common.follow')}</Link>
+              <Link to="/login" className="action-btn action-btn-message">{t('publicProfile.message')}</Link>
             </>
           )}
           {profile.linkUrl && (
             <a href={profile.linkUrl} target="_blank" rel="noopener noreferrer" className="action-btn action-btn-link">
-              Visit Link
+              {t('publicProfile.visitLink')}
             </a>
           )}
           <button className="action-btn action-btn-share" onClick={handleShare}>
-            Share
+            {t('common.share')}
           </button>
           {currentUser && currentUser.id !== profile.id && (
             <button
               className="action-btn action-btn-block"
               onClick={async () => {
-                if (!window.confirm('Block this user? They won\'t be able to see your profile.')) return;
+                if (!window.confirm(t('publicProfile.blockConfirm'))) return;
                 try {
                   await publicApi.blockUser(profile.username);
                 } catch {}
               }}
             >
-              Block
+              {t('publicProfile.block')}
             </button>
           )}
         </div>
@@ -217,12 +219,12 @@ export default function PublicProfilePage() {
       {!canSeeMeals ? (
         <div style={{ textAlign: 'center', padding: 'var(--space-2xl) 0', color: 'var(--color-text-secondary)' }}>
           <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" style={{ opacity: 0.4, marginBottom: 'var(--space-md)' }}><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-          <p style={{ fontWeight: 600 }}>This account is private</p>
-          <p style={{ fontSize: 'var(--font-size-sm)' }}>Follow to see their meals</p>
+          <p style={{ fontWeight: 600 }}>{t('publicProfile.privateAccount')}</p>
+          <p style={{ fontSize: 'var(--font-size-sm)' }}>{t('publicProfile.followToSee')}</p>
         </div>
       ) : meals.length === 0 && !loadingMore ? (
         <p style={{ textAlign: 'center', color: 'var(--color-text-secondary)', padding: 'var(--space-xl) 0' }}>
-          No meals yet
+          {t('publicProfile.noMealsYet')}
         </p>
       ) : (
         <>
@@ -238,14 +240,14 @@ export default function PublicProfilePage() {
             return (
             <div key={group.key} className="day-group">
               <div className="day-group-header">
-                <span>{formatDayLabel(group.date)}</span>
-                <span style={{ fontWeight: 600, color: 'var(--color-primary)' }}>{dayKcal} kcal</span>
+                <span>{formatDayLabel(group.date, t)}</span>
+                <span style={{ fontWeight: 600, color: 'var(--color-primary)' }}>{dayKcal} {t('common.kcal')}</span>
               </div>
               <div style={{ display: 'flex', gap: 'var(--space-md)', fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)', marginBottom: 'var(--space-sm)', padding: '0 var(--space-xs)' }}>
                 <span>P: {Math.round(dayProtein)}g</span>
                 <span>C: {Math.round(dayCarbs)}g</span>
                 <span>F: {Math.round(dayFat)}g</span>
-                <span>{group.meals.length} meal{group.meals.length !== 1 ? 's' : ''}</span>
+                <span>{group.meals.length} {group.meals.length !== 1 ? t('publicProfile.meals') : t('publicProfile.meal')}</span>
               </div>
               {ratio !== null && (
                 <div style={{ height: 4, borderRadius: 2, background: 'var(--color-border)', marginBottom: 'var(--space-sm)', overflow: 'hidden' }}>
@@ -260,13 +262,13 @@ export default function PublicProfilePage() {
                         <img src={photoSrc(meal.photoUrl)} alt={meal.name} loading="lazy" />
                         <div className="meal-tile-overlay">
                           <span>{meal.name}</span>
-                          <span style={{ float: 'right' }}>{meal.calories} kcal</span>
+                          <span style={{ float: 'right' }}>{meal.calories} {t('common.kcal')}</span>
                         </div>
                       </>
                     ) : (
                       <div className="meal-tile-placeholder">
                         <span className="meal-tile-name">{meal.name}</span>
-                        <span className="meal-tile-cals">{meal.calories} kcal</span>
+                        <span className="meal-tile-cals">{meal.calories} {t('common.kcal')}</span>
                       </div>
                     )}
                     {(meal._count?.likes > 0 || meal._count?.comments > 0) && (

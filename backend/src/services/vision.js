@@ -1,5 +1,6 @@
 const OpenAI = require('openai');
 const fs = require('fs');
+const { getLanguageName } = require('../utils/languageName');
 
 function getProvider() {
   const provider = process.env.AI_PROVIDER || 'openai';
@@ -10,7 +11,7 @@ function getProvider() {
   throw new Error(`Unsupported AI_PROVIDER: ${provider}`);
 }
 
-async function analyzePhoto(imagePath, weightKg, context) {
+async function analyzePhoto(imagePath, weightKg, context, language = 'en') {
   const client = getProvider();
   const imageData = fs.readFileSync(imagePath);
   const base64 = imageData.toString('base64');
@@ -27,7 +28,7 @@ async function analyzePhoto(imagePath, weightKg, context) {
     messages: [
       {
         role: 'system',
-        content: `You are a nutrition estimator. Given a meal photo and the user's weight (${weightKg} kg), estimate: dish name, total calories, protein/carbs/fat in grams, and confidence (0-1). Account for portion size relative to typical plates.${contextHint} Return ONLY valid JSON: {"name","calories","protein_g","carbs_g","fat_g","confidence"}. No markdown, no code fences, no prose.`,
+        content: `You are a nutrition estimator. Given a meal photo and the user's weight (${weightKg} kg), estimate: dish name, total calories, protein/carbs/fat in grams, and confidence (0-1). Account for portion size relative to typical plates.${contextHint} Respond with the dish name in ${getLanguageName(language)}. Return ONLY valid JSON: {"name","calories","protein_g","carbs_g","fat_g","confidence"}. No markdown, no code fences, no prose.`,
       },
       {
         role: 'user',
@@ -65,7 +66,7 @@ async function analyzePhoto(imagePath, weightKg, context) {
   };
 }
 
-async function getSuggestion({ goal, target, eaten, protein, carbs, fat }) {
+async function getSuggestion({ goal, target, eaten, protein, carbs, fat, language = 'en' }) {
   const client = getProvider();
 
   const response = await client.chat.completions.create({
@@ -74,7 +75,7 @@ async function getSuggestion({ goal, target, eaten, protein, carbs, fat }) {
     messages: [
       {
         role: 'user',
-        content: `User: ${goal}, target ${target} kcal, ate ${eaten} kcal, P/C/F: ${protein}/${carbs}/${fat}g. Give 1-sentence advice (max 25 words).`,
+        content: `User: ${goal}, target ${target} kcal, ate ${eaten} kcal, P/C/F: ${protein}/${carbs}/${fat}g. Give 1-sentence advice (max 25 words). Respond in ${getLanguageName(language)}.`,
       },
     ],
   });

@@ -3,8 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import { meals } from '../services/api';
 import { resizeImage } from '../services/imageResize';
 import { photoSrc } from '../services/photoUrl';
+import { useTranslation } from '../i18n';
 
 export default function ScanPage() {
+  const { t } = useTranslation();
   const fileRef = useRef(null);
   const navigate = useNavigate();
   const openedRef = useRef(false);
@@ -142,11 +144,11 @@ export default function ScanPage() {
                   style={{ background: 'none', border: 'none', color: 'var(--color-text-secondary)', cursor: 'pointer', fontSize: 'var(--font-size-sm)', marginTop: 'var(--space-xs)' }}
                   onClick={() => fileRef.current?.click()}
                 >
-                  Choose different photo
+                  {t('scan.chooseDifferentPhoto')}
                 </button>
                 <div className="form-group" style={{ width: '100%', marginTop: 'var(--space-md)' }}>
                   <label htmlFor="meal-context" style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-xs)' }}>
-                    Additional info
+                    {t('scan.additionalInfo')}
                     <span
                       className="context-help-icon"
                       onClick={() => setShowContextTip(!showContextTip)}
@@ -158,7 +160,7 @@ export default function ScanPage() {
                   </label>
                   {showContextTip && (
                     <p className="context-help-tip">
-                      Help the AI be more accurate! Mention things like: portion size, cooking method, sauce/dressing, number of servings, or specific ingredients the photo can't show.
+                      {t('scan.contextHelpTip')}
                     </p>
                   )}
                   <input
@@ -166,7 +168,7 @@ export default function ScanPage() {
                     type="text"
                     value={context}
                     onChange={(e) => setContext(e.target.value)}
-                    placeholder="e.g. 2 eggs, cooked in olive oil, with side salad"
+                    placeholder={t('scan.contextPlaceholder')}
                   />
                 </div>
                 <button
@@ -175,23 +177,23 @@ export default function ScanPage() {
                   disabled={loading}
                 >
                   {loading ? (
-                    <>Analyzing...</>
+                    <>{t('scan.analyzing')}</>
                   ) : (
-                    <><span className="ai-analyze-icon">&#10024;</span> AI Nutrition Analysis</>
+                    <><span className="ai-analyze-icon">&#10024;</span> {t('dashboard.aiNutritionAnalysis')}</>
                   )}
                 </button>
               </>
             ) : (
               <>
                 <p style={{ color: 'var(--color-text-secondary)', textAlign: 'center' }}>
-                  Select a photo of your meal to scan
+                  {t('scan.selectPhoto')}
                 </p>
                 <button
                   className="btn btn-primary"
                   onClick={() => fileRef.current?.click()}
                   style={{ marginTop: 'var(--space-md)' }}
                 >
-                  Choose Photo
+                  {t('scan.choosePhoto')}
                 </button>
               </>
             )}
@@ -220,40 +222,40 @@ export default function ScanPage() {
                   fontSize: 'var(--font-size-sm)',
                   marginBottom: 'var(--space-md)',
                 }}>
-                  Confidence: {Math.round(result.confidence * 100)}%
+                  {t('scan.confidence', Math.round(result.confidence * 100))}
                 </p>
               )}
               <div className="macro-bar" style={{ marginBottom: 'var(--space-lg)' }}>
                 <div className="macro-item">
                   <span className="macro-value">{result.calories}</span>
-                  <span className="macro-label">kcal</span>
+                  <span className="macro-label">{t('common.kcal')}</span>
                 </div>
                 <div className="macro-item">
                   <span className="macro-value">{result.proteinG}g</span>
-                  <span className="macro-label">Protein</span>
+                  <span className="macro-label">{t('common.protein')}</span>
                 </div>
                 <div className="macro-item">
                   <span className="macro-value">{result.carbsG}g</span>
-                  <span className="macro-label">Carbs</span>
+                  <span className="macro-label">{t('common.carbs')}</span>
                 </div>
                 <div className="macro-item">
                   <span className="macro-value">{result.fatG}g</span>
-                  <span className="macro-label">Fat</span>
+                  <span className="macro-label">{t('common.fat')}</span>
                 </div>
               </div>
               <div className="form-group" style={{ marginBottom: 'var(--space-md)' }}>
-                <label>Recipe / Notes (visible on public profile)</label>
+                <label>{t('scan.recipeNotes')}</label>
                 <textarea
                   value={result.description || ''}
                   onChange={(e) => setResult({ ...result, description: e.target.value })}
-                  placeholder="Add a recipe, ingredients, or notes about this meal..."
+                  placeholder={t('scan.recipeNotesPlaceholder')}
                   rows={3}
                   style={{ resize: 'vertical' }}
                 />
               </div>
               <div style={{ display: 'flex', gap: 'var(--space-sm)' }}>
                 <button className="btn btn-secondary" style={{ flex: 1 }} onClick={() => setEditing(true)}>
-                  Edit
+                  {t('common.edit')}
                 </button>
                 <button className="btn btn-primary" style={{ flex: 1 }} onClick={async () => {
                   if (result.description && result.id) {
@@ -261,47 +263,47 @@ export default function ScanPage() {
                   }
                   navigate('/dashboard');
                 }}>
-                  Done ✓
+                  {t('common.done')} ✓
                 </button>
               </div>
             </>
           ) : (
             <>
-              <h2 style={{ marginBottom: 'var(--space-md)' }}>Review & Edit</h2>
+              <h2 style={{ marginBottom: 'var(--space-md)' }}>{t('scan.reviewAndEdit')}</h2>
               {result.lowConfidence && (
                 <p style={{ color: 'var(--color-warning)', fontSize: 'var(--font-size-sm)', marginBottom: 'var(--space-md)' }}>
-                  Low confidence — please review before saving.
+                  {t('scan.lowConfidence')}
                 </p>
               )}
               <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-md)' }}>
                 <div className="form-group">
-                  <label>Name</label>
+                  <label>{t('common.name')}</label>
                   <input type="text" value={result.name} onChange={updateField('name')} />
                 </div>
                 <div className="grid-2">
                   <div className="form-group">
-                    <label>Calories</label>
+                    <label>{t('common.calories')}</label>
                     <input type="number" value={result.calories} onChange={updateField('calories')} />
                   </div>
                   <div className="form-group">
-                    <label>Protein (g)</label>
+                    <label>{t('common.proteinG')}</label>
                     <input type="number" value={result.proteinG} onChange={updateField('proteinG')} />
                   </div>
                   <div className="form-group">
-                    <label>Carbs (g)</label>
+                    <label>{t('common.carbsG')}</label>
                     <input type="number" value={result.carbsG} onChange={updateField('carbsG')} />
                   </div>
                   <div className="form-group">
-                    <label>Fat (g)</label>
+                    <label>{t('common.fatG')}</label>
                     <input type="number" value={result.fatG} onChange={updateField('fatG')} />
                   </div>
                 </div>
                 <div style={{ display: 'flex', gap: 'var(--space-sm)' }}>
                   <button className="btn btn-secondary" style={{ flex: 1 }} onClick={() => setEditing(false)}>
-                    Cancel
+                    {t('common.cancel')}
                   </button>
                   <button className="btn btn-primary" style={{ flex: 1 }} onClick={handleSaveEdited} disabled={loading}>
-                    {loading ? 'Saving...' : 'Save Changes'}
+                    {loading ? t('scan.savingChanges') : t('scan.saveChanges')}
                   </button>
                 </div>
               </div>
@@ -315,13 +317,13 @@ export default function ScanPage() {
       {showWeightPrompt && (
         <div className="modal-overlay" onClick={() => setShowWeightPrompt(false)}>
           <div className="modal" onClick={(e) => e.stopPropagation()}>
-            <h2>Update Your Weight</h2>
+            <h2>{t('scan.updateYourWeight')}</h2>
             <p style={{ color: 'var(--color-text-secondary)', marginBottom: 'var(--space-md)' }}>
-              Your body weight helps estimate portion sizes more accurately.
+              {t('scan.weightHelpText')}
             </p>
             <form onSubmit={handleWeightSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-md)' }}>
               <div className="form-group">
-                <label htmlFor="weight-input">Your weight (kg)</label>
+                <label htmlFor="weight-input">{t('scan.yourWeightKg')}</label>
                 <input
                   id="weight-input"
                   type="number"
@@ -331,15 +333,15 @@ export default function ScanPage() {
                   required
                   min="20"
                   max="500"
-                  placeholder="e.g. 75"
+                  placeholder={t('scan.weightPlaceholder')}
                 />
               </div>
               <div style={{ display: 'flex', gap: 'var(--space-sm)' }}>
                 <button type="button" className="btn btn-secondary" style={{ flex: 1 }} onClick={() => setShowWeightPrompt(false)}>
-                  Cancel
+                  {t('common.cancel')}
                 </button>
                 <button type="submit" className="btn btn-primary" style={{ flex: 1 }}>
-                  Submit
+                  {t('common.submit')}
                 </button>
               </div>
             </form>

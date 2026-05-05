@@ -2,8 +2,10 @@ import { useState } from 'react';
 import { meals } from '../services/api';
 import { buildMealShareText, shareText } from '../services/share';
 import { photoSrc } from '../services/photoUrl';
+import { useTranslation } from '../i18n';
 
 export default function MealDetailModal({ meal, onClose, onUpdated }) {
+  const { t } = useTranslation();
   const [editing, setEditing] = useState(false);
   const [form, setForm] = useState({
     name: meal.name,
@@ -34,20 +36,20 @@ export default function MealDetailModal({ meal, onClose, onUpdated }) {
       });
       onUpdated();
     } catch (err) {
-      setError(err.message || 'Update failed');
+      setError(err.message || t('mealDetail.updateFailed'));
     } finally {
       setLoading(false);
     }
   };
 
   const handleDelete = async () => {
-    if (!confirm('Delete this meal?')) return;
+    if (!confirm(t('mealDetail.deleteMealConfirm'))) return;
     setLoading(true);
     try {
       await meals.remove(meal.id);
       onUpdated();
     } catch (err) {
-      setError(err.message || 'Delete failed');
+      setError(err.message || t('mealDetail.deleteFailed'));
     } finally {
       setLoading(false);
     }
@@ -88,12 +90,12 @@ export default function MealDetailModal({ meal, onClose, onUpdated }) {
                 <p style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-text-secondary)' }}>
                   {date} at {time}
                   {meal.source === 'photo_ai' && (
-                    <span style={{ color: 'var(--color-primary)', marginLeft: 8 }}>📷 AI scanned</span>
+                    <span style={{ color: 'var(--color-primary)', marginLeft: 8 }}>📷 {t('mealDetail.aiScanned')}</span>
                   )}
                 </p>
               </div>
               <span style={{ fontSize: 'var(--font-size-xl)', fontWeight: 700, color: 'var(--color-primary)' }}>
-                {meal.calories} kcal
+                {meal.calories} {t('common.kcal')}
               </span>
             </div>
 
@@ -103,22 +105,22 @@ export default function MealDetailModal({ meal, onClose, onUpdated }) {
                 color: meal.aiConfidence > 0.7 ? 'var(--color-success)' : 'var(--color-warning)',
                 marginBottom: 'var(--space-md)',
               }}>
-                AI confidence: {Math.round(meal.aiConfidence * 100)}%
+                {t('mealDetail.aiConfidence', Math.round(meal.aiConfidence * 100))}
               </p>
             )}
 
             <div className="macro-bar" style={{ marginBottom: 'var(--space-lg)' }}>
               <div className="macro-item">
                 <span className="macro-value">{Math.round(meal.proteinG)}g</span>
-                <span className="macro-label">Protein</span>
+                <span className="macro-label">{t('common.protein')}</span>
               </div>
               <div className="macro-item">
                 <span className="macro-value">{Math.round(meal.carbsG)}g</span>
-                <span className="macro-label">Carbs</span>
+                <span className="macro-label">{t('common.carbs')}</span>
               </div>
               <div className="macro-item">
                 <span className="macro-value">{Math.round(meal.fatG)}g</span>
-                <span className="macro-label">Fat</span>
+                <span className="macro-label">{t('common.fat')}</span>
               </div>
             </div>
 
@@ -130,7 +132,7 @@ export default function MealDetailModal({ meal, onClose, onUpdated }) {
 
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 'var(--space-sm)', padding: 'var(--space-sm) 0', borderTop: '1px solid var(--color-border)' }}>
               <span style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-text-secondary)' }}>
-                {mealPublic ? 'Visible on public profile' : 'Hidden from public profile'}
+                {mealPublic ? t('mealDetail.visibleOnPublic') : t('mealDetail.hiddenFromPublic')}
               </span>
               <label className="toggle-switch">
                 <input
@@ -159,67 +161,67 @@ export default function MealDetailModal({ meal, onClose, onUpdated }) {
             <div style={{ display: 'flex', gap: 'var(--space-sm)' }}>
               <button className="action-btn action-btn-follow" style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }} onClick={() => setEditing(true)}>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
-                Edit
+                {t('common.edit')}
               </button>
               <button className="action-btn action-btn-message" style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }} onClick={async () => {
                 const text = buildMealShareText(meal);
                 const imgUrl = meal.photoUrl ? photoSrc(meal.photoUrl) : null;
                 const result = await shareText(text, meal.name, imgUrl);
-                if (result === 'copied') alert('Copied to clipboard!');
+                if (result === 'copied') alert(t('common.copiedToClipboard'));
               }}>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
-                Share
+                {t('common.share')}
               </button>
               <button className="action-btn" style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, background: '#FEE2E2', color: '#DC2626' }} onClick={handleDelete} disabled={loading}>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-                Delete
+                {t('common.delete')}
               </button>
             </div>
           </>
         ) : (
           <>
             {/* Edit form */}
-            <h2 style={{ marginBottom: 'var(--space-md)' }}>Edit Meal</h2>
+            <h2 style={{ marginBottom: 'var(--space-md)' }}>{t('mealDetail.editMeal')}</h2>
             <p className={`error-text${error ? ' visible' : ''}`} style={{ marginBottom: error ? 'var(--space-sm)' : 0 }}><span>{error}</span></p>
             <form onSubmit={handleUpdate} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-md)' }}>
               <div className="form-group">
-                <label>Name</label>
+                <label>{t('common.name')}</label>
                 <input type="text" value={form.name} onChange={set('name')} required />
               </div>
               <div className="form-group">
-                <label>Calories</label>
+                <label>{t('common.calories')}</label>
                 <input type="number" value={form.calories} onChange={set('calories')} required min="0" />
               </div>
               <div className="grid-3">
                 <div className="form-group">
-                  <label>Protein (g)</label>
+                  <label>{t('common.proteinG')}</label>
                   <input type="number" value={form.proteinG} onChange={set('proteinG')} min="0" />
                 </div>
                 <div className="form-group">
-                  <label>Carbs (g)</label>
+                  <label>{t('common.carbsG')}</label>
                   <input type="number" value={form.carbsG} onChange={set('carbsG')} min="0" />
                 </div>
                 <div className="form-group">
-                  <label>Fat (g)</label>
+                  <label>{t('common.fatG')}</label>
                   <input type="number" value={form.fatG} onChange={set('fatG')} min="0" />
                 </div>
               </div>
               <div className="form-group">
-                <label>Recipe / Notes</label>
+                <label>{t('mealDetail.recipeNotes')}</label>
                 <textarea
                   value={form.description}
                   onChange={set('description')}
-                  placeholder="Add a recipe, ingredients, or notes..."
+                  placeholder={t('mealDetail.recipePlaceholder')}
                   rows={3}
                   style={{ resize: 'vertical' }}
                 />
               </div>
               <div style={{ display: 'flex', gap: 'var(--space-sm)' }}>
                 <button type="button" className="btn btn-secondary" style={{ flex: 1 }} onClick={() => setEditing(false)}>
-                  Cancel
+                  {t('common.cancel')}
                 </button>
                 <button type="submit" className="btn btn-primary" style={{ flex: 1 }} disabled={loading}>
-                  {loading ? 'Saving...' : '✓ Save'}
+                  {loading ? t('common.saving') : `✓ ${t('common.save')}`}
                 </button>
               </div>
             </form>
