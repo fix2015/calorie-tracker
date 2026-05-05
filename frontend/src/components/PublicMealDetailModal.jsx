@@ -162,6 +162,18 @@ export default function PublicMealDetailModal({ mealId, username, onClose, onDel
               />
             )}
 
+            {meal.owner && (
+              <a href={`/u/${meal.owner.username || username}`} style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-sm)', textDecoration: 'none', color: 'var(--color-text)', marginBottom: 'var(--space-sm)' }} onClick={(e) => e.stopPropagation()}>
+                {meal.owner.avatarUrl ? (
+                  <img src={photoSrc(meal.owner.avatarUrl)} alt="" style={{ width: 28, height: 28, borderRadius: '50%', objectFit: 'cover' }} />
+                ) : (
+                  <div style={{ width: 28, height: 28, borderRadius: '50%', background: 'var(--color-primary)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 'var(--font-size-xs)', fontWeight: 700 }}>
+                    {meal.owner.name?.charAt(0)?.toUpperCase() || '?'}
+                  </div>
+                )}
+                <span style={{ fontWeight: 600, fontSize: 'var(--font-size-sm)' }}>{meal.owner.username || meal.owner.name}</span>
+              </a>
+            )}
             <h2 style={{ margin: '0 0 var(--space-xs)', fontSize: 'var(--font-size-lg)' }}>{meal.name}</h2>
             <p style={{ margin: '0 0 var(--space-md)', fontSize: 'var(--font-size-sm)', color: 'var(--color-text-secondary)' }}>
               {formatDate(meal.consumedAt)} at {formatTime(meal.consumedAt)}
