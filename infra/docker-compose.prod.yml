@@ -48,7 +48,11 @@ services:
 
 volumes:
   pgdata:
+    name: infra_pgdata
+    external: true
   uploads:
+    name: infra_uploads
+    external: true
 
 networks:
   calorie_net:

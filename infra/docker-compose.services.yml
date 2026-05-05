@@ -128,5 +128,11 @@ networks:
 
 volumes:
   image-uploads:
+    name: infra_image-uploads
+    external: true
   video-uploads:
+    name: infra_video-uploads
+    external: true
   services-pgdata:
+    name: infra_services-pgdata
+    external: true
