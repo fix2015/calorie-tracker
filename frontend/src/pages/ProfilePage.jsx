@@ -176,28 +176,11 @@ export default function ProfilePage() {
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-md)' }}>
           <div className="form-group">
             <label>{t('profile.language')}</label>
-            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+            <select value={language} onChange={(e) => setLanguage(e.target.value)}>
               {Object.entries(LANGUAGES).map(([code, { nativeName, flag }]) => (
-                <button
-                  key={code}
-                  type="button"
-                  onClick={() => setLanguage(code)}
-                  style={{
-                    display: 'flex', alignItems: 'center', gap: '6px',
-                    padding: '8px 14px', borderRadius: '20px', border: 'none',
-                    background: language === code ? 'var(--color-primary)' : 'var(--color-surface)',
-                    color: language === code ? '#fff' : 'var(--color-text)',
-                    fontWeight: language === code ? 600 : 400,
-                    fontSize: '0.9rem', cursor: 'pointer',
-                    boxShadow: language === code ? '0 2px 8px rgba(0,0,0,0.15)' : 'none',
-                    transition: 'all 0.2s',
-                  }}
-                >
-                  <span style={{ fontSize: '1.2rem' }}>{flag}</span>
-                  {nativeName}
-                </button>
+                <option key={code} value={code}>{flag} {nativeName}</option>
               ))}
-            </div>
+            </select>
           </div>
 
           <div className="form-group">
