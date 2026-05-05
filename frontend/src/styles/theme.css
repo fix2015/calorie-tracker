@@ -2237,6 +2237,70 @@ a:hover { text-decoration: underline; }
 }
 
 /* Action buttons — consistent across the app */
+.profile-actions-row {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-top: var(--space-md);
+}
+
+.action-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 40px;
+  border: 2px solid var(--color-border);
+  border-radius: 20px;
+  background: transparent;
+  color: var(--color-text);
+  cursor: pointer;
+  transition: all 0.2s;
+  text-decoration: none;
+}
+.action-icon-btn:hover {
+  background: var(--color-bg);
+}
+.action-icon-btn svg {
+  width: 22px;
+  height: 22px;
+}
+
+.action-icon-follow {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+.action-icon-follow:hover {
+  background: rgba(34, 197, 94, 0.06);
+}
+.action-icon-follow.following {
+  background: rgba(34, 197, 94, 0.08);
+}
+
+.action-icon-message {
+  border-color: var(--color-border);
+  color: var(--color-text);
+}
+.action-icon-message:hover {
+  border-color: var(--color-text-secondary);
+}
+
+.action-icon-share {
+  border-color: var(--color-border);
+  color: var(--color-text);
+}
+.action-icon-share:hover {
+  border-color: var(--color-text-secondary);
+}
+
+.action-icon-block {
+  border-color: var(--color-danger);
+  color: var(--color-danger);
+}
+.action-icon-block:hover {
+  background: rgba(239, 68, 68, 0.06);
+}
+
 .action-btn {
   display: inline-flex;
   align-items: center;

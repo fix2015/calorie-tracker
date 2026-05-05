@@ -157,11 +157,12 @@ export default function PublicProfilePage() {
 
         {profile.bio && <p className="public-bio">{profile.bio}</p>}
 
-        <div style={{ display: 'flex', justifyContent: 'center', gap: 'var(--space-sm)', marginTop: 'var(--space-md)', flexWrap: 'wrap' }}>
+        <div className="profile-actions-row">
           {currentUser && currentUser.id !== profile.id && (
             <>
               <button
-                className={`action-btn action-btn-follow${isFollowing ? ' following' : ''}`}
+                className={`action-icon-btn action-icon-follow${isFollowing ? ' following' : ''}`}
+                title={isFollowing ? t('common.following') : t('common.follow')}
                 onClick={async () => {
                   try {
                     const res = await publicApi.follow(profile.username);
@@ -170,10 +171,16 @@ export default function PublicProfilePage() {
                   } catch {}
                 }}
               >
-                {isFollowing ? t('common.following') : t('common.follow')}
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+                  <circle cx="9" cy="7" r="4" />
+                  {isFollowing && <polyline points="16 11 18 13 22 9" />}
+                  {!isFollowing && <><line x1="19" y1="8" x2="19" y2="14" /><line x1="16" y1="11" x2="22" y2="11" /></>}
+                </svg>
               </button>
               <button
-                className="action-btn action-btn-message"
+                className="action-icon-btn action-icon-message"
+                title={t('publicProfile.message')}
                 onClick={async () => {
                   try {
                     const conv = await messagesApi.start(profile.id);
@@ -181,27 +188,44 @@ export default function PublicProfilePage() {
                   } catch {}
                 }}
               >
-                {t('publicProfile.message')}
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                  <circle cx="9" cy="10" r="1" fill="currentColor" stroke="none" />
+                  <circle cx="12" cy="10" r="1" fill="currentColor" stroke="none" />
+                  <circle cx="15" cy="10" r="1" fill="currentColor" stroke="none" />
+                </svg>
               </button>
             </>
           )}
           {!currentUser && (
             <>
-              <Link to="/login" className="action-btn action-btn-follow">{t('common.follow')}</Link>
-              <Link to="/login" className="action-btn action-btn-message">{t('publicProfile.message')}</Link>
+              <Link to="/login" className="action-icon-btn action-icon-follow" title={t('common.follow')}>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" />
+                  <line x1="19" y1="8" x2="19" y2="14" /><line x1="16" y1="11" x2="22" y2="11" />
+                </svg>
+              </Link>
+              <Link to="/login" className="action-icon-btn action-icon-message" title={t('publicProfile.message')}>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                  <circle cx="9" cy="10" r="1" fill="currentColor" stroke="none" />
+                  <circle cx="12" cy="10" r="1" fill="currentColor" stroke="none" />
+                  <circle cx="15" cy="10" r="1" fill="currentColor" stroke="none" />
+                </svg>
+              </Link>
             </>
           )}
-          {profile.linkUrl && (
-            <a href={profile.linkUrl} target="_blank" rel="noopener noreferrer" className="action-btn action-btn-link">
-              {t('publicProfile.visitLink')}
-            </a>
-          )}
-          <button className="action-btn action-btn-share" onClick={handleShare}>
-            {t('common.share')}
+          <button className="action-icon-btn action-icon-share" title={t('common.share')} onClick={handleShare}>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" />
+              <polyline points="16 6 12 2 8 6" />
+              <line x1="12" y1="2" x2="12" y2="15" />
+            </svg>
           </button>
           {currentUser && currentUser.id !== profile.id && (
             <button
-              className="action-btn action-btn-block"
+              className="action-icon-btn action-icon-block"
+              title={t('publicProfile.block')}
               onClick={async () => {
                 if (!window.confirm(t('publicProfile.blockConfirm'))) return;
                 try {
@@ -209,7 +233,10 @@ export default function PublicProfilePage() {
                 } catch {}
               }}
             >
-              {t('publicProfile.block')}
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="10" />
+                <line x1="4.93" y1="4.93" x2="19.07" y2="19.07" />
+              </svg>
             </button>
           )}
         </div>
