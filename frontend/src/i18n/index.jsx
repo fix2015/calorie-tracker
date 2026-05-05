@@ -11,12 +11,12 @@ import pl from './locales/pl.json';
 const translations = { en, uk, es, fr, de, pl };
 
 export const LANGUAGES = {
-  en: { label: 'English', nativeName: 'English' },
-  uk: { label: 'Ukrainian', nativeName: 'Українська' },
-  es: { label: 'Spanish', nativeName: 'Español' },
-  fr: { label: 'French', nativeName: 'Français' },
-  de: { label: 'German', nativeName: 'Deutsch' },
-  pl: { label: 'Polish', nativeName: 'Polski' },
+  en: { label: 'English', nativeName: 'English', flag: '🇬🇧' },
+  uk: { label: 'Ukrainian', nativeName: 'Українська', flag: '🇺🇦' },
+  es: { label: 'Spanish', nativeName: 'Español', flag: '🇪🇸' },
+  fr: { label: 'French', nativeName: 'Français', flag: '🇫🇷' },
+  de: { label: 'German', nativeName: 'Deutsch', flag: '🇩🇪' },
+  pl: { label: 'Polish', nativeName: 'Polski', flag: '🇵🇱' },
 };
 
 function getInitialLanguage() {
