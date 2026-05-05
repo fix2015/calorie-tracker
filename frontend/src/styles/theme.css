@@ -2240,7 +2240,7 @@ a:hover { text-decoration: underline; }
 .profile-actions-row {
   display: flex;
   justify-content: center;
-  gap: 12px;
+  gap: 8px;
   margin-top: var(--space-md);
 }
 
@@ -2248,10 +2248,10 @@ a:hover { text-decoration: underline; }
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 56px;
-  height: 40px;
-  border: 2px solid var(--color-border);
-  border-radius: 20px;
+  width: 44px;
+  height: 32px;
+  border: 1.5px solid var(--color-border);
+  border-radius: 16px;
   background: transparent;
   color: var(--color-text);
   cursor: pointer;
@@ -2262,8 +2262,8 @@ a:hover { text-decoration: underline; }
   background: var(--color-bg);
 }
 .action-icon-btn svg {
-  width: 22px;
-  height: 22px;
+  width: 18px;
+  height: 18px;
 }
 
 .action-icon-follow {
