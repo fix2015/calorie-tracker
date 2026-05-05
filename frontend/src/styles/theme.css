@@ -975,7 +975,7 @@ a:hover { text-decoration: underline; }
 .dash-chart {
   display: flex;
   gap: var(--space-sm);
-  height: 140px;
+  height: 200px;
   margin-top: var(--space-sm);
 }
 
@@ -1027,14 +1027,16 @@ a:hover { text-decoration: underline; }
 
 .dash-chart-bar-label {
   font-size: var(--font-size-2xs);
-  color: var(--color-text-secondary);
+  font-weight: 600;
+  color: var(--color-text);
   margin-bottom: 2px;
+  white-space: nowrap;
 }
 
 .dash-chart-bar {
-  width: 60%;
-  max-width: 28px;
-  min-width: 12px;
+  width: 70%;
+  max-width: 36px;
+  min-width: 16px;
   background: var(--color-border-hover);
   border-radius: var(--radius-sm) var(--radius-sm) 2px 2px;
   transition: height 0.6s ease;
