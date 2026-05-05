@@ -10,6 +10,7 @@ const SERVICES = {
   notification: process.env.SERVICE_NOTIFICATION_URL || null,
   messaging: process.env.SERVICE_MESSAGING_URL || null,
   social: process.env.SERVICE_SOCIAL_URL || null,
+  video: process.env.SERVICE_VIDEO_URL || null,
 };
 
 async function serviceCall(service, path, opts = {}) {
@@ -206,6 +207,32 @@ async function uploadImage(buffer, opts = {}) {
   return res.json();
 }
 
+// ─── Video/Stories Service ───
+
+async function getStoriesFeed(userIds, viewerId) {
+  return serviceCall('video', `/stories/feed?userIds=${userIds.join(',')}&viewerId=${viewerId || ''}`);
+}
+
+async function getUserStories(userId, viewerId) {
+  const params = viewerId ? `?viewerId=${viewerId}` : '';
+  return serviceCall('video', `/stories/user/${userId}${params}`);
+}
+
+async function markStoryViewed(storyId, viewerId) {
+  return serviceCall('video', `/stories/${storyId}/view`, {
+    method: 'POST',
+    body: { viewerId },
+  });
+}
+
+async function deleteStory(storyId) {
+  return serviceCall('video', `/stories/${storyId}`, { method: 'DELETE' });
+}
+
+async function getStoryViewers(storyId) {
+  return serviceCall('video', `/stories/${storyId}/viewers`);
+}
+
 module.exports = {
   SERVICES,
   serviceCall,
@@ -238,4 +265,10 @@ module.exports = {
   getSavedContent,
   // Image
   uploadImage: uploadImage,
+  // Video/Stories
+  getStoriesFeed,
+  getUserStories,
+  markStoryViewed,
+  deleteStory,
+  getStoryViewers,
 };

@@ -10,6 +10,7 @@ const publicRoutes = require('./routes/public');
 const notificationRoutes = require('./routes/notifications');
 const messageRoutes = require('./routes/messages');
 const adminRoutes = require('./routes/admin');
+const storyRoutes = require('./routes/stories');
 const { errorHandler } = require('./middleware/errorHandler');
 
 const app = express();
@@ -33,6 +34,7 @@ app.use('/api/public', publicRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/messages', messageRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/stories', storyRoutes);
 
 app.use(errorHandler);
 

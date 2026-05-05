@@ -94,6 +94,23 @@ export const reports = {
   weightHistory: () => request('/reports/weight-history'),
 };
 
+export const storiesApi = {
+  feed: () => request('/stories/feed'),
+  userStories: (userId) => request(`/stories/user/${userId}`),
+  upload: (file) => {
+    const form = new FormData();
+    form.append('video', file);
+    return fetch(`${API}/stories`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${localStorage.getItem('accessToken')}` },
+      body: form,
+    }).then(r => r.ok ? r.json() : r.json().then(e => Promise.reject(e)));
+  },
+  view: (id) => request(`/stories/${id}/view`, { method: 'POST' }),
+  remove: (id) => request(`/stories/${id}`, { method: 'DELETE' }),
+  viewers: (id) => request(`/stories/${id}/viewers`),
+};
+
 export const publicApi = {
   search: (q) => request(`/public/search?q=${encodeURIComponent(q)}`),
   popularUsers: (offset = 0, limit = 10) => request(`/public/popular-users?offset=${offset}&limit=${limit}`),

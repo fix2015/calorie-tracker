@@ -6,6 +6,7 @@ import { useInfiniteScroll } from '../services/useInfiniteScroll';
 import { photoSrc } from '../services/photoUrl';
 import FeedCard from '../components/FeedCard';
 import PublicMealDetailModal from '../components/PublicMealDetailModal';
+import StoryRing from '../components/StoryRing';
 
 // hasSaved/savedMeals state removed - saved is now in TopBar
 
@@ -111,23 +112,8 @@ export default function FeedPage() {
         </button>
       </div>
 
-      {/* Following users avatar row */}
-      {followingUsers.length > 0 && (
-        <div className="stories-row">
-          {followingUsers.map((u) => (
-            <Link key={u.id} to={`/u/${u.username}`} className="story-item">
-              <div className="story-ring">
-                {u.avatarUrl ? (
-                  <img src={photoSrc(u.avatarUrl)} alt="" className="story-avatar" />
-                ) : (
-                  <div className="story-avatar-placeholder">{u.name?.charAt(0)?.toUpperCase() || '?'}</div>
-                )}
-              </div>
-              <span className="story-name">{u.username}</span>
-            </Link>
-          ))}
-        </div>
-      )}
+      {/* Stories */}
+      <StoryRing />
 
       {/* Suggestions */}
       {suggestions.length > 0 && meals.length === 0 && (
