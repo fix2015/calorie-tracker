@@ -49,8 +49,10 @@ jobs:
           # Login to GHCR, pull and restart
           ${SSH_CMD} "echo '${{ secrets.GITHUB_TOKEN }}' | docker login ghcr.io -u fix2015 --password-stdin"
           ${SSH_CMD} "cd /opt/calorie-tracker/infra && docker compose -f docker-compose.prod.yml pull"
-          ${SSH_CMD} "cd /opt/calorie-tracker/infra && docker compose -f docker-compose.prod.yml down --remove-orphans"
+          ${SSH_CMD} "cd /opt/calorie-tracker/infra && docker compose -f docker-compose.prod.yml down"
           ${SSH_CMD} "cd /opt/calorie-tracker/infra && docker compose -f docker-compose.prod.yml up -d"
+          ${SSH_CMD} "cd /opt/calorie-tracker/infra && docker compose -f docker-compose.services.yml pull"
+          ${SSH_CMD} "cd /opt/calorie-tracker/infra && docker compose -f docker-compose.services.yml up -d"
           ${SSH_CMD} "docker image prune -f"
 
           # Health check

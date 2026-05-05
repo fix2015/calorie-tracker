@@ -21,6 +21,7 @@ async function serviceCall(service, path, opts = {}) {
     const url = `${baseUrl}${path}`;
     const res = await fetch(url, {
       ...opts,
+      signal: AbortSignal.timeout(3000),
       headers: {
         'Content-Type': 'application/json',
         'X-Service-Key': SERVICE_KEY,
