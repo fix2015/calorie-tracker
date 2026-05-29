@@ -224,14 +224,14 @@ export default function ScanPage() {
             className={`scan-mode-btn${mode === 'photo' ? ' active' : ''}`}
             onClick={() => switchMode('photo')}
           >
-            &#128247; {t('scan.photoTab')}
+            📷 {t('scan.photoTab')}
           </button>
           {voiceSupported && (
             <button
               className={`scan-mode-btn${mode === 'voice' ? ' active' : ''}`}
               onClick={() => switchMode('voice')}
             >
-              &#127908; {t('scan.voiceTab')}
+              🎤 {t('scan.voiceTab')}
             </button>
           )}
         </div>
@@ -294,7 +294,7 @@ export default function ScanPage() {
                   {loading ? (
                     <>{t('scan.analyzing')}</>
                   ) : (
-                    <><span className="ai-analyze-icon">&#10024;</span> {t('dashboard.aiNutritionAnalysis')}</>
+                    <><span className="ai-analyze-icon">✨</span> {t('dashboard.aiNutritionAnalysis')}</>
                   )}
                 </button>
               </>
@@ -332,7 +332,7 @@ export default function ScanPage() {
               onClick={isRecording ? stopRecording : startRecording}
               disabled={loading}
             >
-              <span className="voice-record-icon">{isRecording ? '&#9632;' : '&#127908;'}</span>
+              <span className="voice-record-icon">{isRecording ? '⬛' : '🎤'}</span>
               <span>{isRecording ? t('scan.stopRecording') : t('scan.startRecording')}</span>
             </button>
 
@@ -354,7 +354,7 @@ export default function ScanPage() {
                   {loading ? (
                     <>{t('scan.analyzing')}</>
                   ) : (
-                    <><span className="ai-analyze-icon">&#10024;</span> {t('dashboard.aiNutritionAnalysis')}</>
+                    <><span className="ai-analyze-icon">✨</span> {t('dashboard.aiNutritionAnalysis')}</>
                   )}
                 </button>
               </div>
