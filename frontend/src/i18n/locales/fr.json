@@ -206,7 +206,14 @@
     "updateYourWeight": "Mettez à jour votre poids",
     "weightHelpText": "Votre poids corporel aide à estimer les portions plus précisément.",
     "yourWeightKg": "Votre poids (kg)",
-    "weightPlaceholder": "ex. 75"
+    "weightPlaceholder": "ex. 75",
+    "photoTab": "Photo",
+    "voiceTab": "Voix",
+    "voiceDescription": "Appuyez sur le micro et décrivez ce que vous avez mangé. L'IA estimera la nutrition.",
+    "startRecording": "Appuyez pour parler",
+    "stopRecording": "Appuyez pour arrêter",
+    "youSaid": "Vous avez dit :",
+    "voiceError": "Impossible d'accéder au microphone. Vérifiez les autorisations."
   },
   "reports": {
     "dailySummary": "Résumé quotidien",

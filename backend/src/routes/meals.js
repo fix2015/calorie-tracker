@@ -4,7 +4,7 @@ const prisma = require('../utils/prisma');
 const { authenticate } = require('../middleware/auth');
 const { upload } = require('../middleware/upload');
 const { manualMealSchema } = require('../utils/validation');
-const { analyzePhoto } = require('../services/vision');
+const { analyzePhoto, analyzeVoiceText } = require('../services/vision');
 const { uploadImage } = require('../services/s3');
 const { refreshDailyStat } = require('../utils/dailyStats');
 
@@ -112,6 +112,53 @@ router.post('/photo', authenticate, aiLimiter, upload.single('photo'), async (re
         tags: mealTags,
         source: 'photo_ai',
         photoUrl,
+        aiConfidence: result.confidence,
+        consumedAt: new Date(),
+      },
+    });
+
+    refreshDailyStat(req.userId, meal.consumedAt).catch(() => {});
+    res.status(201).json({
+      meal,
+      low_confidence: lowConfidence,
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.post('/voice', authenticate, aiLimiter, async (req, res, next) => {
+  try {
+    const { text } = req.body;
+    if (!text || !text.trim()) return res.status(400).json({ error: 'Text description is required' });
+
+    const user = await prisma.user.findUnique({ where: { id: req.userId } });
+    if (!user) return res.status(404).json({ error: 'User not found' });
+
+    const weightKg = user.weightKg || 70;
+    const language = req.headers['x-language'] || 'en';
+
+    let result;
+    try {
+      result = await analyzeVoiceText(text.trim(), weightKg, language);
+    } catch (aiErr) {
+      return res.status(422).json({
+        error: aiErr.message || 'Could not analyze this description. Please try again.',
+      });
+    }
+
+    const lowConfidence = result.confidence < 0.4;
+    const mealTags = autoTags(result);
+    const meal = await prisma.meal.create({
+      data: {
+        userId: req.userId,
+        name: result.name,
+        calories: result.calories,
+        proteinG: result.proteinG,
+        carbsG: result.carbsG,
+        fatG: result.fatG,
+        tags: mealTags,
+        source: 'voice_ai',
         aiConfidence: result.confidence,
         consumedAt: new Date(),
       },

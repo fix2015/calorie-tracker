@@ -206,7 +206,14 @@
     "updateYourWeight": "Update Your Weight",
     "weightHelpText": "Your body weight helps estimate portion sizes more accurately.",
     "yourWeightKg": "Your weight (kg)",
-    "weightPlaceholder": "e.g. 75"
+    "weightPlaceholder": "e.g. 75",
+    "photoTab": "Photo",
+    "voiceTab": "Voice",
+    "voiceDescription": "Tap the microphone and describe what you ate. AI will estimate the nutrition.",
+    "startRecording": "Tap to speak",
+    "stopRecording": "Tap to stop",
+    "youSaid": "You said:",
+    "voiceError": "Could not access microphone. Please check permissions."
   },
   "reports": {
     "dailySummary": "Daily Summary",

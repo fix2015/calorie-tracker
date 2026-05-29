@@ -83,4 +83,49 @@ async function getSuggestion({ goal, target, eaten, protein, carbs, fat, languag
   return response.choices[0].message.content.trim();
 }
 
-module.exports = { analyzePhoto, getSuggestion };
+async function analyzeVoiceText(text, weightKg, language = 'en') {
+  const client = getProvider();
+
+  const response = await client.chat.completions.create({
+    model: 'gpt-4o-mini',
+    max_tokens: 200,
+    messages: [
+      {
+        role: 'system',
+        content: `You are a nutrition estimator. The user describes what they ate. Given the description and user's weight (${weightKg} kg), estimate: dish name, total calories, protein/carbs/fat in grams, and confidence (0-1). If the description is vague, use reasonable average portions. Respond with the dish name in ${getLanguageName(language)}. Return ONLY valid JSON: {"name","calories","protein_g","carbs_g","fat_g","confidence"}. No markdown, no code fences, no prose.`,
+      },
+      {
+        role: 'user',
+        content: text,
+      },
+    ],
+  });
+
+  const raw = response.choices[0].message.content.trim();
+  const jsonMatch = raw.match(/\{[\s\S]*\}/);
+  if (!jsonMatch) {
+    throw new Error('Could not analyze this description. Please try again with more detail.');
+  }
+
+  let result;
+  try {
+    result = JSON.parse(jsonMatch[0]);
+  } catch {
+    throw new Error('Could not analyze this description. Please try again with more detail.');
+  }
+
+  if (!result.name && !result.calories) {
+    throw new Error('Could not recognize the meal. Try describing what you ate more clearly.');
+  }
+
+  return {
+    name: result.name || 'Unknown dish',
+    calories: Math.round(Number(result.calories) || 0),
+    proteinG: Math.round(Number(result.protein_g) || 0),
+    carbsG: Math.round(Number(result.carbs_g) || 0),
+    fatG: Math.round(Number(result.fat_g) || 0),
+    confidence: Math.min(1, Math.max(0, Number(result.confidence) || 0)),
+  };
+}
+
+module.exports = { analyzePhoto, analyzeVoiceText, getSuggestion };

@@ -206,7 +206,14 @@
     "updateYourWeight": "Оновіть вашу вагу",
     "weightHelpText": "Ваша вага тіла допомагає точніше оцінювати розмір порцій.",
     "yourWeightKg": "Ваша вага (кг)",
-    "weightPlaceholder": "напр. 75"
+    "weightPlaceholder": "напр. 75",
+    "photoTab": "Фото",
+    "voiceTab": "Голос",
+    "voiceDescription": "Натисніть мікрофон і опишіть, що ви з'їли. AI оцінить поживну цінність.",
+    "startRecording": "Натисніть, щоб говорити",
+    "stopRecording": "Натисніть, щоб зупинити",
+    "youSaid": "Ви сказали:",
+    "voiceError": "Не вдалося отримати доступ до мікрофона. Перевірте дозволи."
   },
   "reports": {
     "dailySummary": "Денний підсумок",

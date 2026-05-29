@@ -38,7 +38,7 @@ export default function FollowListModal({ username, type, onClose }) {
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: 400, maxHeight: '80vh', display: 'flex', flexDirection: 'column' }}>
-        <h2 style={{ marginBottom: 'var(--space-md)', textTransform: 'capitalize' }}>{type}</h2>
+        <h2 style={{ marginBottom: 'var(--space-md)', textTransform: 'capitalize' }}>{type === 'followers' ? t('publicProfile.followersCount') : t('publicProfile.followingCount')}</h2>
 
         {loading ? (
           <div style={{ textAlign: 'center', padding: 'var(--space-xl)' }}><div className="spinner"></div></div>

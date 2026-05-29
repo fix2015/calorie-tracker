@@ -30,6 +30,7 @@ enum Goal {
 enum MealSource {
   manual
   photo_ai
+  voice_ai
 }
 
 model User {

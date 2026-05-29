@@ -206,7 +206,14 @@
     "updateYourWeight": "Gewicht aktualisieren",
     "weightHelpText": "Dein Körpergewicht hilft, Portionsgrößen genauer zu schätzen.",
     "yourWeightKg": "Dein Gewicht (kg)",
-    "weightPlaceholder": "z.B. 75"
+    "weightPlaceholder": "z.B. 75",
+    "photoTab": "Foto",
+    "voiceTab": "Sprache",
+    "voiceDescription": "Tippen Sie auf das Mikrofon und beschreiben Sie, was Sie gegessen haben. KI schätzt die Nährwerte.",
+    "startRecording": "Zum Sprechen tippen",
+    "stopRecording": "Zum Stoppen tippen",
+    "youSaid": "Sie sagten:",
+    "voiceError": "Zugriff auf das Mikrofon nicht möglich. Bitte Berechtigungen prüfen."
   },
   "reports": {
     "dailySummary": "Tagesübersicht",

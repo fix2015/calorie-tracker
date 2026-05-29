@@ -1,7 +1,9 @@
 import { useRef, useState } from 'react';
 import { photoSrc } from '../services/photoUrl';
+import { useTranslation } from '../i18n';
 
 export default function AvatarUpload({ currentUrl, name, onUpload, size = 96 }) {
+  const { t } = useTranslation();
   const fileRef = useRef(null);
   const [preview, setPreview] = useState(null);
   const [uploading, setUploading] = useState(false);
@@ -58,7 +60,7 @@ export default function AvatarUpload({ currentUrl, name, onUpload, size = 96 }) 
         style={{ display: 'none' }}
       />
       <p style={{ textAlign: 'center', fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)', marginTop: 'var(--space-xs)' }}>
-        Tap to change
+        {t('avatar.tapToChange')}
       </p>
     </div>
   );

@@ -5,24 +5,20 @@ import { resizeImage } from '../services/imageResize';
 import { photoSrc } from '../services/photoUrl';
 import { useTranslation } from '../i18n';
 
+const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
 export default function ScanPage() {
   const { t } = useTranslation();
   const fileRef = useRef(null);
   const navigate = useNavigate();
   const openedRef = useRef(false);
+  const recognitionRef = useRef(null);
 
+  const [mode, setMode] = useState('photo'); // 'photo' | 'voice'
   const [preview, setPreview] = useState(null);
   const [file, setFile] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-
-  // Immediately open file picker on mount
-  useEffect(() => {
-    if (!openedRef.current) {
-      openedRef.current = true;
-      setTimeout(() => fileRef.current?.click(), 100);
-    }
-  }, []);
 
   const [context, setContext] = useState('');
   const [showContextTip, setShowContextTip] = useState(false);
@@ -30,9 +26,31 @@ export default function ScanPage() {
   const [weight, setWeight] = useState('');
   const [pendingBlob, setPendingBlob] = useState(null);
 
-  // Result screen — shown for both high and low confidence
+  // Voice state
+  const [isRecording, setIsRecording] = useState(false);
+  const [transcript, setTranscript] = useState('');
+  const [voiceSupported] = useState(!!SpeechRecognition);
+
+  // Result screen
   const [result, setResult] = useState(null);
   const [editing, setEditing] = useState(false);
+
+  // Open file picker on mount for photo mode
+  useEffect(() => {
+    if (mode === 'photo' && !openedRef.current) {
+      openedRef.current = true;
+      setTimeout(() => fileRef.current?.click(), 100);
+    }
+  }, []);
+
+  // Cleanup recognition on unmount
+  useEffect(() => {
+    return () => {
+      if (recognitionRef.current) {
+        recognitionRef.current.abort();
+      }
+    };
+  }, []);
 
   const handleFileChange = (e) => {
     const f = e.target.files[0];
@@ -98,11 +116,77 @@ export default function ScanPage() {
     setWeight('');
   };
 
+  // --- Voice ---
+  const startRecording = () => {
+    if (!SpeechRecognition) return;
+    setError('');
+    setTranscript('');
+
+    const recognition = new SpeechRecognition();
+    recognition.lang = localStorage.getItem('appLanguage') || 'en';
+    recognition.interimResults = true;
+    recognition.continuous = true;
+
+    recognition.onresult = (event) => {
+      let text = '';
+      for (let i = 0; i < event.results.length; i++) {
+        text += event.results[i][0].transcript;
+      }
+      setTranscript(text);
+    };
+
+    recognition.onerror = (event) => {
+      if (event.error !== 'aborted') {
+        setError(t('scan.voiceError'));
+      }
+      setIsRecording(false);
+    };
+
+    recognition.onend = () => {
+      setIsRecording(false);
+    };
+
+    recognitionRef.current = recognition;
+    recognition.start();
+    setIsRecording(true);
+  };
+
+  const stopRecording = () => {
+    if (recognitionRef.current) {
+      recognitionRef.current.stop();
+    }
+  };
+
+  const submitVoice = async () => {
+    if (!transcript.trim()) return;
+    setLoading(true);
+    setError('');
+    try {
+      const res = await meals.voice(transcript.trim());
+      const m = res.meal;
+      setResult({
+        id: m.id,
+        name: m.name,
+        calories: m.calories,
+        proteinG: m.proteinG,
+        carbsG: m.carbsG,
+        fatG: m.fatG,
+        confidence: m.aiConfidence,
+        lowConfidence: res.low_confidence,
+      });
+      if (res.low_confidence) setEditing(true);
+    } catch (err) {
+      setError(err.message || 'Analysis failed');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // --- Shared ---
   const handleSaveEdited = async () => {
     setLoading(true);
     setError('');
     try {
-      // Update the existing AI meal with edited values (preserves photo)
       await meals.update(result.id, {
         name: result.name,
         calories: Number(result.calories),
@@ -120,10 +204,41 @@ export default function ScanPage() {
 
   const updateField = (field) => (e) => setResult({ ...result, [field]: e.target.value });
 
+  const switchMode = (newMode) => {
+    setMode(newMode);
+    setResult(null);
+    setEditing(false);
+    setError('');
+    setTranscript('');
+    setPreview(null);
+    setFile(null);
+    if (isRecording) stopRecording();
+  };
+
   return (
     <div className="page">
-      {/* Camera / file selection */}
+      {/* Mode toggle */}
       {!result && (
+        <div className="scan-mode-toggle">
+          <button
+            className={`scan-mode-btn${mode === 'photo' ? ' active' : ''}`}
+            onClick={() => switchMode('photo')}
+          >
+            &#128247; {t('scan.photoTab')}
+          </button>
+          {voiceSupported && (
+            <button
+              className={`scan-mode-btn${mode === 'voice' ? ' active' : ''}`}
+              onClick={() => switchMode('voice')}
+            >
+              &#127908; {t('scan.voiceTab')}
+            </button>
+          )}
+        </div>
+      )}
+
+      {/* Photo mode */}
+      {!result && mode === 'photo' && (
         <div className="card">
           <div className="scan-area">
             <input
@@ -196,6 +311,53 @@ export default function ScanPage() {
                   {t('scan.choosePhoto')}
                 </button>
               </>
+            )}
+
+            {loading && <div className="spinner" />}
+            <p className={`error-text${error ? ' visible' : ''}`}><span>{error}</span></p>
+          </div>
+        </div>
+      )}
+
+      {/* Voice mode */}
+      {!result && mode === 'voice' && (
+        <div className="card">
+          <div className="scan-area">
+            <p style={{ color: 'var(--color-text-secondary)', textAlign: 'center', marginBottom: 'var(--space-md)' }}>
+              {t('scan.voiceDescription')}
+            </p>
+
+            <button
+              className={`voice-record-btn${isRecording ? ' recording' : ''}`}
+              onClick={isRecording ? stopRecording : startRecording}
+              disabled={loading}
+            >
+              <span className="voice-record-icon">{isRecording ? '&#9632;' : '&#127908;'}</span>
+              <span>{isRecording ? t('scan.stopRecording') : t('scan.startRecording')}</span>
+            </button>
+
+            {transcript && (
+              <div className="voice-transcript">
+                <label>{t('scan.youSaid')}</label>
+                <textarea
+                  value={transcript}
+                  onChange={(e) => setTranscript(e.target.value)}
+                  rows={3}
+                  style={{ resize: 'vertical' }}
+                />
+                <button
+                  className="ai-analyze-btn"
+                  onClick={submitVoice}
+                  disabled={loading || !transcript.trim()}
+                  style={{ marginTop: 'var(--space-md)' }}
+                >
+                  {loading ? (
+                    <>{t('scan.analyzing')}</>
+                  ) : (
+                    <><span className="ai-analyze-icon">&#10024;</span> {t('dashboard.aiNutritionAnalysis')}</>
+                  )}
+                </button>
+              </div>
             )}
 
             {loading && <div className="spinner" />}

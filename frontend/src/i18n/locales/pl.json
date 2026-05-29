@@ -206,7 +206,14 @@
     "updateYourWeight": "Zaktualizuj swoją wagę",
     "weightHelpText": "Twoja masa ciała pomaga dokładniej oszacować wielkość porcji.",
     "yourWeightKg": "Twoja waga (kg)",
-    "weightPlaceholder": "np. 75"
+    "weightPlaceholder": "np. 75",
+    "photoTab": "Zdjęcie",
+    "voiceTab": "Głos",
+    "voiceDescription": "Dotknij mikrofon i opisz, co zjadłeś. AI oszacuje wartości odżywcze.",
+    "startRecording": "Dotknij, aby mówić",
+    "stopRecording": "Dotknij, aby zatrzymać",
+    "youSaid": "Powiedziałeś:",
+    "voiceError": "Nie można uzyskać dostępu do mikrofonu. Sprawdź uprawnienia."
   },
   "reports": {
     "dailySummary": "Podsumowanie dnia",

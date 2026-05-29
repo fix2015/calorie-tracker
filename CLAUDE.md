@@ -50,7 +50,9 @@ Uses Node.js built-in test runner (no framework). Test directory: `backend/src/t
 ### Production deployment
 ```bash
 # See infra/ for docker-compose.prod.yml and nginx configs
-# CI/CD via GitHub Actions (.github/workflows/deploy.yml) deploys to EC2
+# CI/CD: .github/workflows/ci.yml builds+pushes Docker images to GHCR on main push
+#         .github/workflows/deploy.yml deploys to EC2 via SSH on successful CI
+# Node 20-alpine in Docker; health check at GET /api/health
 ```
 
 ## Architecture
@@ -70,9 +72,10 @@ Uses Node.js built-in test runner (no framework). Test directory: `backend/src/t
   - `public.js` — public profiles and explore feed
   - `admin.js` — admin endpoints
 - **Services:** `src/services/vision.js` (OpenAI GPT-4o photo scanning, configurable via `AI_PROVIDER`), `s3.js` (image resize via sharp + S3 upload with local fallback), `microservices.js` (HTTP client for external microservices)
-- **Middleware:** `auth.js` (JWT verify), `upload.js` (multer for photo uploads), `errorHandler.js`
+- **Middleware:** `auth.js` (JWT verify with `authenticate()` and `optionalAuth()` variants), `upload.js` (multer — images 10MB, videos 50MB), `errorHandler.js` (catches ZodError → 400)
 - **Rate limiting:** `express-rate-limit` on auth routes and AI endpoints (photo scan 20/hr, suggestions 20/hr, nutrition analysis 10/day)
-- **Validation:** Zod schemas in route handlers
+- **Validation:** Zod schemas in `src/utils/validation.js`, validated in route handlers
+- **Utils:** `src/utils/` — `jwt.js` (sign/verify access+refresh tokens), `calories.js` (Mifflin-St Jeor formula), `dailyStats.js` (meal aggregation), `languageName.js` (language codes → native names for GPT)
 
 ### Database (PostgreSQL + Prisma)
 Schema at `backend/prisma/schema.prisma`. Prisma uses `@map` to snake_case DB columns while keeping camelCase in JS. All models cascade-delete from User.
@@ -83,9 +86,17 @@ Social models: Like, Comment, CommentLike, Follow, Conversation, ConversationPar
 
 Tracking models: WeightLog, DailyStat
 
-### Frontend (React 19, Vite, ES modules)
-- **Routing:** React Router v7 in `App.jsx`. Protected routes use `<ProtectedLayout>` with `<Outlet>`. Public routes (`/login`, `/register`) redirect authenticated users to `/`.
-- **Auth state:** `services/AuthContext.jsx` — React context with auto-refresh on mount
+Enums: Gender, ActivityLevel, Goal, MealSource. Unique constraints enforce one-per-pair for likes, follows, saves, and blocks.
+
+### API Patterns
+- **Auth:** JWT access tokens (default 15m) + refresh tokens (default 7d). `optionalAuth()` middleware used on public endpoints.
+- **Pagination:** Cursor-based on most list endpoints (feed, explore, followers). Configurable `limit` param with defaults (12 for meals, 10 for users).
+- **File uploads:** Multer to disk → sharp resize → S3 (or local `uploads/` fallback). Client-side resize in `frontend/src/services/imageResize.js` before upload.
+
+### Frontend (React 19, Vite 8, ES modules)
+- **Routing:** React Router v7 in `App.jsx`. Protected routes use `<ProtectedLayout>` with `<Outlet>`. Public routes (`/login`, `/register`) redirect authenticated users to `/`. `/explore` works for both auth'd and anonymous users.
+- **i18n:** Custom context-based system in `src/i18n/`. Supports en, uk, es, fr, de, pl. Locale JSON files in `src/i18n/locales/`. Uses `LanguageProvider` wrapper, localStorage key `appLanguage`, and sends `X-Language` header on API requests.
+- **Auth state:** `services/AuthContext.jsx` — React context with auto-refresh on mount. Tokens stored in localStorage.
 - **API client:** `services/api.js` — fetch wrapper with automatic JWT refresh on 401
 - **Pages:** Dashboard (calorie ring + meal list), Scan (camera/upload → AI), Reports (Recharts), Profile, Explore, Feed, Messages, Notifications, Saved, Admin, PublicProfile
 - **Components:** `components/` — AddMealModal, MealDetailModal, MealGrid, Navbar, TopBar, StoryRing, FeedCard, AvatarUpload, FollowListModal
