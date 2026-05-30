@@ -221,7 +221,10 @@ export default function DashboardPage() {
               {t('dashboard.addMeal')}
             </button>
             <button className="action-btn action-btn-share" style={{ flex: 1 }} onClick={() => navigate('/scan')}>
-              {t('dashboard.scanPhoto')}
+              📷 {t('dashboard.scanPhoto')}
+            </button>
+            <button className="action-btn action-btn-share" style={{ flex: 1 }} onClick={() => navigate('/scan?mode=voice')}>
+              🎤 {t('dashboard.voiceInput')}
             </button>
           </div>
 

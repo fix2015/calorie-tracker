@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { meals } from '../services/api';
 import { resizeImage } from '../services/imageResize';
 import { photoSrc } from '../services/photoUrl';
@@ -11,10 +11,12 @@ export default function ScanPage() {
   const { t } = useTranslation();
   const fileRef = useRef(null);
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const openedRef = useRef(false);
   const recognitionRef = useRef(null);
 
-  const [mode, setMode] = useState('photo'); // 'photo' | 'voice'
+  const initialMode = searchParams.get('mode') === 'voice' && SpeechRecognition ? 'voice' : 'photo';
+  const [mode, setMode] = useState(initialMode); // 'photo' | 'voice'
   const [preview, setPreview] = useState(null);
   const [file, setFile] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -37,7 +39,7 @@ export default function ScanPage() {
 
   // Open file picker on mount for photo mode
   useEffect(() => {
-    if (mode === 'photo' && !openedRef.current) {
+    if (initialMode === 'photo' && !openedRef.current) {
       openedRef.current = true;
       setTimeout(() => fileRef.current?.click(), 100);
     }
