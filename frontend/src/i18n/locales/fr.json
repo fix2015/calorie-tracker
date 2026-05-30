@@ -214,7 +214,13 @@
     "startRecording": "Appuyez pour parler",
     "stopRecording": "Appuyez pour arrêter",
     "youSaid": "Vous avez dit :",
-    "voiceError": "Impossible d'accéder au microphone. Vérifiez les autorisations."
+    "voiceError": "Impossible d'accéder au microphone. Vérifiez les autorisations.",
+    "voiceRemaining": "Voix restante aujourd'hui : {0}",
+    "voiceLimitReached": "Limite vocale quotidienne atteinte (3 min/jour). Réinitialisation demain.",
+    "maxDuration": "Max : {0}",
+    "recordingReady": "Enregistrement prêt ({0})",
+    "reRecord": "Réenregistrer",
+    "analyzeVoice": "Analyser"
   },
   "reports": {
     "dailySummary": "Résumé quotidien",

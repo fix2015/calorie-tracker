@@ -45,4 +45,19 @@ const uploadVideo = multer({
   limits: { fileSize: 50 * 1024 * 1024 }, // 50MB
 });
 
-module.exports = { upload, uploadVideo };
+const audioFilter = (req, file, cb) => {
+  const allowed = ['audio/webm', 'audio/ogg', 'audio/mp4', 'audio/mpeg', 'audio/wav', 'audio/x-m4a'];
+  if (allowed.includes(file.mimetype)) {
+    cb(null, true);
+  } else {
+    cb(new Error('Unsupported audio format'), false);
+  }
+};
+
+const uploadAudio = multer({
+  storage,
+  fileFilter: audioFilter,
+  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
+});
+
+module.exports = { upload, uploadVideo, uploadAudio };

@@ -214,7 +214,13 @@
     "startRecording": "Dotknij, aby mówić",
     "stopRecording": "Dotknij, aby zatrzymać",
     "youSaid": "Powiedziałeś:",
-    "voiceError": "Nie można uzyskać dostępu do mikrofonu. Sprawdź uprawnienia."
+    "voiceError": "Nie można uzyskać dostępu do mikrofonu. Sprawdź uprawnienia.",
+    "voiceRemaining": "Pozostały czas głosu na dziś: {0}",
+    "voiceLimitReached": "Dzienny limit głosu osiągnięty (3 min/dzień). Odnowi się jutro.",
+    "maxDuration": "Maks: {0}",
+    "recordingReady": "Nagranie gotowe ({0})",
+    "reRecord": "Nagraj ponownie",
+    "analyzeVoice": "Analizuj"
   },
   "reports": {
     "dailySummary": "Podsumowanie dnia",

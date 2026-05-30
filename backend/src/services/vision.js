@@ -66,6 +66,15 @@ async function analyzePhoto(imagePath, weightKg, context, language = 'en') {
   };
 }
 
+async function transcribeAudio(filePath) {
+  const client = getProvider();
+  const response = await client.audio.transcriptions.create({
+    model: 'whisper-1',
+    file: fs.createReadStream(filePath),
+  });
+  return response.text;
+}
+
 async function getSuggestion({ goal, target, eaten, protein, carbs, fat, language = 'en' }) {
   const client = getProvider();
 
@@ -128,4 +137,4 @@ async function analyzeVoiceText(text, weightKg, language = 'en') {
   };
 }
 
-module.exports = { analyzePhoto, analyzeVoiceText, getSuggestion };
+module.exports = { analyzePhoto, analyzeVoiceText, transcribeAudio, getSuggestion };

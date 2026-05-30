@@ -214,7 +214,13 @@
     "startRecording": "Toca para hablar",
     "stopRecording": "Toca para detener",
     "youSaid": "Dijiste:",
-    "voiceError": "No se pudo acceder al micrófono. Revisa los permisos."
+    "voiceError": "No se pudo acceder al micrófono. Revisa los permisos.",
+    "voiceRemaining": "Voz restante hoy: {0}",
+    "voiceLimitReached": "Límite de voz diario alcanzado (3 min/día). Se renueva mañana.",
+    "maxDuration": "Máx: {0}",
+    "recordingReady": "Grabación lista ({0})",
+    "reRecord": "Regrabar",
+    "analyzeVoice": "Analizar"
   },
   "reports": {
     "dailySummary": "Resumen diario",

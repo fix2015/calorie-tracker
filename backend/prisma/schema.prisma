@@ -54,6 +54,8 @@ model User {
   linkUrl             String?        @map("link_url")
   isPublic            Boolean        @default(false) @map("is_public")
   followersOnly       Boolean        @default(false) @map("followers_only")
+  voiceSecondsUsed    Int            @default(0) @map("voice_seconds_used")
+  voiceSecondsResetAt DateTime?      @map("voice_seconds_reset_at")
   createdAt           DateTime       @default(now()) @map("created_at")
   updatedAt           DateTime       @updatedAt @map("updated_at")
 

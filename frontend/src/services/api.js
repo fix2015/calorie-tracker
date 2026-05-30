@@ -78,7 +78,8 @@ export const users = {
 export const meals = {
   manual: (data) => request('/meals/manual', { method: 'POST', body: JSON.stringify(data) }),
   photo: (formData) => request('/meals/photo', { method: 'POST', body: formData }),
-  voice: (text) => request('/meals/voice', { method: 'POST', body: JSON.stringify({ text }) }),
+  voice: (formData) => request('/meals/voice', { method: 'POST', body: formData }),
+  voiceLimit: () => request('/meals/voice/limit'),
   list: (from, to) => {
     const params = new URLSearchParams();
     if (from) params.set('from', from);

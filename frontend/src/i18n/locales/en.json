@@ -214,7 +214,13 @@
     "startRecording": "Tap to speak",
     "stopRecording": "Tap to stop",
     "youSaid": "You said:",
-    "voiceError": "Could not access microphone. Please check permissions."
+    "voiceError": "Could not access microphone. Please check permissions.",
+    "voiceRemaining": "Daily voice remaining: {0}",
+    "voiceLimitReached": "Daily voice limit reached (3 min/day). Resets tomorrow.",
+    "maxDuration": "Max: {0}",
+    "recordingReady": "Recording ready ({0})",
+    "reRecord": "Re-record",
+    "analyzeVoice": "Analyze"
   },
   "reports": {
     "dailySummary": "Daily Summary",

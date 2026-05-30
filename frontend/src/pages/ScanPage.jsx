@@ -1,11 +1,15 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { meals } from '../services/api';
 import { resizeImage } from '../services/imageResize';
 import { photoSrc } from '../services/photoUrl';
 import { useTranslation } from '../i18n';
 
-const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+function formatTime(seconds) {
+  const m = Math.floor(seconds / 60);
+  const s = seconds % 60;
+  return `${m}:${s.toString().padStart(2, '0')}`;
+}
 
 export default function ScanPage() {
   const { t } = useTranslation();
@@ -13,10 +17,13 @@ export default function ScanPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const openedRef = useRef(false);
-  const recognitionRef = useRef(null);
+  const mediaRecorderRef = useRef(null);
+  const chunksRef = useRef([]);
+  const timerRef = useRef(null);
+  const startTimeRef = useRef(null);
 
-  const initialMode = searchParams.get('mode') === 'voice' && SpeechRecognition ? 'voice' : 'photo';
-  const [mode, setMode] = useState(initialMode); // 'photo' | 'voice'
+  const initialMode = searchParams.get('mode') === 'voice' ? 'voice' : 'photo';
+  const [mode, setMode] = useState(initialMode);
   const [preview, setPreview] = useState(null);
   const [file, setFile] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -30,8 +37,10 @@ export default function ScanPage() {
 
   // Voice state
   const [isRecording, setIsRecording] = useState(false);
+  const [recordingTime, setRecordingTime] = useState(0);
+  const [audioBlob, setAudioBlob] = useState(null);
   const [transcript, setTranscript] = useState('');
-  const [voiceSupported] = useState(!!SpeechRecognition);
+  const [remainingSeconds, setRemainingSeconds] = useState(null);
 
   // Result screen
   const [result, setResult] = useState(null);
@@ -45,12 +54,20 @@ export default function ScanPage() {
     }
   }, []);
 
-  // Cleanup recognition on unmount
+  // Fetch voice limit when switching to voice mode
+  useEffect(() => {
+    if (mode === 'voice') {
+      meals.voiceLimit().then((data) => setRemainingSeconds(data.remainingSeconds)).catch(() => {});
+    }
+  }, [mode]);
+
+  // Cleanup on unmount
   useEffect(() => {
     return () => {
-      if (recognitionRef.current) {
-        recognitionRef.current.abort();
+      if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+        mediaRecorderRef.current.stop();
       }
+      if (timerRef.current) clearInterval(timerRef.current);
     };
   }, []);
 
@@ -118,53 +135,78 @@ export default function ScanPage() {
     setWeight('');
   };
 
-  // --- Voice ---
-  const startRecording = () => {
-    if (!SpeechRecognition) return;
+  // --- Voice (MediaRecorder + Whisper) ---
+  const maxRecordingTime = remainingSeconds !== null ? Math.min(remainingSeconds, 60) : 60;
+
+  const startRecording = useCallback(async () => {
     setError('');
+    setAudioBlob(null);
     setTranscript('');
+    setRecordingTime(0);
 
-    const recognition = new SpeechRecognition();
-    recognition.lang = localStorage.getItem('appLanguage') || 'en';
-    recognition.interimResults = true;
-    recognition.continuous = true;
-
-    recognition.onresult = (event) => {
-      let text = '';
-      for (let i = 0; i < event.results.length; i++) {
-        text += event.results[i][0].transcript;
-      }
-      setTranscript(text);
-    };
-
-    recognition.onerror = (event) => {
-      if (event.error !== 'aborted') {
-        setError(t('scan.voiceError'));
-      }
-      setIsRecording(false);
-    };
-
-    recognition.onend = () => {
-      setIsRecording(false);
-    };
-
-    recognitionRef.current = recognition;
-    recognition.start();
-    setIsRecording(true);
-  };
-
-  const stopRecording = () => {
-    if (recognitionRef.current) {
-      recognitionRef.current.stop();
+    if (remainingSeconds !== null && remainingSeconds <= 0) {
+      setError(t('scan.voiceLimitReached'));
+      return;
     }
-  };
+
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mediaRecorder = new MediaRecorder(stream);
+      chunksRef.current = [];
+
+      mediaRecorder.ondataavailable = (e) => {
+        if (e.data.size > 0) chunksRef.current.push(e.data);
+      };
+
+      mediaRecorder.onstop = () => {
+        stream.getTracks().forEach((track) => track.stop());
+        const blob = new Blob(chunksRef.current, { type: mediaRecorder.mimeType || 'audio/webm' });
+        setAudioBlob(blob);
+        if (timerRef.current) clearInterval(timerRef.current);
+      };
+
+      mediaRecorderRef.current = mediaRecorder;
+      mediaRecorder.start();
+      startTimeRef.current = Date.now();
+      setIsRecording(true);
+
+      // Timer
+      timerRef.current = setInterval(() => {
+        const elapsed = Math.floor((Date.now() - startTimeRef.current) / 1000);
+        setRecordingTime(elapsed);
+        if (elapsed >= maxRecordingTime) {
+          mediaRecorder.stop();
+          setIsRecording(false);
+          clearInterval(timerRef.current);
+        }
+      }, 500);
+    } catch {
+      setError(t('scan.voiceError'));
+    }
+  }, [remainingSeconds, maxRecordingTime, t]);
+
+  const stopRecording = useCallback(() => {
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+      mediaRecorderRef.current.stop();
+    }
+    setIsRecording(false);
+    if (timerRef.current) clearInterval(timerRef.current);
+  }, []);
 
   const submitVoice = async () => {
-    if (!transcript.trim()) return;
+    if (!audioBlob) return;
     setLoading(true);
     setError('');
     try {
-      const res = await meals.voice(transcript.trim());
+      const ext = audioBlob.type.includes('webm') ? 'webm' : audioBlob.type.includes('mp4') ? 'mp4' : 'ogg';
+      const formData = new FormData();
+      formData.append('audio', audioBlob, `voice.${ext}`);
+      formData.append('duration', String(recordingTime));
+
+      const res = await meals.voice(formData);
+      setTranscript(res.transcript || '');
+      if (res.remainingSeconds !== undefined) setRemainingSeconds(res.remainingSeconds);
+
       const m = res.meal;
       setResult({
         id: m.id,
@@ -212,6 +254,8 @@ export default function ScanPage() {
     setEditing(false);
     setError('');
     setTranscript('');
+    setAudioBlob(null);
+    setRecordingTime(0);
     setPreview(null);
     setFile(null);
     if (isRecording) stopRecording();
@@ -228,14 +272,12 @@ export default function ScanPage() {
           >
             📷 {t('scan.photoTab')}
           </button>
-          {voiceSupported && (
-            <button
-              className={`scan-mode-btn${mode === 'voice' ? ' active' : ''}`}
-              onClick={() => switchMode('voice')}
-            >
-              🎤 {t('scan.voiceTab')}
-            </button>
-          )}
+          <button
+            className={`scan-mode-btn${mode === 'voice' ? ' active' : ''}`}
+            onClick={() => switchMode('voice')}
+          >
+            🎤 {t('scan.voiceTab')}
+          </button>
         </div>
       )}
 
@@ -325,40 +367,64 @@ export default function ScanPage() {
       {!result && mode === 'voice' && (
         <div className="card">
           <div className="scan-area">
-            <p style={{ color: 'var(--color-text-secondary)', textAlign: 'center', marginBottom: 'var(--space-md)' }}>
+            <p style={{ color: 'var(--color-text-secondary)', textAlign: 'center', marginBottom: 'var(--space-sm)' }}>
               {t('scan.voiceDescription')}
             </p>
+
+            {remainingSeconds !== null && (
+              <p style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)', marginBottom: 'var(--space-md)' }}>
+                {t('scan.voiceRemaining', formatTime(remainingSeconds))}
+              </p>
+            )}
 
             <button
               className={`voice-record-btn${isRecording ? ' recording' : ''}`}
               onClick={isRecording ? stopRecording : startRecording}
-              disabled={loading}
+              disabled={loading || (remainingSeconds !== null && remainingSeconds <= 0 && !isRecording)}
             >
               <span className="voice-record-icon">{isRecording ? '⬛' : '🎤'}</span>
-              <span>{isRecording ? t('scan.stopRecording') : t('scan.startRecording')}</span>
+              <span>{isRecording ? formatTime(recordingTime) : t('scan.startRecording')}</span>
             </button>
 
+            {isRecording && (
+              <p style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)', marginTop: 'var(--space-sm)' }}>
+                {t('scan.maxDuration', formatTime(maxRecordingTime))}
+              </p>
+            )}
+
+            {audioBlob && !isRecording && (
+              <div className="voice-transcript" style={{ marginTop: 'var(--space-lg)' }}>
+                <p style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-text-secondary)', marginBottom: 'var(--space-sm)' }}>
+                  {t('scan.recordingReady', formatTime(recordingTime))}
+                </p>
+                <div style={{ display: 'flex', gap: 'var(--space-sm)' }}>
+                  <button
+                    className="btn btn-secondary"
+                    style={{ flex: 1 }}
+                    onClick={() => { setAudioBlob(null); setRecordingTime(0); }}
+                  >
+                    {t('scan.reRecord')}
+                  </button>
+                  <button
+                    className="ai-analyze-btn"
+                    style={{ flex: 1 }}
+                    onClick={submitVoice}
+                    disabled={loading}
+                  >
+                    {loading ? (
+                      <>{t('scan.analyzing')}</>
+                    ) : (
+                      <><span className="ai-analyze-icon">✨</span> {t('scan.analyzeVoice')}</>
+                    )}
+                  </button>
+                </div>
+              </div>
+            )}
+
             {transcript && (
-              <div className="voice-transcript">
-                <label>{t('scan.youSaid')}</label>
-                <textarea
-                  value={transcript}
-                  onChange={(e) => setTranscript(e.target.value)}
-                  rows={3}
-                  style={{ resize: 'vertical' }}
-                />
-                <button
-                  className="ai-analyze-btn"
-                  onClick={submitVoice}
-                  disabled={loading || !transcript.trim()}
-                  style={{ marginTop: 'var(--space-md)' }}
-                >
-                  {loading ? (
-                    <>{t('scan.analyzing')}</>
-                  ) : (
-                    <><span className="ai-analyze-icon">✨</span> {t('dashboard.aiNutritionAnalysis')}</>
-                  )}
-                </button>
+              <div style={{ marginTop: 'var(--space-md)', width: '100%' }}>
+                <label style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-text-secondary)' }}>{t('scan.youSaid')}</label>
+                <p style={{ fontStyle: 'italic', marginTop: 'var(--space-xs)' }}>{transcript}</p>
               </div>
             )}
 

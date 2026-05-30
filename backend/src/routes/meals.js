@@ -2,9 +2,9 @@ const { Router } = require('express');
 const rateLimit = require('express-rate-limit');
 const prisma = require('../utils/prisma');
 const { authenticate } = require('../middleware/auth');
-const { upload } = require('../middleware/upload');
+const { upload, uploadAudio } = require('../middleware/upload');
 const { manualMealSchema } = require('../utils/validation');
-const { analyzePhoto, analyzeVoiceText } = require('../services/vision');
+const { analyzePhoto, analyzeVoiceText, transcribeAudio } = require('../services/vision');
 const { uploadImage } = require('../services/s3');
 const { refreshDailyStat } = require('../utils/dailyStats');
 
@@ -127,23 +127,87 @@ router.post('/photo', authenticate, aiLimiter, upload.single('photo'), async (re
   }
 });
 
-router.post('/voice', authenticate, aiLimiter, async (req, res, next) => {
+const VOICE_DAILY_LIMIT_SECONDS = 180; // 3 minutes per day
+
+async function getVoiceSecondsRemaining(userId) {
+  const user = await prisma.user.findUnique({ where: { id: userId }, select: { voiceSecondsUsed: true, voiceSecondsResetAt: true } });
+  const today = new Date().toDateString();
+  const resetDay = user.voiceSecondsResetAt ? user.voiceSecondsResetAt.toDateString() : null;
+  if (resetDay !== today) return VOICE_DAILY_LIMIT_SECONDS;
+  return Math.max(0, VOICE_DAILY_LIMIT_SECONDS - user.voiceSecondsUsed);
+}
+
+router.get('/voice/limit', authenticate, async (req, res, next) => {
   try {
-    const { text } = req.body;
-    if (!text || !text.trim()) return res.status(400).json({ error: 'Text description is required' });
+    const remaining = await getVoiceSecondsRemaining(req.userId);
+    res.json({ remainingSeconds: remaining, dailyLimitSeconds: VOICE_DAILY_LIMIT_SECONDS });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.post('/voice', authenticate, aiLimiter, uploadAudio.single('audio'), async (req, res, next) => {
+  try {
+    if (!req.file) return res.status(400).json({ error: 'Audio file is required' });
 
     const user = await prisma.user.findUnique({ where: { id: req.userId } });
     if (!user) return res.status(404).json({ error: 'User not found' });
 
+    // Parse duration from client (seconds)
+    const duration = Math.ceil(parseFloat(req.body.duration) || 0);
+
+    // Check daily voice limit
+    const today = new Date().toDateString();
+    const resetDay = user.voiceSecondsResetAt ? user.voiceSecondsResetAt.toDateString() : null;
+    const usedToday = resetDay === today ? user.voiceSecondsUsed : 0;
+
+    if (usedToday + duration > VOICE_DAILY_LIMIT_SECONDS) {
+      const fs = require('fs');
+      fs.unlink(req.file.path, () => {});
+      return res.status(429).json({
+        error: 'Daily voice limit reached (3 min/day)',
+        remainingSeconds: Math.max(0, VOICE_DAILY_LIMIT_SECONDS - usedToday),
+      });
+    }
+
+    // Transcribe with Whisper
+    let transcript;
+    try {
+      transcript = await transcribeAudio(req.file.path);
+    } catch (err) {
+      const fs = require('fs');
+      fs.unlink(req.file.path, () => {});
+      return res.status(422).json({ error: 'Could not transcribe audio. Please try again.' });
+    }
+
+    // Clean up audio file
+    const fs = require('fs');
+    fs.unlink(req.file.path, () => {});
+
+    if (!transcript || !transcript.trim()) {
+      return res.status(422).json({ error: 'No speech detected. Please try again.' });
+    }
+
+    // Update voice usage
+    await prisma.user.update({
+      where: { id: req.userId },
+      data: {
+        voiceSecondsUsed: usedToday + duration,
+        voiceSecondsResetAt: new Date(),
+      },
+    });
+
+    // Analyze text with GPT
     const weightKg = user.weightKg || 70;
     const language = req.headers['x-language'] || 'en';
 
     let result;
     try {
-      result = await analyzeVoiceText(text.trim(), weightKg, language);
+      result = await analyzeVoiceText(transcript.trim(), weightKg, language);
     } catch (aiErr) {
       return res.status(422).json({
         error: aiErr.message || 'Could not analyze this description. Please try again.',
+        transcript,
       });
     }
 
@@ -167,7 +231,9 @@ router.post('/voice', authenticate, aiLimiter, async (req, res, next) => {
     refreshDailyStat(req.userId, meal.consumedAt).catch(() => {});
     res.status(201).json({
       meal,
+      transcript,
       low_confidence: lowConfidence,
+      remainingSeconds: Math.max(0, VOICE_DAILY_LIMIT_SECONDS - usedToday - duration),
     });
   } catch (err) {
     next(err);

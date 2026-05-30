@@ -214,7 +214,13 @@
     "startRecording": "Zum Sprechen tippen",
     "stopRecording": "Zum Stoppen tippen",
     "youSaid": "Sie sagten:",
-    "voiceError": "Zugriff auf das Mikrofon nicht möglich. Bitte Berechtigungen prüfen."
+    "voiceError": "Zugriff auf das Mikrofon nicht möglich. Bitte Berechtigungen prüfen.",
+    "voiceRemaining": "Verbleibende Sprachzeit heute: {0}",
+    "voiceLimitReached": "Tägliches Sprachlimit erreicht (3 Min/Tag). Wird morgen zurückgesetzt.",
+    "maxDuration": "Max: {0}",
+    "recordingReady": "Aufnahme bereit ({0})",
+    "reRecord": "Erneut aufnehmen",
+    "analyzeVoice": "Analysieren"
   },
   "reports": {
     "dailySummary": "Tagesübersicht",
