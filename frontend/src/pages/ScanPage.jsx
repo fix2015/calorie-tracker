@@ -397,7 +397,7 @@ export default function ScanPage() {
                 <p style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-text-secondary)', marginBottom: 'var(--space-sm)' }}>
                   {t('scan.recordingReady', formatTime(recordingTime))}
                 </p>
-                <div style={{ display: 'flex', gap: 'var(--space-sm)' }}>
+                <div style={{ display: 'flex', gap: 'var(--space-sm)', width: '100%' }}>
                   <button
                     className="btn btn-secondary"
                     style={{ flex: 1 }}
@@ -406,16 +406,12 @@ export default function ScanPage() {
                     {t('scan.reRecord')}
                   </button>
                   <button
-                    className="ai-analyze-btn"
+                    className="btn btn-primary"
                     style={{ flex: 1 }}
                     onClick={submitVoice}
                     disabled={loading}
                   >
-                    {loading ? (
-                      <>{t('scan.analyzing')}</>
-                    ) : (
-                      <><span className="ai-analyze-icon">✨</span> {t('scan.analyzeVoice')}</>
-                    )}
+                    {loading ? t('scan.analyzing') : `✨ ${t('scan.analyzeVoice')}`}
                   </button>
                 </div>
               </div>
