@@ -1,6 +1,5 @@
-const CACHE_NAME = 'calorie-tracker-v1';
+const CACHE_NAME = 'calorie-tracker-v2';
 const STATIC_ASSETS = [
-  '/',
   '/manifest.json',
   '/favicon.svg',
 ];
@@ -34,6 +33,9 @@ self.addEventListener('fetch', (event) => {
   // API calls — network only (don't cache user data)
   if (url.pathname.startsWith('/api/')) return;
 
+  // Never cache index.html or sw.js — always go to network
+  if (url.pathname === '/' || url.pathname === '/index.html' || url.pathname === '/sw.js') return;
+
   // Uploads — network first, cache fallback
   if (url.pathname.startsWith('/uploads/')) {
     event.respondWith(
@@ -48,7 +50,7 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // App shell & static assets — stale-while-revalidate
+  // Static assets — stale-while-revalidate
   event.respondWith(
     caches.match(request).then((cached) => {
       const fetchPromise = fetch(request)
