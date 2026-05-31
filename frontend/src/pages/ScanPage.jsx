@@ -288,7 +288,6 @@ export default function ScanPage() {
             <input
               type="file"
               accept="image/*"
-              capture="environment"
               ref={fileRef}
               onChange={handleFileChange}
               style={{ display: 'none' }}
