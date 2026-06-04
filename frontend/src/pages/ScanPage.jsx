@@ -45,6 +45,7 @@ export default function ScanPage() {
   // Result screen
   const [result, setResult] = useState(null);
   const [editing, setEditing] = useState(false);
+  const [scanning, setScanning] = useState(false);
 
   // Open file picker on mount for photo mode
   useEffect(() => {
@@ -117,11 +118,13 @@ export default function ScanPage() {
       setError(err.message || 'Scan failed');
     } finally {
       setLoading(false);
+      setScanning(false);
     }
   };
 
   const handleScan = async () => {
     if (!file) return;
+    setScanning(true);
     setLoading(true);
     const blob = await resizeImage(file);
     submitPhoto(blob);
@@ -535,6 +538,27 @@ export default function ScanPage() {
               <p className={`error-text${error ? ' visible' : ''}`} style={{ marginTop: error ? 'var(--space-sm)' : 0 }}><span>{error}</span></p>
             </>
           )}
+        </div>
+      )}
+
+      {/* Scanning animation overlay */}
+      {scanning && preview && (
+        <div className="scan-overlay">
+          <div className="scan-overlay-content">
+            <div className="scan-image-wrapper">
+              <img src={preview} alt="Scanning food" />
+              <div className="scan-line-h" />
+              <div className="scan-line-v" />
+              <div className="scan-corners">
+                <span className="scan-corner tl" />
+                <span className="scan-corner tr" />
+                <span className="scan-corner bl" />
+                <span className="scan-corner br" />
+              </div>
+              <div className="scan-glow" />
+            </div>
+            <p className="scan-label">{t('scan.analyzing')}</p>
+          </div>
         </div>
       )}
 
