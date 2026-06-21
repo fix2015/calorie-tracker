@@ -247,6 +247,7 @@ export default function ScanPage() {
   // --- Barcode ---
   const stopBarcodeScanner = useCallback(() => {
     if (quaggaRunningRef.current) {
+      Quagga.offDetected();
       Quagga.stop();
       quaggaRunningRef.current = false;
     }
@@ -297,8 +298,11 @@ export default function ScanPage() {
     // Use a confidence check — only accept if the same code is detected 3 times
     let lastCode = '';
     let codeCount = 0;
+    let handled = false;
 
+    Quagga.offDetected();
     Quagga.onDetected((result) => {
+      if (handled) return;
       const code = result.codeResult?.code;
       if (!code) return;
 
@@ -310,6 +314,8 @@ export default function ScanPage() {
       }
 
       if (codeCount >= 3) {
+        handled = true;
+        Quagga.offDetected();
         stopBarcodeScanner();
         handleBarcodeDetected(code);
       }
