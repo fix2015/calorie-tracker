@@ -79,19 +79,14 @@ export default function DashboardPage() {
     fetchData();
   };
 
-  const handleSwipeDelete = useCallback(async (mealId, wrapperEl) => {
-    // Animate slide out
-    const content = wrapperEl?.querySelector('.dash-meal-content');
-    if (content) content.classList.add('removing');
-
-    // Wait for animation then delete
-    setTimeout(async () => {
-      try {
-        await meals.remove(mealId);
-      } catch {}
-      setSwipedMealId(null);
-      fetchData();
-    }, 300);
+  const handleSwipeDelete = useCallback(async (mealId) => {
+    setSwipedMealId(null);
+    // Remove from local state immediately — no flicker
+    setDaily((prev) => prev ? { ...prev, meals: prev.meals.filter((m) => m.id !== mealId) } : prev);
+    try {
+      await meals.remove(mealId);
+    } catch {}
+    fetchData();
   }, []);
 
   const handleTouchStart = useCallback((e, mealId) => {
@@ -117,7 +112,6 @@ export default function DashboardPage() {
       el.style.transition = 'none';
       el.style.transform = `translateX(${offset}px)`;
     }
-    // Show delete button when swiped enough
     if (offset < -30) {
       e.currentTarget.classList.add('reveal-delete');
     }
@@ -130,19 +124,17 @@ export default function DashboardPage() {
     const el = e.currentTarget.querySelector('.dash-meal-content');
     if (el) el.style.transition = '';
 
-    // Second swipe left when already open → delete
+    // Second swipe left when already open → delete immediately
     if (sw.alreadyOpen && dx < -40) {
-      handleSwipeDelete(sw.id, e.currentTarget);
+      handleSwipeDelete(sw.id);
       return;
     }
 
     if (dx < -50) {
-      // Reveal delete button
       if (el) el.style.transform = 'translateX(-90px)';
       setSwipedMealId(sw.id);
       e.currentTarget.classList.add('reveal-delete');
     } else {
-      // Snap back
       if (el) el.style.transform = 'translateX(0)';
       setSwipedMealId(null);
       e.currentTarget.classList.remove('reveal-delete');

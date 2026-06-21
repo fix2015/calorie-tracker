@@ -1153,13 +1153,6 @@ a:hover { text-decoration: underline; }
   transform: translateX(-90px);
 }
 
-.dash-meal-content.removing {
-  transform: translateX(-100%);
-  opacity: 0;
-  max-height: 0;
-  padding: 0;
-  transition: transform 0.3s ease-in, opacity 0.3s ease-in, max-height 0.3s ease-in;
-}
 
 .dash-meal-item {
   display: flex;
