@@ -1251,18 +1251,18 @@ a:hover { text-decoration: underline; }
 }
 
 /* Barcode scanner */
+.barcode-video {
+  width: 100%;
+  max-width: 400px;
+  border-radius: var(--radius-lg);
+  object-fit: contain;
+}
+
 .barcode-reader {
   width: 100%;
   max-width: 400px;
   border-radius: var(--radius-lg);
   overflow: hidden;
-  background: #000;
-}
-
-video.barcode-reader {
-  display: block;
-  object-fit: cover;
-  max-height: 300px;
 }
 
 .barcode-servings {

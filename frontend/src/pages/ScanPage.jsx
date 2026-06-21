@@ -251,7 +251,11 @@ export default function ScanPage() {
       barcodeIntervalRef.current = null;
     }
     if (barcodeStreamRef.current) {
-      barcodeStreamRef.current.getTracks().forEach((t) => t.stop());
+      if (barcodeStreamRef.current._scanner) {
+        barcodeStreamRef.current._scanner.stop().catch(() => {});
+      } else {
+        barcodeStreamRef.current.getTracks().forEach((tr) => tr.stop());
+      }
       barcodeStreamRef.current = null;
     }
     if (barcodeVideoRef.current) {
@@ -266,22 +270,22 @@ export default function ScanPage() {
     setBarcodeActive(true);
 
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: {
-          facingMode: 'environment',
-          width: { ideal: 1920 },
-          height: { ideal: 1080 },
-        },
-      });
-      barcodeStreamRef.current = stream;
-
-      const video = barcodeVideoRef.current;
-      if (!video) { stopBarcodeScanner(); return; }
-      video.srcObject = stream;
-      await video.play();
-
-      // Use native BarcodeDetector if available, otherwise fall back to html5-qrcode
       if ('BarcodeDetector' in window) {
+        // Native path: getUserMedia with HD + BarcodeDetector
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: {
+            facingMode: 'environment',
+            width: { ideal: 1920 },
+            height: { ideal: 1080 },
+          },
+        });
+        barcodeStreamRef.current = stream;
+
+        const video = barcodeVideoRef.current;
+        if (!video) { stopBarcodeScanner(); return; }
+        video.srcObject = stream;
+        await video.play();
+
         const detector = new window.BarcodeDetector({
           formats: ['ean_13', 'ean_8', 'upc_a', 'upc_e', 'code_128', 'code_39', 'itf'],
         });
@@ -298,12 +302,8 @@ export default function ScanPage() {
           } catch {}
         }, 200);
       } else {
-        // Fallback: dynamically import html5-qrcode for devices without BarcodeDetector
+        // Fallback: html5-qrcode handles its own camera
         const { Html5Qrcode } = await import('html5-qrcode');
-        stopBarcodeScanner();
-
-        // Re-request camera through html5-qrcode
-        setBarcodeActive(true);
         const scanner = new Html5Qrcode('barcode-reader-fallback', { verbose: false });
         barcodeStreamRef.current = { getTracks: () => [], _scanner: scanner };
 
@@ -596,8 +596,11 @@ export default function ScanPage() {
               {t('scan.scanBarcode')}
             </p>
 
-            <video ref={barcodeVideoRef} className="barcode-reader" playsInline muted />
-            <div id="barcode-reader-fallback" className="barcode-reader" style={{ display: barcodeActive && !barcodeVideoRef.current?.srcObject ? 'block' : 'none' }} />
+            {'BarcodeDetector' in window ? (
+              <video ref={barcodeVideoRef} className="barcode-video" playsInline muted />
+            ) : (
+              <div id="barcode-reader-fallback" className="barcode-reader" />
+            )}
 
             {!barcodeActive ? (
               <button
