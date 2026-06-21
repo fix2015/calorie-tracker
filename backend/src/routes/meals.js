@@ -291,6 +291,7 @@ router.post('/barcode', authenticate, async (req, res, next) => {
         fatG,
         tags: mealTags,
         source: 'barcode',
+        photoUrl: photoUrl || null,
         consumedAt: new Date(),
       },
     });

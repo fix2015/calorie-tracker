@@ -337,6 +337,7 @@ export default function ScanPage() {
         proteinG: m.proteinG,
         carbsG: m.carbsG,
         fatG: m.fatG,
+        photoUrl: m.photoUrl,
       });
     } catch (err) {
       setError(err.message || t('scan.barcodeNotFound'));
