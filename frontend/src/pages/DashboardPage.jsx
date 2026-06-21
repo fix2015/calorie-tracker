@@ -79,18 +79,25 @@ export default function DashboardPage() {
     fetchData();
   };
 
-  const handleSwipeDelete = useCallback(async (mealId) => {
-    try {
-      await meals.remove(mealId);
+  const handleSwipeDelete = useCallback(async (mealId, wrapperEl) => {
+    // Animate slide out
+    const content = wrapperEl?.querySelector('.dash-meal-content');
+    if (content) content.classList.add('removing');
+
+    // Wait for animation then delete
+    setTimeout(async () => {
+      try {
+        await meals.remove(mealId);
+      } catch {}
       setSwipedMealId(null);
       fetchData();
-    } catch {}
+    }, 300);
   }, []);
 
   const handleTouchStart = useCallback((e, mealId) => {
     const touch = e.touches[0];
-    swipeRef.current = { startX: touch.clientX, startY: touch.clientY, currentX: touch.clientX, swiping: false, id: mealId };
-  }, []);
+    swipeRef.current = { startX: touch.clientX, startY: touch.clientY, currentX: touch.clientX, swiping: false, id: mealId, alreadyOpen: swipedMealId === mealId };
+  }, [swipedMealId]);
 
   const handleTouchMove = useCallback((e) => {
     const touch = e.touches[0];
@@ -103,9 +110,17 @@ export default function DashboardPage() {
     sw.swiping = true;
     sw.currentX = touch.clientX;
 
-    const offset = Math.min(0, Math.max(-80, dx));
+    const base = sw.alreadyOpen ? -90 : 0;
+    const offset = Math.min(0, Math.max(-200, base + dx));
     const el = e.currentTarget.querySelector('.dash-meal-content');
-    if (el) el.style.transform = `translateX(${offset}px)`;
+    if (el) {
+      el.style.transition = 'none';
+      el.style.transform = `translateX(${offset}px)`;
+    }
+    // Show delete button when swiped enough
+    if (offset < -30) {
+      e.currentTarget.classList.add('reveal-delete');
+    }
   }, []);
 
   const handleTouchEnd = useCallback((e) => {
@@ -113,17 +128,26 @@ export default function DashboardPage() {
     if (!sw.swiping) return;
     const dx = sw.currentX - sw.startX;
     const el = e.currentTarget.querySelector('.dash-meal-content');
+    if (el) el.style.transition = '';
+
+    // Second swipe left when already open → delete
+    if (sw.alreadyOpen && dx < -40) {
+      handleSwipeDelete(sw.id, e.currentTarget);
+      return;
+    }
 
     if (dx < -50) {
-      // Swiped far enough — reveal delete button
-      if (el) el.style.transform = 'translateX(-80px)';
+      // Reveal delete button
+      if (el) el.style.transform = 'translateX(-90px)';
       setSwipedMealId(sw.id);
+      e.currentTarget.classList.add('reveal-delete');
     } else {
       // Snap back
       if (el) el.style.transform = 'translateX(0)';
       setSwipedMealId(null);
+      e.currentTarget.classList.remove('reveal-delete');
     }
-  }, []);
+  }, [handleSwipeDelete]);
 
   const needsWeighIn = user?.weightUpdatedAt
     ? (Date.now() - new Date(user.weightUpdatedAt).getTime()) > 7 * 24 * 60 * 60 * 1000
@@ -316,7 +340,10 @@ export default function DashboardPage() {
                 onTouchMove={handleTouchMove}
                 onTouchEnd={handleTouchEnd}
               >
-                <div className="dash-meal-delete-action" onClick={() => handleSwipeDelete(m.id)}>
+                <div className="dash-meal-delete-action" onClick={(e) => handleSwipeDelete(m.id, e.currentTarget.closest('.dash-meal-swipe-wrapper'))}>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="3 6 5 6 21 6" /><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6" /><path d="M10 11v6" /><path d="M14 11v6" /><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2" />
+                  </svg>
                   {t('common.delete')}
                 </div>
                 <div className={`dash-meal-content${swipedMealId === m.id ? ' swiped' : ''}`}>

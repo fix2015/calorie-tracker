@@ -1097,10 +1097,13 @@ a:hover { text-decoration: underline; }
   position: relative;
   overflow: hidden;
   border-bottom: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  margin-bottom: 2px;
 }
 
 .dash-meal-swipe-wrapper:last-child {
   border-bottom: none;
+  margin-bottom: 0;
 }
 
 .dash-meal-delete-action {
@@ -1108,27 +1111,54 @@ a:hover { text-decoration: underline; }
   right: 0;
   top: 0;
   bottom: 0;
-  width: 80px;
-  background: #DC2626;
+  width: 90px;
+  background: linear-gradient(135deg, #EF4444, #DC2626);
   color: white;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
+  gap: 4px;
   font-weight: 600;
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-xs);
   cursor: pointer;
   user-select: none;
+  opacity: 0;
+  transform: scale(0.8);
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+.dash-meal-swipe-wrapper.reveal-delete .dash-meal-delete-action {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.dash-meal-delete-action:active {
+  background: linear-gradient(135deg, #DC2626, #B91C1C);
+}
+
+.dash-meal-delete-action svg {
+  width: 20px;
+  height: 20px;
 }
 
 .dash-meal-content {
   position: relative;
   background: var(--color-surface);
-  transition: transform 0.2s ease-out;
+  transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   z-index: 1;
 }
 
 .dash-meal-content.swiped {
-  transform: translateX(-80px);
+  transform: translateX(-90px);
+}
+
+.dash-meal-content.removing {
+  transform: translateX(-100%);
+  opacity: 0;
+  max-height: 0;
+  padding: 0;
+  transition: transform 0.3s ease-in, opacity 0.3s ease-in, max-height 0.3s ease-in;
 }
 
 .dash-meal-item {
