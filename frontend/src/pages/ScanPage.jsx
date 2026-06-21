@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { Html5Qrcode } from 'html5-qrcode';
 import { meals } from '../services/api';
 import { resizeImage } from '../services/imageResize';
 import { photoSrc } from '../services/photoUrl';
@@ -22,7 +23,11 @@ export default function ScanPage() {
   const timerRef = useRef(null);
   const startTimeRef = useRef(null);
 
-  const initialMode = searchParams.get('mode') === 'voice' ? 'voice' : 'photo';
+  const barcodeRegionRef = useRef(null);
+  const html5QrCodeRef = useRef(null);
+
+  const modeParam = searchParams.get('mode');
+  const initialMode = modeParam === 'voice' ? 'voice' : modeParam === 'barcode' ? 'barcode' : 'photo';
   const [mode, setMode] = useState(initialMode);
   const [preview, setPreview] = useState(null);
   const [file, setFile] = useState(null);
@@ -41,6 +46,11 @@ export default function ScanPage() {
   const [audioBlob, setAudioBlob] = useState(null);
   const [transcript, setTranscript] = useState('');
   const [remainingSeconds, setRemainingSeconds] = useState(null);
+
+  // Barcode state
+  const [barcodeActive, setBarcodeActive] = useState(false);
+  const [barcodeProduct, setBarcodeProduct] = useState(null);
+  const [barcodeServings, setBarcodeServings] = useState(1);
 
   // Result screen
   const [result, setResult] = useState(null);
@@ -69,6 +79,10 @@ export default function ScanPage() {
         mediaRecorderRef.current.stop();
       }
       if (timerRef.current) clearInterval(timerRef.current);
+      if (html5QrCodeRef.current) {
+        html5QrCodeRef.current.stop().catch(() => {});
+        html5QrCodeRef.current = null;
+      }
     };
   }, []);
 
@@ -229,6 +243,93 @@ export default function ScanPage() {
     }
   };
 
+  // --- Barcode ---
+  const startBarcodeScanner = useCallback(async () => {
+    if (html5QrCodeRef.current) return;
+    setError('');
+    setBarcodeActive(true);
+
+    try {
+      const html5QrCode = new Html5Qrcode('barcode-reader');
+      html5QrCodeRef.current = html5QrCode;
+
+      await html5QrCode.start(
+        { facingMode: 'environment' },
+        { fps: 10, qrbox: { width: 250, height: 150 } },
+        async (decodedText) => {
+          // Stop scanner on successful scan
+          await html5QrCode.stop().catch(() => {});
+          html5QrCodeRef.current = null;
+          setBarcodeActive(false);
+          handleBarcodeDetected(decodedText);
+        },
+        () => {} // ignore scan failures (no barcode in frame)
+      );
+    } catch {
+      setError(t('scan.barcodeError'));
+      setBarcodeActive(false);
+    }
+  }, [t]);
+
+  const stopBarcodeScanner = useCallback(async () => {
+    if (html5QrCodeRef.current) {
+      await html5QrCodeRef.current.stop().catch(() => {});
+      html5QrCodeRef.current = null;
+    }
+    setBarcodeActive(false);
+  }, []);
+
+  const handleBarcodeDetected = async (barcode) => {
+    setLoading(true);
+    setError('');
+    try {
+      const res = await meals.barcode({ barcode, servings: 1 });
+      setBarcodeProduct(res.product);
+      setBarcodeServings(1);
+      const m = res.meal;
+      setResult({
+        id: m.id,
+        name: m.name,
+        calories: m.calories,
+        proteinG: m.proteinG,
+        carbsG: m.carbsG,
+        fatG: m.fatG,
+      });
+    } catch (err) {
+      setError(err.message || t('scan.barcodeNotFound'));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleBarcodeServingsChange = async (newServings) => {
+    const count = Math.max(0.1, parseFloat(newServings) || 1);
+    setBarcodeServings(count);
+    if (!barcodeProduct || !result) return;
+
+    // Recalculate based on product nutriments
+    const src = barcodeProduct.nutrimentsPerServing || barcodeProduct.nutrimentsPer100g;
+    const updated = {
+      ...result,
+      calories: Math.round(src.calories * count),
+      proteinG: Math.round(src.proteinG * count),
+      carbsG: Math.round(src.carbsG * count),
+      fatG: Math.round(src.fatG * count),
+    };
+    setResult(updated);
+
+    // Update the meal in DB
+    try {
+      await meals.update(result.id, {
+        name: result.name,
+        calories: updated.calories,
+        proteinG: updated.proteinG,
+        carbsG: updated.carbsG,
+        fatG: updated.fatG,
+      });
+    } catch {}
+  };
+
   // --- Shared ---
   const handleSaveEdited = async () => {
     setLoading(true);
@@ -261,7 +362,10 @@ export default function ScanPage() {
     setRecordingTime(0);
     setPreview(null);
     setFile(null);
+    setBarcodeProduct(null);
+    setBarcodeServings(1);
     if (isRecording) stopRecording();
+    stopBarcodeScanner();
   };
 
   return (
@@ -280,6 +384,12 @@ export default function ScanPage() {
             onClick={() => switchMode('voice')}
           >
             🎤 {t('scan.voiceTab')}
+          </button>
+          <button
+            className={`scan-mode-btn${mode === 'barcode' ? ' active' : ''}`}
+            onClick={() => switchMode('barcode')}
+          >
+            📦 {t('scan.barcodeTab')}
           </button>
         </div>
       )}
@@ -432,6 +542,41 @@ export default function ScanPage() {
         </div>
       )}
 
+      {/* Barcode mode */}
+      {!result && mode === 'barcode' && (
+        <div className="card">
+          <div className="scan-area">
+            <p style={{ color: 'var(--color-text-secondary)', textAlign: 'center', marginBottom: 'var(--space-md)' }}>
+              {t('scan.scanBarcode')}
+            </p>
+
+            <div id="barcode-reader" className="barcode-reader" />
+
+            {!barcodeActive ? (
+              <button
+                className="btn btn-primary"
+                onClick={startBarcodeScanner}
+                disabled={loading}
+                style={{ marginTop: 'var(--space-md)' }}
+              >
+                {t('scan.startScanner')}
+              </button>
+            ) : (
+              <button
+                className="btn btn-secondary"
+                onClick={stopBarcodeScanner}
+                style={{ marginTop: 'var(--space-md)' }}
+              >
+                {t('scan.stopScanner')}
+              </button>
+            )}
+
+            {loading && <div className="spinner" />}
+            <p className={`error-text${error ? ' visible' : ''}`}><span>{error}</span></p>
+          </div>
+        </div>
+      )}
+
       {/* Result screen */}
       {result && (
         <div className="card">
@@ -440,10 +585,20 @@ export default function ScanPage() {
               <img src={photoSrc(result.photoUrl)} alt={result.name} />
             </div>
           )}
+          {!result.photoUrl && barcodeProduct?.imageUrl && (
+            <div className="photo-preview" style={{ marginBottom: 'var(--space-md)' }}>
+              <img src={barcodeProduct.imageUrl} alt={result.name} />
+            </div>
+          )}
 
           {!editing ? (
             <>
               <h2 style={{ marginBottom: 'var(--space-sm)' }}>{result.name}</h2>
+              {barcodeProduct && barcodeProduct.brand && (
+                <p style={{ color: 'var(--color-text-secondary)', fontSize: 'var(--font-size-sm)', marginBottom: 'var(--space-xs)' }}>
+                  {barcodeProduct.brand}
+                </p>
+              )}
               {result.confidence && (
                 <p style={{
                   color: result.confidence > 0.7 ? 'var(--color-success)' : 'var(--color-warning)',
@@ -452,6 +607,25 @@ export default function ScanPage() {
                 }}>
                   {t('scan.confidence', Math.round(result.confidence * 100))}
                 </p>
+              )}
+              {barcodeProduct && (
+                <div className="barcode-servings" style={{ marginBottom: 'var(--space-md)' }}>
+                  {barcodeProduct.servingSize && (
+                    <p style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-text-secondary)', marginBottom: 'var(--space-xs)' }}>
+                      {t('scan.servingSize')}: {barcodeProduct.servingSize}
+                    </p>
+                  )}
+                  <div className="form-group" style={{ maxWidth: '200px' }}>
+                    <label>{t('scan.servings')}</label>
+                    <input
+                      type="number"
+                      min="0.1"
+                      step="0.5"
+                      value={barcodeServings}
+                      onChange={(e) => handleBarcodeServingsChange(e.target.value)}
+                    />
+                  </div>
+                </div>
               )}
               <div className="macro-bar" style={{ marginBottom: 'var(--space-lg)' }}>
                 <div className="macro-item">

@@ -31,6 +31,7 @@ enum MealSource {
   manual
   photo_ai
   voice_ai
+  barcode
 }
 
 model User {

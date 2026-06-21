@@ -220,7 +220,16 @@
     "maxDuration": "Макс: {0}",
     "recordingReady": "Запис готовий ({0})",
     "reRecord": "Перезаписати",
-    "analyzeVoice": "Аналізувати"
+    "analyzeVoice": "Аналізувати",
+    "barcodeTab": "Штрих-код",
+    "scanBarcode": "Наведіть камеру на штрих-код продукту",
+    "barcodeNotFound": "Продукт не знайдено. Спробуйте ввести вручну.",
+    "barcodeError": "Не вдалося отримати доступ до камери. Перевірте дозволи.",
+    "startScanner": "Запустити сканер",
+    "stopScanner": "Зупинити сканер",
+    "servingSize": "Розмір порції",
+    "servings": "Порції",
+    "productFound": "Продукт знайдено!"
   },
   "reports": {
     "dailySummary": "Денний підсумок",

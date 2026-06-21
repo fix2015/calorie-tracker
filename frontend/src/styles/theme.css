@@ -1250,6 +1250,26 @@ a:hover { text-decoration: underline; }
   margin-bottom: var(--space-xs);
 }
 
+/* Barcode scanner */
+.barcode-reader {
+  width: 100%;
+  max-width: 400px;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.barcode-reader video {
+  border-radius: var(--radius-lg);
+}
+
+.barcode-reader #qr-shaded-region {
+  border-color: var(--color-primary) !important;
+}
+
+.barcode-servings {
+  text-align: center;
+}
+
 /* Photo scan */
 .scan-area {
   display: flex;

@@ -240,6 +240,90 @@ router.post('/voice', authenticate, aiLimiter, uploadAudio.single('audio'), asyn
   }
 });
 
+router.post('/barcode', authenticate, async (req, res, next) => {
+  try {
+    const { barcode, servings } = req.body;
+    if (!barcode || typeof barcode !== 'string') {
+      return res.status(400).json({ error: 'Barcode is required' });
+    }
+
+    // Look up product on Open Food Facts
+    const response = await fetch(`https://world.openfoodfacts.org/api/v2/product/${encodeURIComponent(barcode)}.json`);
+    const data = await response.json();
+
+    if (!data || data.status !== 1 || !data.product) {
+      return res.status(404).json({ error: 'Product not found' });
+    }
+
+    const product = data.product;
+    const nutriments = product.nutriments || {};
+    const servingCount = Math.max(0.1, parseFloat(servings) || 1);
+
+    // Get per-serving values if available, otherwise fall back to per-100g
+    const servingSize = product.serving_quantity ? parseFloat(product.serving_quantity) : null;
+    const hasPerServing = nutriments['energy-kcal_serving'] != null;
+
+    let calories, proteinG, carbsG, fatG;
+    if (hasPerServing) {
+      calories = Math.round((nutriments['energy-kcal_serving'] || 0) * servingCount);
+      proteinG = Math.round((nutriments['proteins_serving'] || 0) * servingCount);
+      carbsG = Math.round((nutriments['carbohydrates_serving'] || 0) * servingCount);
+      fatG = Math.round((nutriments['fat_serving'] || 0) * servingCount);
+    } else {
+      // Use per 100g values
+      calories = Math.round((nutriments['energy-kcal_100g'] || nutriments['energy-kcal'] || 0) * servingCount);
+      proteinG = Math.round((nutriments['proteins_100g'] || nutriments['proteins'] || 0) * servingCount);
+      carbsG = Math.round((nutriments['carbohydrates_100g'] || nutriments['carbohydrates'] || 0) * servingCount);
+      fatG = Math.round((nutriments['fat_100g'] || nutriments['fat'] || 0) * servingCount);
+    }
+
+    const name = product.product_name || product.product_name_en || 'Unknown product';
+    const photoUrl = product.image_front_small_url || product.image_url || null;
+
+    const mealTags = autoTags({ calories, proteinG, carbsG, fatG });
+    const meal = await prisma.meal.create({
+      data: {
+        userId: req.userId,
+        name,
+        calories,
+        proteinG,
+        carbsG,
+        fatG,
+        tags: mealTags,
+        source: 'barcode',
+        consumedAt: new Date(),
+      },
+    });
+
+    refreshDailyStat(req.userId, meal.consumedAt).catch(() => {});
+    res.status(201).json({
+      meal,
+      product: {
+        name,
+        brand: product.brands || null,
+        servingSize: product.serving_size || null,
+        servingQuantity: servingSize,
+        imageUrl: photoUrl,
+        hasPerServing,
+        nutrimentsPer100g: {
+          calories: Math.round(nutriments['energy-kcal_100g'] || nutriments['energy-kcal'] || 0),
+          proteinG: Math.round(nutriments['proteins_100g'] || nutriments['proteins'] || 0),
+          carbsG: Math.round(nutriments['carbohydrates_100g'] || nutriments['carbohydrates'] || 0),
+          fatG: Math.round(nutriments['fat_100g'] || nutriments['fat'] || 0),
+        },
+        nutrimentsPerServing: hasPerServing ? {
+          calories: Math.round(nutriments['energy-kcal_serving'] || 0),
+          proteinG: Math.round(nutriments['proteins_serving'] || 0),
+          carbsG: Math.round(nutriments['carbohydrates_serving'] || 0),
+          fatG: Math.round(nutriments['fat_serving'] || 0),
+        } : null,
+      },
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
 router.get('/', authenticate, async (req, res, next) => {
   try {
     const { from, to } = req.query;

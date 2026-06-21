@@ -220,7 +220,16 @@
     "maxDuration": "Max : {0}",
     "recordingReady": "Enregistrement prêt ({0})",
     "reRecord": "Réenregistrer",
-    "analyzeVoice": "Analyser"
+    "analyzeVoice": "Analyser",
+    "barcodeTab": "Code-barres",
+    "scanBarcode": "Pointez la caméra vers le code-barres du produit",
+    "barcodeNotFound": "Produit non trouvé. Essayez de le saisir manuellement.",
+    "barcodeError": "Impossible d'accéder à la caméra. Vérifiez les permissions.",
+    "startScanner": "Démarrer le scanner",
+    "stopScanner": "Arrêter le scanner",
+    "servingSize": "Taille de la portion",
+    "servings": "Portions",
+    "productFound": "Produit trouvé !"
   },
   "reports": {
     "dailySummary": "Résumé quotidien",

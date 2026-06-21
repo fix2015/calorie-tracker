@@ -220,7 +220,16 @@
     "maxDuration": "Maks: {0}",
     "recordingReady": "Nagranie gotowe ({0})",
     "reRecord": "Nagraj ponownie",
-    "analyzeVoice": "Analizuj"
+    "analyzeVoice": "Analizuj",
+    "barcodeTab": "Kod kreskowy",
+    "scanBarcode": "Skieruj kamerę na kod kreskowy produktu",
+    "barcodeNotFound": "Produkt nie znaleziony. Spróbuj wprowadzić ręcznie.",
+    "barcodeError": "Nie udało się uzyskać dostępu do kamery. Sprawdź uprawnienia.",
+    "startScanner": "Uruchom skaner",
+    "stopScanner": "Zatrzymaj skaner",
+    "servingSize": "Wielkość porcji",
+    "servings": "Porcje",
+    "productFound": "Znaleziono produkt!"
   },
   "reports": {
     "dailySummary": "Podsumowanie dnia",

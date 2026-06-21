@@ -80,6 +80,7 @@ export const meals = {
   photo: (formData) => request('/meals/photo', { method: 'POST', body: formData }),
   voice: (formData) => request('/meals/voice', { method: 'POST', body: formData }),
   voiceLimit: () => request('/meals/voice/limit'),
+  barcode: (data) => request('/meals/barcode', { method: 'POST', body: JSON.stringify(data) }),
   list: (from, to) => {
     const params = new URLSearchParams();
     if (from) params.set('from', from);

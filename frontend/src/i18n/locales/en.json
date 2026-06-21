@@ -220,7 +220,16 @@
     "maxDuration": "Max: {0}",
     "recordingReady": "Recording ready ({0})",
     "reRecord": "Re-record",
-    "analyzeVoice": "Analyze"
+    "analyzeVoice": "Analyze",
+    "barcodeTab": "Barcode",
+    "scanBarcode": "Point your camera at a product barcode",
+    "barcodeNotFound": "Product not found. Try entering manually.",
+    "barcodeError": "Could not access camera. Please check permissions.",
+    "startScanner": "Start Scanner",
+    "stopScanner": "Stop Scanner",
+    "servingSize": "Serving size",
+    "servings": "Servings",
+    "productFound": "Product found!"
   },
   "reports": {
     "dailySummary": "Daily Summary",
