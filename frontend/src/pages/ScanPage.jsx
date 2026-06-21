@@ -276,12 +276,9 @@ export default function ScanPage() {
 
       await html5QrCode.start(
         {
-          facingMode: 'environment',
-          video: {
-            width: { ideal: 1920 },
-            height: { ideal: 1080 },
-            focusMode: { ideal: 'continuous' },
-          },
+          facingMode: { ideal: 'environment' },
+          width: { ideal: 1920 },
+          height: { ideal: 1080 },
         },
         {
           fps: 25,
