@@ -72,14 +72,6 @@ export default function ScanPage() {
     }
   }, [mode]);
 
-  // Auto-start barcode scanner when switching to barcode mode
-  useEffect(() => {
-    if (mode === 'barcode' && !result) {
-      // Small delay to let the DOM render the barcode-reader div
-      const timer = setTimeout(() => startBarcodeScanner(), 300);
-      return () => clearTimeout(timer);
-    }
-  }, [mode]);
 
   // Cleanup on unmount
   useEffect(() => {
@@ -275,13 +267,9 @@ export default function ScanPage() {
       html5QrCodeRef.current = html5QrCode;
 
       await html5QrCode.start(
+        { facingMode: 'environment' },
         {
-          facingMode: { ideal: 'environment' },
-          width: { ideal: 1920 },
-          height: { ideal: 1080 },
-        },
-        {
-          fps: 25,
+          fps: 10,
           disableFlip: false,
         },
         async (decodedText) => {
