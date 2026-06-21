@@ -1,6 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Html5Qrcode, Html5QrcodeSupportedFormats } from 'html5-qrcode';
 import { meals } from '../services/api';
 import { resizeImage } from '../services/imageResize';
 import { photoSrc } from '../services/photoUrl';
@@ -23,8 +22,9 @@ export default function ScanPage() {
   const timerRef = useRef(null);
   const startTimeRef = useRef(null);
 
-  const barcodeRegionRef = useRef(null);
-  const html5QrCodeRef = useRef(null);
+  const barcodeVideoRef = useRef(null);
+  const barcodeStreamRef = useRef(null);
+  const barcodeIntervalRef = useRef(null);
 
   const modeParam = searchParams.get('mode');
   const initialMode = modeParam === 'voice' ? 'voice' : modeParam === 'barcode' ? 'barcode' : 'photo';
@@ -80,9 +80,9 @@ export default function ScanPage() {
         mediaRecorderRef.current.stop();
       }
       if (timerRef.current) clearInterval(timerRef.current);
-      if (html5QrCodeRef.current) {
-        html5QrCodeRef.current.stop().catch(() => {});
-        html5QrCodeRef.current = null;
+      if (barcodeIntervalRef.current) clearInterval(barcodeIntervalRef.current);
+      if (barcodeStreamRef.current) {
+        barcodeStreamRef.current.getTracks().forEach((t) => t.stop());
       }
     };
   }, []);
@@ -245,55 +245,85 @@ export default function ScanPage() {
   };
 
   // --- Barcode ---
+  const stopBarcodeScanner = useCallback(() => {
+    if (barcodeIntervalRef.current) {
+      clearInterval(barcodeIntervalRef.current);
+      barcodeIntervalRef.current = null;
+    }
+    if (barcodeStreamRef.current) {
+      barcodeStreamRef.current.getTracks().forEach((t) => t.stop());
+      barcodeStreamRef.current = null;
+    }
+    if (barcodeVideoRef.current) {
+      barcodeVideoRef.current.srcObject = null;
+    }
+    setBarcodeActive(false);
+  }, []);
+
   const startBarcodeScanner = useCallback(async () => {
-    if (html5QrCodeRef.current) return;
+    if (barcodeStreamRef.current) return;
     setError('');
     setBarcodeActive(true);
 
     try {
-      const html5QrCode = new Html5Qrcode('barcode-reader', {
-        formatsToSupport: [
-          Html5QrcodeSupportedFormats.EAN_13,
-          Html5QrcodeSupportedFormats.EAN_8,
-          Html5QrcodeSupportedFormats.UPC_A,
-          Html5QrcodeSupportedFormats.UPC_E,
-          Html5QrcodeSupportedFormats.CODE_128,
-          Html5QrcodeSupportedFormats.CODE_39,
-          Html5QrcodeSupportedFormats.ITF,
-        ],
-        useBarCodeDetectorIfSupported: true,
-        verbose: false,
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: {
+          facingMode: 'environment',
+          width: { ideal: 1920 },
+          height: { ideal: 1080 },
+        },
       });
-      html5QrCodeRef.current = html5QrCode;
+      barcodeStreamRef.current = stream;
 
-      await html5QrCode.start(
-        { facingMode: 'environment' },
-        {
-          fps: 10,
-          disableFlip: false,
-        },
-        async (decodedText) => {
-          // Stop scanner on successful scan
-          await html5QrCode.stop().catch(() => {});
-          html5QrCodeRef.current = null;
-          setBarcodeActive(false);
-          handleBarcodeDetected(decodedText);
-        },
-        () => {} // ignore scan failures (no barcode in frame)
-      );
+      const video = barcodeVideoRef.current;
+      if (!video) { stopBarcodeScanner(); return; }
+      video.srcObject = stream;
+      await video.play();
+
+      // Use native BarcodeDetector if available, otherwise fall back to html5-qrcode
+      if ('BarcodeDetector' in window) {
+        const detector = new window.BarcodeDetector({
+          formats: ['ean_13', 'ean_8', 'upc_a', 'upc_e', 'code_128', 'code_39', 'itf'],
+        });
+
+        barcodeIntervalRef.current = setInterval(async () => {
+          if (!video.videoWidth) return;
+          try {
+            const barcodes = await detector.detect(video);
+            if (barcodes.length > 0) {
+              const code = barcodes[0].rawValue;
+              stopBarcodeScanner();
+              handleBarcodeDetected(code);
+            }
+          } catch {}
+        }, 200);
+      } else {
+        // Fallback: dynamically import html5-qrcode for devices without BarcodeDetector
+        const { Html5Qrcode } = await import('html5-qrcode');
+        stopBarcodeScanner();
+
+        // Re-request camera through html5-qrcode
+        setBarcodeActive(true);
+        const scanner = new Html5Qrcode('barcode-reader-fallback', { verbose: false });
+        barcodeStreamRef.current = { getTracks: () => [], _scanner: scanner };
+
+        await scanner.start(
+          { facingMode: 'environment' },
+          { fps: 10, disableFlip: false },
+          async (decodedText) => {
+            await scanner.stop().catch(() => {});
+            barcodeStreamRef.current = null;
+            setBarcodeActive(false);
+            handleBarcodeDetected(decodedText);
+          },
+          () => {}
+        );
+      }
     } catch {
       setError(t('scan.barcodeError'));
-      setBarcodeActive(false);
+      stopBarcodeScanner();
     }
-  }, [t]);
-
-  const stopBarcodeScanner = useCallback(async () => {
-    if (html5QrCodeRef.current) {
-      await html5QrCodeRef.current.stop().catch(() => {});
-      html5QrCodeRef.current = null;
-    }
-    setBarcodeActive(false);
-  }, []);
+  }, [t, stopBarcodeScanner]);
 
   const handleBarcodeDetected = async (barcode) => {
     setLoading(true);
@@ -566,7 +596,8 @@ export default function ScanPage() {
               {t('scan.scanBarcode')}
             </p>
 
-            <div id="barcode-reader" className="barcode-reader" />
+            <video ref={barcodeVideoRef} className="barcode-reader" playsInline muted />
+            <div id="barcode-reader-fallback" className="barcode-reader" style={{ display: barcodeActive && !barcodeVideoRef.current?.srcObject ? 'block' : 'none' }} />
 
             {!barcodeActive ? (
               <button

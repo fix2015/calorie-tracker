@@ -1256,14 +1256,13 @@ a:hover { text-decoration: underline; }
   max-width: 400px;
   border-radius: var(--radius-lg);
   overflow: hidden;
+  background: #000;
 }
 
-.barcode-reader video {
-  border-radius: var(--radius-lg);
-}
-
-.barcode-reader #qr-shaded-region {
-  border-color: var(--color-primary) !important;
+video.barcode-reader {
+  display: block;
+  object-fit: cover;
+  max-height: 300px;
 }
 
 .barcode-servings {
