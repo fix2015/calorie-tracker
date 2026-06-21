@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Html5Qrcode } from 'html5-qrcode';
+import { Html5Qrcode, Html5QrcodeSupportedFormats } from 'html5-qrcode';
 import { meals } from '../services/api';
 import { resizeImage } from '../services/imageResize';
 import { photoSrc } from '../services/photoUrl';
@@ -250,12 +250,23 @@ export default function ScanPage() {
     setBarcodeActive(true);
 
     try {
-      const html5QrCode = new Html5Qrcode('barcode-reader');
+      const html5QrCode = new Html5Qrcode('barcode-reader', {
+        formatsToSupport: [
+          Html5QrcodeSupportedFormats.EAN_13,
+          Html5QrcodeSupportedFormats.EAN_8,
+          Html5QrcodeSupportedFormats.UPC_A,
+          Html5QrcodeSupportedFormats.UPC_E,
+          Html5QrcodeSupportedFormats.CODE_128,
+          Html5QrcodeSupportedFormats.CODE_39,
+          Html5QrcodeSupportedFormats.ITF,
+        ],
+        verbose: false,
+      });
       html5QrCodeRef.current = html5QrCode;
 
       await html5QrCode.start(
         { facingMode: 'environment' },
-        { fps: 10, qrbox: { width: 250, height: 150 } },
+        { fps: 15, qrbox: { width: 300, height: 150 }, aspectRatio: 1.0 },
         async (decodedText) => {
           // Stop scanner on successful scan
           await html5QrCode.stop().catch(() => {});
@@ -570,6 +581,24 @@ export default function ScanPage() {
                 {t('scan.stopScanner')}
               </button>
             )}
+
+            <div style={{ width: '100%', marginTop: 'var(--space-lg)', borderTop: '1px solid var(--color-border, #e2e8f0)', paddingTop: 'var(--space-lg)' }}>
+              <p style={{ color: 'var(--color-text-secondary)', fontSize: 'var(--font-size-sm)', textAlign: 'center', marginBottom: 'var(--space-sm)' }}>
+                {t('scan.orEnterManually')}
+              </p>
+              <form onSubmit={(e) => { e.preventDefault(); const code = e.target.elements.barcode.value.trim(); if (code) handleBarcodeDetected(code); }} style={{ display: 'flex', gap: 'var(--space-sm)' }}>
+                <input
+                  name="barcode"
+                  type="text"
+                  inputMode="numeric"
+                  placeholder={t('scan.barcodePlaceholder')}
+                  style={{ flex: 1 }}
+                />
+                <button type="submit" className="btn btn-primary" disabled={loading}>
+                  {t('scan.lookup')}
+                </button>
+              </form>
+            </div>
 
             {loading && <div className="spinner" />}
             <p className={`error-text${error ? ' visible' : ''}`}><span>{error}</span></p>

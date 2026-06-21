@@ -229,7 +229,10 @@
     "stopScanner": "Detener escáner",
     "servingSize": "Tamaño de porción",
     "servings": "Porciones",
-    "productFound": "¡Producto encontrado!"
+    "productFound": "¡Producto encontrado!",
+    "orEnterManually": "O ingresa el código de barras manualmente",
+    "barcodePlaceholder": "ej. 5901234123457",
+    "lookup": "Buscar"
   },
   "reports": {
     "dailySummary": "Resumen diario",

@@ -229,7 +229,10 @@
     "stopScanner": "Zatrzymaj skaner",
     "servingSize": "Wielkość porcji",
     "servings": "Porcje",
-    "productFound": "Znaleziono produkt!"
+    "productFound": "Znaleziono produkt!",
+    "orEnterManually": "Lub wpisz kod kreskowy ręcznie",
+    "barcodePlaceholder": "np. 5901234123457",
+    "lookup": "Szukaj"
   },
   "reports": {
     "dailySummary": "Podsumowanie dnia",

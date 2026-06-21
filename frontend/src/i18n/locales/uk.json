@@ -229,7 +229,10 @@
     "stopScanner": "Зупинити сканер",
     "servingSize": "Розмір порції",
     "servings": "Порції",
-    "productFound": "Продукт знайдено!"
+    "productFound": "Продукт знайдено!",
+    "orEnterManually": "Або введіть штрих-код вручну",
+    "barcodePlaceholder": "напр. 5901234123457",
+    "lookup": "Знайти"
   },
   "reports": {
     "dailySummary": "Денний підсумок",

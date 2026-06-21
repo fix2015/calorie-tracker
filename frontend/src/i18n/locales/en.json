@@ -229,7 +229,10 @@
     "stopScanner": "Stop Scanner",
     "servingSize": "Serving size",
     "servings": "Servings",
-    "productFound": "Product found!"
+    "productFound": "Product found!",
+    "orEnterManually": "Or enter barcode number manually",
+    "barcodePlaceholder": "e.g. 5901234123457",
+    "lookup": "Look up"
   },
   "reports": {
     "dailySummary": "Daily Summary",
