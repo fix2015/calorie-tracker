@@ -269,14 +269,22 @@ export default function ScanPage() {
           Html5QrcodeSupportedFormats.CODE_39,
           Html5QrcodeSupportedFormats.ITF,
         ],
+        useBarCodeDetectorIfSupported: true,
         verbose: false,
       });
       html5QrCodeRef.current = html5QrCode;
 
       await html5QrCode.start(
-        { facingMode: 'environment' },
         {
-          fps: 20,
+          facingMode: 'environment',
+          video: {
+            width: { ideal: 1920 },
+            height: { ideal: 1080 },
+            focusMode: { ideal: 'continuous' },
+          },
+        },
+        {
+          fps: 25,
           disableFlip: false,
         },
         async (decodedText) => {
