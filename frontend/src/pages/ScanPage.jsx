@@ -273,12 +273,10 @@ export default function ScanPage() {
       });
       html5QrCodeRef.current = html5QrCode;
 
-      const containerWidth = document.getElementById('barcode-reader')?.offsetWidth || 300;
       await html5QrCode.start(
         { facingMode: 'environment' },
         {
           fps: 20,
-          qrbox: { width: Math.min(containerWidth - 30, 400), height: 200 },
           disableFlip: false,
         },
         async (decodedText) => {
