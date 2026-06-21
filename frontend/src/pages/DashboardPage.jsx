@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../services/AuthContext';
-import { reports, users } from '../services/api';
+import { reports, users, meals } from '../services/api';
 import { calcMacroTargets } from '../services/macroCalc';
 import { photoSrc } from '../services/photoUrl';
 import { requestNotificationPermission, startNotificationScheduler } from '../services/notifications';
@@ -28,6 +28,8 @@ export default function DashboardPage() {
   const [dashTab, setDashTab] = useState('meals');
   const [selectedDate, setSelectedDate] = useState(() => new Date().toISOString().split('T')[0]);
   const [weekOffset, setWeekOffset] = useState(0);
+  const [swipedMealId, setSwipedMealId] = useState(null);
+  const swipeRef = useRef({ startX: 0, startY: 0, currentX: 0, swiping: false });
 
   const target = user?.dailyCalorieTarget || 2000;
   const macroTargets = calcMacroTargets(user);
@@ -76,6 +78,52 @@ export default function DashboardPage() {
     setSelectedMeal(null);
     fetchData();
   };
+
+  const handleSwipeDelete = useCallback(async (mealId) => {
+    try {
+      await meals.remove(mealId);
+      setSwipedMealId(null);
+      fetchData();
+    } catch {}
+  }, []);
+
+  const handleTouchStart = useCallback((e, mealId) => {
+    const touch = e.touches[0];
+    swipeRef.current = { startX: touch.clientX, startY: touch.clientY, currentX: touch.clientX, swiping: false, id: mealId };
+  }, []);
+
+  const handleTouchMove = useCallback((e) => {
+    const touch = e.touches[0];
+    const sw = swipeRef.current;
+    const dx = touch.clientX - sw.startX;
+    const dy = Math.abs(touch.clientY - sw.startY);
+
+    // Only horizontal swipe — ignore vertical scrolling
+    if (!sw.swiping && dy > Math.abs(dx)) return;
+    sw.swiping = true;
+    sw.currentX = touch.clientX;
+
+    const offset = Math.min(0, Math.max(-80, dx));
+    const el = e.currentTarget.querySelector('.dash-meal-content');
+    if (el) el.style.transform = `translateX(${offset}px)`;
+  }, []);
+
+  const handleTouchEnd = useCallback((e) => {
+    const sw = swipeRef.current;
+    if (!sw.swiping) return;
+    const dx = sw.currentX - sw.startX;
+    const el = e.currentTarget.querySelector('.dash-meal-content');
+
+    if (dx < -50) {
+      // Swiped far enough — reveal delete button
+      if (el) el.style.transform = 'translateX(-80px)';
+      setSwipedMealId(sw.id);
+    } else {
+      // Snap back
+      if (el) el.style.transform = 'translateX(0)';
+      setSwipedMealId(null);
+    }
+  }, []);
 
   const needsWeighIn = user?.weightUpdatedAt
     ? (Date.now() - new Date(user.weightUpdatedAt).getTime()) > 7 * 24 * 60 * 60 * 1000
@@ -254,24 +302,44 @@ export default function DashboardPage() {
             {todayMeals.length === 0 ? (
               <p style={{ color: 'var(--color-text-secondary)', padding: 'var(--space-md) 0', textAlign: 'center' }}>{t('dashboard.noMealsToday')}</p>
             ) : todayMeals.map((m) => (
-              <div className="dash-meal-item" key={m.id} onClick={() => setSelectedMeal(m)}>
-                {m.photoUrl ? (
-                  <img src={photoSrc(m.photoUrl)} alt={m.name} className="dash-meal-img" />
-                ) : (
-                  <div className="dash-meal-img-placeholder">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="12" cy="12" r="3"/></svg>
-                  </div>
-                )}
-                <div className="dash-meal-info">
-                  <span className="dash-meal-name">{m.name}</span>
-                  <span className="dash-meal-meta">
-                    {m.source === 'photo_ai' && 'AI · '}
-                    P {Math.round(m.proteinG)}g · C {Math.round(m.carbsG)}g · F {Math.round(m.fatG)}g
-                  </span>
+              <div
+                className="dash-meal-swipe-wrapper"
+                key={m.id}
+                onTouchStart={(e) => {
+                  if (swipedMealId && swipedMealId !== m.id) {
+                    // Close any other open swipe
+                    setSwipedMealId(null);
+                    document.querySelectorAll('.dash-meal-content').forEach((el) => { el.style.transform = ''; });
+                  }
+                  handleTouchStart(e, m.id);
+                }}
+                onTouchMove={handleTouchMove}
+                onTouchEnd={handleTouchEnd}
+              >
+                <div className="dash-meal-delete-action" onClick={() => handleSwipeDelete(m.id)}>
+                  {t('common.delete')}
                 </div>
-                <div className="dash-meal-right">
-                  <span className="dash-meal-cals">{m.calories} {t('common.kcal')}</span>
-                  <span className="dash-meal-time">{new Date(m.consumedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                <div className={`dash-meal-content${swipedMealId === m.id ? ' swiped' : ''}`}>
+                  <div className="dash-meal-item" onClick={() => { if (!swipeRef.current.swiping) setSelectedMeal(m); }}>
+                    {m.photoUrl ? (
+                      <img src={photoSrc(m.photoUrl)} alt={m.name} className="dash-meal-img" />
+                    ) : (
+                      <div className="dash-meal-img-placeholder">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="12" cy="12" r="3"/></svg>
+                      </div>
+                    )}
+                    <div className="dash-meal-info">
+                      <span className="dash-meal-name">{m.name}</span>
+                      <span className="dash-meal-meta">
+                        {m.source === 'photo_ai' && 'AI · '}
+                        P {Math.round(m.proteinG)}g · C {Math.round(m.carbsG)}g · F {Math.round(m.fatG)}g
+                      </span>
+                    </div>
+                    <div className="dash-meal-right">
+                      <span className="dash-meal-cals">{m.calories} {t('common.kcal')}</span>
+                      <span className="dash-meal-time">{new Date(m.consumedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                    </div>
+                  </div>
                 </div>
               </div>
             ))}

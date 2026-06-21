@@ -1092,18 +1092,52 @@ a:hover { text-decoration: underline; }
   margin-bottom: var(--space-md);
 }
 
+/* Swipe-to-delete wrapper */
+.dash-meal-swipe-wrapper {
+  position: relative;
+  overflow: hidden;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.dash-meal-swipe-wrapper:last-child {
+  border-bottom: none;
+}
+
+.dash-meal-delete-action {
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 80px;
+  background: #DC2626;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+  user-select: none;
+}
+
+.dash-meal-content {
+  position: relative;
+  background: var(--color-surface);
+  transition: transform 0.2s ease-out;
+  z-index: 1;
+}
+
+.dash-meal-content.swiped {
+  transform: translateX(-80px);
+}
+
 .dash-meal-item {
   display: flex;
   align-items: center;
   gap: var(--space-md);
   padding: var(--space-sm) 0;
-  border-bottom: 1px solid var(--color-border);
   cursor: pointer;
   transition: background 0.15s;
-}
-
-.dash-meal-item:last-child {
-  border-bottom: none;
 }
 
 .dash-meal-item:hover {
