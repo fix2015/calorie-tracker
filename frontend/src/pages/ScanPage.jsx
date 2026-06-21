@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import Quagga from '@ericblade/quagga2';
 import { meals } from '../services/api';
 import { resizeImage } from '../services/imageResize';
 import { photoSrc } from '../services/photoUrl';
@@ -22,9 +23,8 @@ export default function ScanPage() {
   const timerRef = useRef(null);
   const startTimeRef = useRef(null);
 
-  const barcodeVideoRef = useRef(null);
-  const barcodeStreamRef = useRef(null);
-  const barcodeIntervalRef = useRef(null);
+  const barcodeContainerRef = useRef(null);
+  const quaggaRunningRef = useRef(false);
 
   const modeParam = searchParams.get('mode');
   const initialMode = modeParam === 'voice' ? 'voice' : modeParam === 'barcode' ? 'barcode' : 'photo';
@@ -80,9 +80,9 @@ export default function ScanPage() {
         mediaRecorderRef.current.stop();
       }
       if (timerRef.current) clearInterval(timerRef.current);
-      if (barcodeIntervalRef.current) clearInterval(barcodeIntervalRef.current);
-      if (barcodeStreamRef.current) {
-        barcodeStreamRef.current.getTracks().forEach((t) => t.stop());
+      if (quaggaRunningRef.current) {
+        Quagga.stop();
+        quaggaRunningRef.current = false;
       }
     };
   }, []);
@@ -246,83 +246,74 @@ export default function ScanPage() {
 
   // --- Barcode ---
   const stopBarcodeScanner = useCallback(() => {
-    if (barcodeIntervalRef.current) {
-      clearInterval(barcodeIntervalRef.current);
-      barcodeIntervalRef.current = null;
-    }
-    if (barcodeStreamRef.current) {
-      if (barcodeStreamRef.current._scanner) {
-        barcodeStreamRef.current._scanner.stop().catch(() => {});
-      } else {
-        barcodeStreamRef.current.getTracks().forEach((tr) => tr.stop());
-      }
-      barcodeStreamRef.current = null;
-    }
-    if (barcodeVideoRef.current) {
-      barcodeVideoRef.current.srcObject = null;
+    if (quaggaRunningRef.current) {
+      Quagga.stop();
+      quaggaRunningRef.current = false;
     }
     setBarcodeActive(false);
   }, []);
 
   const startBarcodeScanner = useCallback(async () => {
-    if (barcodeStreamRef.current) return;
+    if (quaggaRunningRef.current) return;
     setError('');
     setBarcodeActive(true);
 
-    try {
-      if ('BarcodeDetector' in window) {
-        // Native path: getUserMedia with HD + BarcodeDetector
-        const stream = await navigator.mediaDevices.getUserMedia({
-          video: {
-            facingMode: 'environment',
-            width: { ideal: 1920 },
-            height: { ideal: 1080 },
-          },
-        });
-        barcodeStreamRef.current = stream;
+    const target = barcodeContainerRef.current;
+    if (!target) { setBarcodeActive(false); return; }
 
-        const video = barcodeVideoRef.current;
-        if (!video) { stopBarcodeScanner(); return; }
-        video.srcObject = stream;
-        await video.play();
-
-        const detector = new window.BarcodeDetector({
-          formats: ['ean_13', 'ean_8', 'upc_a', 'upc_e', 'code_128', 'code_39', 'itf'],
-        });
-
-        barcodeIntervalRef.current = setInterval(async () => {
-          if (!video.videoWidth) return;
-          try {
-            const barcodes = await detector.detect(video);
-            if (barcodes.length > 0) {
-              const code = barcodes[0].rawValue;
-              stopBarcodeScanner();
-              handleBarcodeDetected(code);
-            }
-          } catch {}
-        }, 200);
-      } else {
-        // Fallback: html5-qrcode handles its own camera
-        const { Html5Qrcode } = await import('html5-qrcode');
-        const scanner = new Html5Qrcode('barcode-reader-fallback', { verbose: false });
-        barcodeStreamRef.current = { getTracks: () => [], _scanner: scanner };
-
-        await scanner.start(
-          { facingMode: 'environment' },
-          { fps: 10, disableFlip: false },
-          async (decodedText) => {
-            await scanner.stop().catch(() => {});
-            barcodeStreamRef.current = null;
-            setBarcodeActive(false);
-            handleBarcodeDetected(decodedText);
-          },
-          () => {}
-        );
+    Quagga.init({
+      inputStream: {
+        type: 'LiveStream',
+        target,
+        constraints: {
+          facingMode: 'environment',
+          width: { ideal: 1280 },
+          height: { ideal: 720 },
+        },
+      },
+      decoder: {
+        readers: [
+          'ean_reader',
+          'ean_8_reader',
+          'upc_reader',
+          'upc_e_reader',
+          'code_128_reader',
+          'code_39_reader',
+        ],
+        multiple: false,
+      },
+      locate: true,
+      frequency: 15,
+    }, (err) => {
+      if (err) {
+        setError(t('scan.barcodeError'));
+        setBarcodeActive(false);
+        return;
       }
-    } catch {
-      setError(t('scan.barcodeError'));
-      stopBarcodeScanner();
-    }
+      Quagga.start();
+      quaggaRunningRef.current = true;
+    });
+
+    // Use a confidence check — only accept if the same code is detected 3 times
+    let lastCode = '';
+    let codeCount = 0;
+
+    Quagga.onDetected((result) => {
+      const code = result.codeResult?.code;
+      if (!code) return;
+
+      if (code === lastCode) {
+        codeCount++;
+      } else {
+        lastCode = code;
+        codeCount = 1;
+      }
+
+      if (codeCount >= 3) {
+        stopBarcodeScanner();
+        handleBarcodeDetected(code);
+      }
+    });
   }, [t, stopBarcodeScanner]);
 
   const handleBarcodeDetected = async (barcode) => {
@@ -596,11 +587,7 @@ export default function ScanPage() {
               {t('scan.scanBarcode')}
             </p>
 
-            {'BarcodeDetector' in window ? (
-              <video ref={barcodeVideoRef} className="barcode-video" playsInline muted />
-            ) : (
-              <div id="barcode-reader-fallback" className="barcode-reader" />
-            )}
+            <div ref={barcodeContainerRef} className="barcode-scanner-container" />
 
             {!barcodeActive ? (
               <button

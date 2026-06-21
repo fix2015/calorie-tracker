@@ -1251,18 +1251,22 @@ a:hover { text-decoration: underline; }
 }
 
 /* Barcode scanner */
-.barcode-video {
-  width: 100%;
-  max-width: 400px;
-  border-radius: var(--radius-lg);
-  object-fit: contain;
-}
-
-.barcode-reader {
+.barcode-scanner-container {
   width: 100%;
   max-width: 400px;
   border-radius: var(--radius-lg);
   overflow: hidden;
+  position: relative;
+}
+
+.barcode-scanner-container video {
+  width: 100%;
+  display: block;
+  border-radius: var(--radius-lg);
+}
+
+.barcode-scanner-container canvas.drawingBuffer {
+  display: none;
 }
 
 .barcode-servings {
