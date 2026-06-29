@@ -3,6 +3,7 @@
  * Falls back to direct Prisma queries if service is unavailable.
  */
 
+const prisma = require('../utils/prisma');
 const SERVICE_KEY = process.env.SERVICE_API_KEY || 'dev-key-change-me';
 
 const SERVICES = {
@@ -107,82 +108,226 @@ async function getUnreadMessagesCount(userId) {
   return serviceCall('messaging', `/user/${userId}/unread`);
 }
 
-// ─── Social Service ───
+// ─── Social Service (with local Prisma fallbacks) ───
 
 async function toggleLike(userId, contentId) {
-  return serviceCall('social', '/likes/toggle', {
+  const svc = await serviceCall('social', '/likes/toggle', {
     method: 'POST',
     body: { userId, contentId },
   });
+  if (svc) return svc;
+
+  // Prisma fallback
+  const existing = await prisma.like.findUnique({
+    where: { userId_mealId: { userId, mealId: contentId } },
+  });
+  if (existing) {
+    await prisma.like.delete({ where: { id: existing.id } });
+    const likesCount = await prisma.like.count({ where: { mealId: contentId } });
+    return { liked: false, likesCount };
+  }
+  await prisma.like.create({ data: { userId, mealId: contentId } });
+  const likesCount = await prisma.like.count({ where: { mealId: contentId } });
+  return { liked: true, likesCount };
 }
 
 async function getContentEngagement(contentId, userId) {
-  const params = userId ? `?userId=${userId}` : '';
-  return serviceCall('social', `/engagement/${contentId}${params}`);
+  const svc = await serviceCall('social', `/engagement/${contentId}?userId=${userId}`);
+  if (svc) return svc;
+
+  // Prisma fallback
+  const [like, save] = await Promise.all([
+    userId ? prisma.like.findUnique({ where: { userId_mealId: { userId, mealId: contentId } } }) : null,
+    userId ? prisma.savedMeal.findUnique({ where: { userId_mealId: { userId, mealId: contentId } } }) : null,
+  ]);
+  return { isLiked: !!like, isSaved: !!save };
 }
 
 async function addComment(userId, contentId, text) {
-  return serviceCall('social', '/comments', {
+  const svc = await serviceCall('social', '/comments', {
     method: 'POST',
     body: { userId, contentId, text },
   });
+  if (svc) return svc;
+
+  // Prisma fallback
+  const comment = await prisma.comment.create({
+    data: { userId, mealId: contentId, text },
+  });
+  return { id: comment.id, userId, contentId, text, createdAt: comment.createdAt, likesCount: 0, isLiked: false };
 }
 
 async function getComments(contentId, cursor, limit = 20) {
   const params = new URLSearchParams({ limit: String(limit) });
   if (cursor) params.set('cursor', cursor);
-  return serviceCall('social', `/comments/content/${contentId}?${params}`);
+  const svc = await serviceCall('social', `/comments/content/${contentId}?${params}`);
+  if (svc) return svc;
+
+  // Prisma fallback
+  const comments = await prisma.comment.findMany({
+    where: { mealId: contentId },
+    orderBy: { createdAt: 'desc' },
+    take: limit + 1,
+    ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
+    include: { _count: { select: { likes: true } } },
+  });
+  const hasMore = comments.length > limit;
+  if (hasMore) comments.pop();
+  return {
+    comments: comments.map(c => ({
+      id: c.id, userId: c.userId, contentId: c.mealId, text: c.text,
+      createdAt: c.createdAt, likesCount: c._count.likes, isLiked: false,
+    })),
+    nextCursor: hasMore ? comments[comments.length - 1].id : null,
+  };
 }
 
 async function toggleCommentLike(userId, commentId) {
-  return serviceCall('social', `/comments/${commentId}/like`, {
+  const svc = await serviceCall('social', `/comments/${commentId}/like`, {
     method: 'POST',
     body: { userId },
   });
+  if (svc) return svc;
+
+  // Prisma fallback
+  const existing = await prisma.commentLike.findUnique({
+    where: { userId_commentId: { userId, commentId } },
+  });
+  if (existing) {
+    await prisma.commentLike.delete({ where: { id: existing.id } });
+    const likesCount = await prisma.commentLike.count({ where: { commentId } });
+    return { liked: false, likesCount };
+  }
+  await prisma.commentLike.create({ data: { userId, commentId } });
+  const likesCount = await prisma.commentLike.count({ where: { commentId } });
+  return { liked: true, likesCount };
 }
 
 async function toggleFollow(followerId, followingId) {
-  return serviceCall('social', '/follows/toggle', {
+  const svc = await serviceCall('social', '/follows/toggle', {
     method: 'POST',
     body: { followerId, followingId },
   });
+  if (svc) return svc;
+
+  // Prisma fallback
+  const existing = await prisma.follow.findUnique({
+    where: { followerId_followingId: { followerId, followingId } },
+  });
+  if (existing) {
+    await prisma.follow.delete({ where: { id: existing.id } });
+    return { following: false };
+  }
+  await prisma.follow.create({ data: { followerId, followingId } });
+  return { following: true };
 }
 
 async function getUserFollowStats(userId, checkerId) {
   const params = checkerId ? `?checkerId=${checkerId}` : '';
-  return serviceCall('social', `/follows/user/${userId}${params}`);
+  const svc = await serviceCall('social', `/follows/user/${userId}${params}`);
+  if (svc) return svc;
+
+  // Prisma fallback
+  if (!checkerId) return { isFollowing: false };
+  const follow = await prisma.follow.findUnique({
+    where: { followerId_followingId: { followerId: checkerId, followingId: userId } },
+  });
+  return { isFollowing: !!follow };
 }
 
 async function getFollowers(userId) {
-  return serviceCall('social', `/follows/user/${userId}/followers`);
+  const svc = await serviceCall('social', `/follows/user/${userId}/followers`);
+  if (svc) return svc;
+
+  // Prisma fallback
+  const follows = await prisma.follow.findMany({
+    where: { followingId: userId },
+    select: { followerId: true },
+  });
+  return { users: follows.map(f => f.followerId) };
 }
 
 async function getFollowing(userId) {
-  return serviceCall('social', `/follows/user/${userId}/following`);
+  const svc = await serviceCall('social', `/follows/user/${userId}/following`);
+  if (svc) return svc;
+
+  // Prisma fallback
+  const follows = await prisma.follow.findMany({
+    where: { followerId: userId },
+    select: { followingId: true },
+  });
+  return { users: follows.map(f => f.followingId) };
 }
 
 async function toggleBlock(blockerId, blockedId) {
-  return serviceCall('social', '/blocks/toggle', {
+  const svc = await serviceCall('social', '/blocks/toggle', {
     method: 'POST',
     body: { blockerId, blockedId },
   });
+  if (svc) return svc;
+
+  // Prisma fallback
+  const existing = await prisma.blockedUser.findUnique({
+    where: { blockerId_blockedId: { blockerId, blockedId } },
+  });
+  if (existing) {
+    await prisma.blockedUser.delete({ where: { id: existing.id } });
+    return { blocked: false };
+  }
+  await prisma.blockedUser.create({ data: { blockerId, blockedId } });
+  return { blocked: true };
 }
 
 async function checkBlocked(blockerId, blockedId) {
-  return serviceCall('social', `/blocks/check?blockerId=${blockerId}&blockedId=${blockedId}`);
+  const svc = await serviceCall('social', `/blocks/check?blockerId=${blockerId}&blockedId=${blockedId}`);
+  if (svc) return svc;
+
+  // Prisma fallback
+  if (!blockedId) return { blocked: false };
+  const block = await prisma.blockedUser.findUnique({
+    where: { blockerId_blockedId: { blockerId, blockedId } },
+  });
+  return { blocked: !!block };
 }
 
 async function toggleSave(userId, contentId) {
-  return serviceCall('social', '/saves/toggle', {
+  const svc = await serviceCall('social', '/saves/toggle', {
     method: 'POST',
     body: { userId, contentId },
   });
+  if (svc) return svc;
+
+  // Prisma fallback
+  const existing = await prisma.savedMeal.findUnique({
+    where: { userId_mealId: { userId, mealId: contentId } },
+  });
+  if (existing) {
+    await prisma.savedMeal.delete({ where: { id: existing.id } });
+    return { saved: false };
+  }
+  await prisma.savedMeal.create({ data: { userId, mealId: contentId } });
+  return { saved: true };
 }
 
 async function getSavedContent(userId, cursor, limit = 20) {
   const params = new URLSearchParams({ limit: String(limit) });
   if (cursor) params.set('cursor', cursor);
-  return serviceCall('social', `/saves/user/${userId}?${params}`);
+  const svc = await serviceCall('social', `/saves/user/${userId}?${params}`);
+  if (svc) return svc;
+
+  // Prisma fallback
+  const saves = await prisma.savedMeal.findMany({
+    where: { userId },
+    orderBy: { createdAt: 'desc' },
+    take: limit + 1,
+    ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
+  });
+  const hasMore = saves.length > limit;
+  if (hasMore) saves.pop();
+  return {
+    saves: saves.map(s => ({ contentId: s.mealId })),
+    nextCursor: hasMore ? saves[saves.length - 1].id : null,
+  };
 }
 
 // ─── Image Service ───

@@ -17,7 +17,6 @@ router.post('/meals/:mealId/save', authenticate, async (req, res, next) => {
     if (!meal || !meal.user.isPublic) return res.status(404).json({ error: 'Meal not found' });
 
     const svc = await ms.toggleSave(req.userId, meal.id);
-    if (!svc) return res.status(503).json({ error: 'Service unavailable' });
     res.json(svc);
   } catch (err) {
     next(err);
@@ -244,7 +243,6 @@ router.post('/u/:username/follow', authenticate, async (req, res, next) => {
     if (target.id === req.userId) return res.status(400).json({ error: 'Cannot follow yourself' });
 
     const svc = await ms.toggleFollow(req.userId, target.id);
-    if (!svc) return res.status(503).json({ error: 'Service unavailable' });
     if (svc.following) createNotification(target.id, req.userId, 'follow');
     res.json(svc);
   } catch (err) {
@@ -298,7 +296,6 @@ router.post('/u/:username/block', authenticate, async (req, res, next) => {
     if (target.id === req.userId) return res.status(400).json({ error: 'Cannot block yourself' });
 
     const svc = await ms.toggleBlock(req.userId, target.id);
-    if (!svc) return res.status(503).json({ error: 'Service unavailable' });
     res.json(svc);
   } catch (err) {
     next(err);
@@ -425,7 +422,6 @@ router.post('/meals/:mealId/like', authenticate, async (req, res, next) => {
     if (!meal || !meal.user.isPublic) return res.status(404).json({ error: 'Meal not found' });
 
     const svc = await ms.toggleLike(req.userId, meal.id);
-    if (!svc) return res.status(503).json({ error: 'Service unavailable' });
     if (svc.liked) createNotification(meal.user.id, req.userId, 'like', { mealId: meal.id });
     res.json(svc);
   } catch (err) {
@@ -444,7 +440,6 @@ router.post('/meals/:mealId/comments', authenticate, async (req, res, next) => {
     if (!meal || !meal.user.isPublic) return res.status(404).json({ error: 'Meal not found' });
 
     const svc = await ms.addComment(req.userId, meal.id, data.text);
-    if (!svc) return res.status(503).json({ error: 'Service unavailable' });
 
     const author = await prisma.user.findUnique({
       where: { id: req.userId },
@@ -474,7 +469,6 @@ router.post('/meals/:mealId/comments', authenticate, async (req, res, next) => {
 router.post('/comments/:commentId/like', authenticate, async (req, res, next) => {
   try {
     const svc = await ms.toggleCommentLike(req.userId, req.params.commentId);
-    if (!svc) return res.status(503).json({ error: 'Service unavailable' });
     res.json(svc);
   } catch (err) {
     next(err);
