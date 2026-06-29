@@ -54,7 +54,8 @@
     "profile": "Профіль",
     "myPublicProfile": "Мій публічний профіль",
     "reports": "Звіти",
-    "notifications": "Сповіщення"
+    "notifications": "Сповіщення",
+    "products": "Продукти"
   },
   "login": {
     "welcomeBack": "З поверненням",
@@ -366,5 +367,20 @@
   },
   "privacy": {
     "title": "Політика конфіденційності"
+  },
+  "productSearch": {
+    "title": "Пошук продуктів",
+    "subtitle": "Шукайте будь-який продукт, щоб побачити його харчову цінність",
+    "placeholder": "Шукати продукт...",
+    "noResults": "Продукти не знайдено",
+    "tryDifferent": "Спробуйте інший пошуковий запит",
+    "per100g": "На 100г",
+    "perServing": "На порцію",
+    "fiber": "Клітковина",
+    "sugar": "Цукор",
+    "saturatedFat": "Насичені жири",
+    "sodium": "Натрій",
+    "loadMore": "Завантажити ще",
+    "poweredBy": "На основі Open Food Facts"
   }
 }

@@ -18,6 +18,7 @@ import SavedPage from './pages/SavedPage';
 import NotificationsPage from './pages/NotificationsPage';
 import MessagesPage from './pages/MessagesPage';
 import AdminPage from './pages/AdminPage';
+import ProductSearchPage from './pages/ProductSearchPage';
 
 function ProtectedLayout() {
   const { user, loading } = useAuth();
@@ -28,6 +29,7 @@ function ProtectedLayout() {
     '/': null,
     '/dashboard': t('nav.stats'),
     '/scan': t('nav.scan'),
+    '/products': t('nav.products'),
     '/notifications': t('nav.notifications'),
     '/messages': t('nav.messages'),
     '/saved': t('nav.saved'),
@@ -108,6 +110,7 @@ function App() {
               <Route path="/" element={<FeedPage />} />
               <Route path="/dashboard" element={<DashboardPage />} />
               <Route path="/scan" element={<ScanPage />} />
+              <Route path="/products" element={<ProductSearchPage />} />
               <Route path="/notifications" element={<NotificationsPage />} />
               <Route path="/messages" element={<MessagesPage />} />
               <Route path="/messages/:conversationId" element={<MessagesPage />} />

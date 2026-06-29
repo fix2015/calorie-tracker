@@ -54,7 +54,8 @@
     "profile": "Profil",
     "myPublicProfile": "Mój profil publiczny",
     "reports": "Raporty",
-    "notifications": "Powiadomienia"
+    "notifications": "Powiadomienia",
+    "products": "Produkty"
   },
   "login": {
     "welcomeBack": "Witaj ponownie",
@@ -366,5 +367,20 @@
   },
   "privacy": {
     "title": "Polityka prywatności"
+  },
+  "productSearch": {
+    "title": "Szukaj produktów",
+    "subtitle": "Wyszukaj dowolny produkt, aby zobaczyć jego wartości odżywcze",
+    "placeholder": "Szukaj produktu...",
+    "noResults": "Nie znaleziono produktów",
+    "tryDifferent": "Spróbuj innej frazy",
+    "per100g": "Na 100g",
+    "perServing": "Na porcję",
+    "fiber": "Błonnik",
+    "sugar": "Cukier",
+    "saturatedFat": "Tłuszcze nasycone",
+    "sodium": "Sód",
+    "loadMore": "Załaduj więcej",
+    "poweredBy": "Dane z Open Food Facts"
   }
 }

@@ -174,6 +174,13 @@ export const publicApi = {
   },
 };
 
+export const productsApi = {
+  search: (q, page = 1, pageSize = 24) => {
+    const params = new URLSearchParams({ q, page, pageSize });
+    return request(`/products/search?${params}`);
+  },
+};
+
 export const notificationsApi = {
   list: (cursor) => {
     const params = new URLSearchParams();

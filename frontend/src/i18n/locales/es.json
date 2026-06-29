@@ -54,7 +54,8 @@
     "profile": "Perfil",
     "myPublicProfile": "Mi perfil público",
     "reports": "Informes",
-    "notifications": "Notificaciones"
+    "notifications": "Notificaciones",
+    "products": "Productos"
   },
   "login": {
     "welcomeBack": "Bienvenido de nuevo",
@@ -366,5 +367,20 @@
   },
   "privacy": {
     "title": "Política de privacidad"
+  },
+  "productSearch": {
+    "title": "Buscar productos",
+    "subtitle": "Busca cualquier producto alimenticio para ver su información nutricional",
+    "placeholder": "Buscar un producto...",
+    "noResults": "No se encontraron productos",
+    "tryDifferent": "Intenta con otro término de búsqueda",
+    "per100g": "Por 100g",
+    "perServing": "Por porción",
+    "fiber": "Fibra",
+    "sugar": "Azúcar",
+    "saturatedFat": "Grasas saturadas",
+    "sodium": "Sodio",
+    "loadMore": "Cargar más",
+    "poweredBy": "Datos de Open Food Facts"
   }
 }
