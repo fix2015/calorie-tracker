@@ -28,6 +28,9 @@ router.get('/search', optionalAuth, async (req, res, next) => {
     ].join(','));
 
     const response = await fetch(url.toString());
+    if (!response.ok) {
+      return res.json({ products: [], total: 0, page, pageSize });
+    }
     const data = await response.json();
 
     const products = (data.products || [])
