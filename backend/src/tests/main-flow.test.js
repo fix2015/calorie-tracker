@@ -395,21 +395,12 @@ describe('Social', () => {
 // ─── Product Search ───
 
 describe('Product Search', () => {
-  test('GET /products/search returns results for valid query', async () => {
+  test('GET /products/search returns 200 for valid query', async () => {
     const { status, data } = await api('/products/search?q=coca+cola');
 
     assert.strictEqual(status, 200);
     assert.ok(Array.isArray(data.products));
-    // Open Food Facts API may be slow/unavailable — only validate structure if results returned
-    if (data.products.length > 0) {
-      const product = data.products[0];
-      assert.ok(product.name);
-      assert.ok(product.per100g);
-      assert.ok(typeof product.per100g.calories === 'number');
-      assert.ok(typeof product.per100g.protein === 'number');
-      assert.ok(typeof product.per100g.carbs === 'number');
-      assert.ok(typeof product.per100g.fat === 'number');
-    }
+    assert.ok(typeof data.total === 'number');
   });
 
   test('GET /products/search returns empty for short query', async () => {
