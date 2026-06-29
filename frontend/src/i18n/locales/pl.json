@@ -233,7 +233,8 @@
     "productFound": "Znaleziono produkt!",
     "orEnterManually": "Lub wpisz kod kreskowy ręcznie",
     "barcodePlaceholder": "np. 5901234123457",
-    "lookup": "Szukaj"
+    "lookup": "Szukaj",
+    "searchTab": "Szukaj"
   },
   "reports": {
     "dailySummary": "Podsumowanie dnia",

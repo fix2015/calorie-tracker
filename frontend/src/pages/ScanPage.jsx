@@ -1,10 +1,14 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import Quagga from '@ericblade/quagga2';
-import { meals } from '../services/api';
+import { meals, productsApi } from '../services/api';
 import { resizeImage } from '../services/imageResize';
 import { photoSrc } from '../services/photoUrl';
 import { useTranslation } from '../i18n';
+
+const NUTRISCORE_COLORS = {
+  a: '#038141', b: '#85BB2F', c: '#FECB02', d: '#EE8100', e: '#E63E11',
+};
 
 function formatTime(seconds) {
   const m = Math.floor(seconds / 60);
@@ -27,7 +31,7 @@ export default function ScanPage() {
   const quaggaRunningRef = useRef(false);
 
   const modeParam = searchParams.get('mode');
-  const initialMode = modeParam === 'voice' ? 'voice' : modeParam === 'barcode' ? 'barcode' : 'photo';
+  const initialMode = modeParam === 'voice' ? 'voice' : modeParam === 'barcode' ? 'barcode' : modeParam === 'search' ? 'search' : 'photo';
   const [mode, setMode] = useState(initialMode);
   const [preview, setPreview] = useState(null);
   const [file, setFile] = useState(null);
@@ -51,6 +55,17 @@ export default function ScanPage() {
   const [barcodeActive, setBarcodeActive] = useState(false);
   const [barcodeProduct, setBarcodeProduct] = useState(null);
   const [barcodeServings, setBarcodeServings] = useState(1);
+
+  // Product search state
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState([]);
+  const [searchTotal, setSearchTotal] = useState(0);
+  const [searchPage, setSearchPage] = useState(1);
+  const [searchLoading, setSearchLoading] = useState(false);
+  const [searchSearched, setSearchSearched] = useState(false);
+  const [expandedProduct, setExpandedProduct] = useState(null);
+  const [productViewMode, setProductViewMode] = useState({});
+  const searchDebounceRef = useRef(null);
 
   // Result screen
   const [result, setResult] = useState(null);
@@ -374,6 +389,43 @@ export default function ScanPage() {
     } catch {}
   };
 
+  // --- Product search ---
+  const doProductSearch = useCallback((q, p = 1) => {
+    if (!q.trim() || q.trim().length < 2) return;
+    setSearchLoading(true);
+    setSearchSearched(true);
+    productsApi.search(q.trim(), p).then((data) => {
+      if (p === 1) setSearchResults(data.products);
+      else setSearchResults(prev => [...prev, ...data.products]);
+      setSearchTotal(data.total);
+      setSearchPage(p);
+      setSearchLoading(false);
+    }).catch(() => setSearchLoading(false));
+  }, []);
+
+  const handleSearchInput = (e) => {
+    const v = e.target.value;
+    setSearchQuery(v);
+    clearTimeout(searchDebounceRef.current);
+    searchDebounceRef.current = setTimeout(() => {
+      if (v.trim().length >= 2) {
+        setSearchResults([]);
+        doProductSearch(v, 1);
+      }
+    }, 400);
+  };
+
+  const handleSearchSubmit = (e) => {
+    e.preventDefault();
+    clearTimeout(searchDebounceRef.current);
+    setSearchResults([]);
+    doProductSearch(searchQuery, 1);
+  };
+
+  const toggleProductView = (code) => {
+    setProductViewMode(prev => ({ ...prev, [code]: prev[code] === 'serving' ? '100g' : 'serving' }));
+  };
+
   // --- Shared ---
   const handleSaveEdited = async () => {
     setLoading(true);
@@ -408,6 +460,10 @@ export default function ScanPage() {
     setFile(null);
     setBarcodeProduct(null);
     setBarcodeServings(1);
+    setSearchQuery('');
+    setSearchResults([]);
+    setSearchSearched(false);
+    setExpandedProduct(null);
     if (isRecording) stopRecording();
     stopBarcodeScanner();
   };
@@ -434,6 +490,12 @@ export default function ScanPage() {
             onClick={() => switchMode('barcode')}
           >
             📦 {t('scan.barcodeTab')}
+          </button>
+          <button
+            className={`scan-mode-btn${mode === 'search' ? ' active' : ''}`}
+            onClick={() => switchMode('search')}
+          >
+            🔍 {t('scan.searchTab')}
           </button>
         </div>
       )}
@@ -636,6 +698,139 @@ export default function ScanPage() {
             {loading && <div className="spinner" />}
             <p className={`error-text${error ? ' visible' : ''}`}><span>{error}</span></p>
           </div>
+        </div>
+      )}
+
+      {/* Search mode */}
+      {!result && mode === 'search' && (
+        <div>
+          <form onSubmit={handleSearchSubmit} style={{ marginBottom: 'var(--space-md)' }}>
+            <div style={{ position: 'relative' }}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--color-text-secondary)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }}>
+                <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+              </svg>
+              <input
+                type="search"
+                value={searchQuery}
+                onChange={handleSearchInput}
+                placeholder={t('productSearch.placeholder')}
+                style={{
+                  width: '100%', padding: 'var(--space-sm) var(--space-md) var(--space-sm) 40px',
+                  border: '1px solid var(--color-border)', borderRadius: 'var(--radius-full)',
+                  fontSize: 'var(--font-size-input)', minHeight: 44, outline: 'none',
+                  background: 'var(--color-surface)', color: 'var(--color-text)',
+                }}
+              />
+            </div>
+          </form>
+
+          {!searchSearched && !searchLoading && (
+            <div style={{ textAlign: 'center', padding: 'var(--space-2xl) 0', color: 'var(--color-text-secondary)' }}>
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2" style={{ opacity: 0.25, marginBottom: 'var(--space-md)' }}>
+                <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+              </svg>
+              <p style={{ fontSize: 'var(--font-size-lg)', fontWeight: 600 }}>{t('productSearch.title')}</p>
+              <p style={{ fontSize: 'var(--font-size-sm)', maxWidth: 280, margin: '0 auto' }}>{t('productSearch.subtitle')}</p>
+            </div>
+          )}
+
+          {searchSearched && searchResults.length === 0 && !searchLoading && (
+            <div style={{ textAlign: 'center', padding: 'var(--space-2xl) 0', color: 'var(--color-text-secondary)' }}>
+              <p style={{ fontSize: 'var(--font-size-lg)', fontWeight: 600 }}>{t('productSearch.noResults')}</p>
+              <p style={{ fontSize: 'var(--font-size-sm)' }}>{t('productSearch.tryDifferent')}</p>
+            </div>
+          )}
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-sm)' }}>
+            {searchResults.map((p) => {
+              const isExpanded = expandedProduct === p.code;
+              const vMode = productViewMode[p.code] || (p.perServing ? 'serving' : '100g');
+              const n = vMode === 'serving' && p.perServing ? p.perServing : p.per100g;
+              const label = vMode === 'serving' ? (p.servingSize || t('productSearch.perServing')) : t('productSearch.per100g');
+
+              return (
+                <div
+                  key={p.code}
+                  className="card"
+                  style={{ padding: 'var(--space-md)', cursor: 'pointer' }}
+                  onClick={() => setExpandedProduct(isExpanded ? null : p.code)}
+                >
+                  <div style={{ display: 'flex', gap: 'var(--space-sm)', alignItems: 'center' }}>
+                    {p.imageUrl ? (
+                      <img src={p.imageUrl} alt={p.name} loading="lazy" style={{ width: 48, height: 48, borderRadius: 'var(--radius-sm)', objectFit: 'cover', flexShrink: 0 }} />
+                    ) : (
+                      <div style={{ width: 48, height: 48, borderRadius: 'var(--radius-sm)', background: 'var(--color-border)', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--color-text-secondary)" strokeWidth="1.5" opacity="0.4"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+                      </div>
+                    )}
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontWeight: 600, fontSize: 'var(--font-size-sm)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.name}</div>
+                      {p.brand && <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.brand}</div>}
+                    </div>
+                    <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                      <div style={{ fontSize: 'var(--font-size-base)', fontWeight: 700, color: 'var(--color-primary)' }}>{n.calories}</div>
+                      <div style={{ fontSize: 'var(--font-size-2xs)', color: 'var(--color-text-secondary)' }}>{t('common.kcal')}</div>
+                    </div>
+                    {p.nutriscoreGrade && (
+                      <div style={{
+                        width: 24, height: 24, borderRadius: 'var(--radius-xs)', fontWeight: 800, fontSize: 11,
+                        display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', flexShrink: 0,
+                        background: NUTRISCORE_COLORS[p.nutriscoreGrade] || 'var(--color-text-secondary)',
+                      }}>
+                        {p.nutriscoreGrade.toUpperCase()}
+                      </div>
+                    )}
+                  </div>
+
+                  {isExpanded && (
+                    <div style={{ marginTop: 'var(--space-md)', borderTop: '1px solid var(--color-border)', paddingTop: 'var(--space-md)' }} onClick={e => e.stopPropagation()}>
+                      {p.perServing && (
+                        <div style={{ display: 'flex', gap: 'var(--space-sm)', marginBottom: 'var(--space-md)' }}>
+                          <button className={`btn ${vMode === '100g' ? 'btn-primary' : 'btn-secondary'}`} style={{ flex: 1, minHeight: 32, fontSize: 'var(--font-size-xs)' }} onClick={() => toggleProductView(p.code)}>{t('productSearch.per100g')}</button>
+                          <button className={`btn ${vMode === 'serving' ? 'btn-primary' : 'btn-secondary'}`} style={{ flex: 1, minHeight: 32, fontSize: 'var(--font-size-xs)' }} onClick={() => toggleProductView(p.code)}>{p.servingSize || t('productSearch.perServing')}</button>
+                        </div>
+                      )}
+                      <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)', marginBottom: 'var(--space-sm)' }}>{label}</div>
+                      <div className="macro-bar" style={{ marginBottom: 'var(--space-md)' }}>
+                        <div className="macro-item"><span className="macro-value">{n.calories}</span><span className="macro-label">{t('common.kcal')}</span></div>
+                        <div className="macro-item"><span className="macro-value">{n.protein}g</span><span className="macro-label">{t('common.protein')}</span></div>
+                        <div className="macro-item"><span className="macro-value">{n.carbs}g</span><span className="macro-label">{t('common.carbs')}</span></div>
+                        <div className="macro-item"><span className="macro-value">{n.fat}g</span><span className="macro-label">{t('common.fat')}</span></div>
+                      </div>
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-xs)' }}>
+                        <div style={{ padding: 'var(--space-xs) var(--space-sm)', background: 'var(--color-bg)', borderRadius: 'var(--radius-sm)', display: 'flex', justifyContent: 'space-between', fontSize: 'var(--font-size-xs)' }}>
+                          <span style={{ color: 'var(--color-text-secondary)' }}>{t('productSearch.fiber')}</span><span style={{ fontWeight: 600 }}>{n.fiber}g</span>
+                        </div>
+                        <div style={{ padding: 'var(--space-xs) var(--space-sm)', background: 'var(--color-bg)', borderRadius: 'var(--radius-sm)', display: 'flex', justifyContent: 'space-between', fontSize: 'var(--font-size-xs)' }}>
+                          <span style={{ color: 'var(--color-text-secondary)' }}>{t('productSearch.sugar')}</span><span style={{ fontWeight: 600 }}>{n.sugar}g</span>
+                        </div>
+                        <div style={{ padding: 'var(--space-xs) var(--space-sm)', background: 'var(--color-bg)', borderRadius: 'var(--radius-sm)', display: 'flex', justifyContent: 'space-between', fontSize: 'var(--font-size-xs)' }}>
+                          <span style={{ color: 'var(--color-text-secondary)' }}>{t('productSearch.saturatedFat')}</span><span style={{ fontWeight: 600 }}>{n.saturatedFat}g</span>
+                        </div>
+                        <div style={{ padding: 'var(--space-xs) var(--space-sm)', background: 'var(--color-bg)', borderRadius: 'var(--radius-sm)', display: 'flex', justifyContent: 'space-between', fontSize: 'var(--font-size-xs)' }}>
+                          <span style={{ color: 'var(--color-text-secondary)' }}>{t('productSearch.sodium')}</span><span style={{ fontWeight: 600 }}>{n.sodium}g</span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+
+          {searchLoading && <div style={{ textAlign: 'center', padding: 'var(--space-lg)' }}><div className="spinner" /></div>}
+
+          {!searchLoading && searchResults.length > 0 && searchResults.length < searchTotal && (
+            <div style={{ textAlign: 'center', padding: 'var(--space-lg)' }}>
+              <button className="btn btn-secondary" onClick={() => doProductSearch(searchQuery, searchPage + 1)}>{t('productSearch.loadMore')}</button>
+            </div>
+          )}
+
+          {searchSearched && searchResults.length > 0 && (
+            <div style={{ textAlign: 'center', padding: 'var(--space-sm)', fontSize: 'var(--font-size-2xs)', color: 'var(--color-text-secondary)' }}>
+              {t('productSearch.poweredBy')}
+            </div>
+          )}
         </div>
       )}
 

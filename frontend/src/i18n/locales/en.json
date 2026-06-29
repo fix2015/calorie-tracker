@@ -233,7 +233,8 @@
     "productFound": "Product found!",
     "orEnterManually": "Or enter barcode number manually",
     "barcodePlaceholder": "e.g. 5901234123457",
-    "lookup": "Look up"
+    "lookup": "Look up",
+    "searchTab": "Search"
   },
   "reports": {
     "dailySummary": "Daily Summary",

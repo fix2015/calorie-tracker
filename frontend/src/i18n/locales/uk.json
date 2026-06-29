@@ -233,7 +233,8 @@
     "productFound": "Продукт знайдено!",
     "orEnterManually": "Або введіть штрих-код вручну",
     "barcodePlaceholder": "напр. 5901234123457",
-    "lookup": "Знайти"
+    "lookup": "Знайти",
+    "searchTab": "Пошук"
   },
   "reports": {
     "dailySummary": "Денний підсумок",

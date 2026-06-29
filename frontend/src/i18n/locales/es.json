@@ -233,7 +233,8 @@
     "productFound": "¡Producto encontrado!",
     "orEnterManually": "O ingresa el código de barras manualmente",
     "barcodePlaceholder": "ej. 5901234123457",
-    "lookup": "Buscar"
+    "lookup": "Buscar",
+    "searchTab": "Buscar"
   },
   "reports": {
     "dailySummary": "Resumen diario",
