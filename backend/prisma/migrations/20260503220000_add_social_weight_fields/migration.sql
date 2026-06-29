@@ -5,6 +5,7 @@ ALTER TABLE "users" ADD COLUMN IF NOT EXISTS "avatar_url" TEXT;
 ALTER TABLE "users" ADD COLUMN IF NOT EXISTS "link_url" TEXT;
 ALTER TABLE "users" ADD COLUMN IF NOT EXISTS "is_public" BOOLEAN NOT NULL DEFAULT false;
 ALTER TABLE "users" ADD COLUMN IF NOT EXISTS "followers_only" BOOLEAN NOT NULL DEFAULT false;
+ALTER TABLE "users" ADD COLUMN IF NOT EXISTS "username_changed_at" TIMESTAMP(3);
 
 -- Add missing columns to meals
 ALTER TABLE "meals" ADD COLUMN IF NOT EXISTS "tags" TEXT[] DEFAULT '{}';
