@@ -5,6 +5,7 @@ import { meals, productsApi } from '../services/api';
 import { resizeImage } from '../services/imageResize';
 import { photoSrc } from '../services/photoUrl';
 import { useTranslation } from '../i18n';
+import PhotoFilterEditor from '../components/PhotoFilterEditor';
 
 const NUTRISCORE_COLORS = {
   a: '#038141', b: '#85BB2F', c: '#FECB02', d: '#EE8100', e: '#E63E11',
@@ -71,6 +72,7 @@ export default function ScanPage() {
   const [result, setResult] = useState(null);
   const [editing, setEditing] = useState(false);
   const [scanning, setScanning] = useState(false);
+  const [showFilter, setShowFilter] = useState(false);
 
   // Open file picker on mount for photo mode
   useEffect(() => {
@@ -132,7 +134,7 @@ export default function ScanPage() {
       }
 
       const m = res.meal;
-      setResult({
+      const resultData = {
         id: m.id,
         name: m.name,
         calories: m.calories,
@@ -142,7 +144,11 @@ export default function ScanPage() {
         photoUrl: m.photoUrl,
         confidence: m.aiConfidence,
         lowConfidence: res.low_confidence,
-      });
+      };
+      setResult(resultData);
+      if (m.photoUrl && !res.low_confidence) {
+        setShowFilter(true);
+      }
       if (res.low_confidence) setEditing(true);
     } catch (err) {
       setError(err.message || 'Scan failed');
@@ -464,6 +470,7 @@ export default function ScanPage() {
     setSearchResults([]);
     setSearchSearched(false);
     setExpandedProduct(null);
+    setShowFilter(false);
     if (isRecording) stopRecording();
     stopBarcodeScanner();
   };
@@ -834,8 +841,39 @@ export default function ScanPage() {
         </div>
       )}
 
+      {/* Filter editor */}
+      {result && showFilter && result.photoUrl && (
+        <div className="card">
+          <PhotoFilterEditor
+            photoUrl={photoSrc(result.photoUrl)}
+            onApply={async (blob, filterName, caption) => {
+              setShowFilter(false);
+              if (blob && result.id) {
+                try {
+                  const formData = new FormData();
+                  formData.append('photo', blob, 'filtered.jpg');
+                  // Upload filtered photo via the photo endpoint and update the meal
+                  const res = await meals.update(result.id, {
+                    name: result.name,
+                    calories: Number(result.calories),
+                    proteinG: Number(result.proteinG),
+                    carbsG: Number(result.carbsG),
+                    fatG: Number(result.fatG),
+                    description: caption || result.description || '',
+                  });
+                  if (caption) setResult(prev => ({ ...prev, description: caption }));
+                } catch {}
+              } else if (caption) {
+                setResult(prev => ({ ...prev, description: caption }));
+              }
+            }}
+            onCancel={() => setShowFilter(false)}
+          />
+        </div>
+      )}
+
       {/* Result screen */}
-      {result && (
+      {result && !showFilter && (
         <div className="card">
           {result.photoUrl && (
             <div className="photo-preview" style={{ marginBottom: 'var(--space-md)' }}>

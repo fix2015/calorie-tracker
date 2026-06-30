@@ -369,6 +369,12 @@
   "privacy": {
     "title": "Datenschutzrichtlinie"
   },
+  "photoFilter": {
+    "captionPlaceholder": "Beschriftung hinzufügen...",
+    "skip": "Überspringen",
+    "apply": "Filter anwenden",
+    "applying": "Wird angewendet..."
+  },
   "productSearch": {
     "title": "Produkte suchen",
     "subtitle": "Suchen Sie nach einem Lebensmittel, um die Nährwerte zu sehen",
