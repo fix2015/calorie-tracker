@@ -369,6 +369,12 @@
   "privacy": {
     "title": "Privacy Policy"
   },
+  "photoFilter": {
+    "captionPlaceholder": "Add a caption...",
+    "skip": "Skip",
+    "apply": "Apply Filter",
+    "applying": "Applying..."
+  },
   "productSearch": {
     "title": "Search Products",
     "subtitle": "Search any food product to see its nutrition facts",

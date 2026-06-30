@@ -369,6 +369,12 @@
   "privacy": {
     "title": "Polityka prywatności"
   },
+  "photoFilter": {
+    "captionPlaceholder": "Dodaj podpis...",
+    "skip": "Pomiń",
+    "apply": "Zastosuj filtr",
+    "applying": "Stosowanie..."
+  },
   "productSearch": {
     "title": "Szukaj produktów",
     "subtitle": "Wyszukaj dowolny produkt, aby zobaczyć jego wartości odżywcze",

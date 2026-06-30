@@ -369,6 +369,12 @@
   "privacy": {
     "title": "Politique de confidentialité"
   },
+  "photoFilter": {
+    "captionPlaceholder": "Ajouter une légende...",
+    "skip": "Passer",
+    "apply": "Appliquer le filtre",
+    "applying": "Application..."
+  },
   "productSearch": {
     "title": "Rechercher des produits",
     "subtitle": "Recherchez n'importe quel produit pour voir ses valeurs nutritionnelles",
