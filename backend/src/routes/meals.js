@@ -346,6 +346,28 @@ router.get('/', authenticate, async (req, res, next) => {
   }
 });
 
+// POST /:id/photo — replace meal photo (for filters/edits)
+router.post('/:id/photo', authenticate, upload.single('photo'), async (req, res, next) => {
+  try {
+    const meal = await prisma.meal.findFirst({
+      where: { id: req.params.id, userId: req.userId },
+    });
+    if (!meal) return res.status(404).json({ error: 'Meal not found' });
+    if (!req.file) return res.status(400).json({ error: 'Photo is required' });
+
+    const s3Url = await uploadImage(req.file.path, { maxWidth: 1200, maxHeight: 1200 });
+    const photoUrl = s3Url || `/uploads/${req.file.filename}`;
+
+    const updated = await prisma.meal.update({
+      where: { id: req.params.id },
+      data: { photoUrl },
+    });
+    res.json(updated);
+  } catch (err) {
+    next(err);
+  }
+});
+
 router.patch('/:id', authenticate, async (req, res, next) => {
   try {
     const meal = await prisma.meal.findFirst({

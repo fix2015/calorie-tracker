@@ -845,26 +845,27 @@ export default function ScanPage() {
       {result && showFilter && result.photoUrl && (
         <div className="card">
           <PhotoFilterEditor
-            photoUrl={photoSrc(result.photoUrl)}
+            photoUrl={preview || photoSrc(result.photoUrl)}
             onApply={async (blob, filterName, caption) => {
               setShowFilter(false);
               if (blob && result.id) {
                 try {
-                  const formData = new FormData();
-                  formData.append('photo', blob, 'filtered.jpg');
-                  // Upload filtered photo via the photo endpoint and update the meal
-                  const res = await meals.update(result.id, {
+                  const res = await meals.uploadPhoto(result.id, blob);
+                  setResult(prev => ({ ...prev, photoUrl: res.photoUrl }));
+                } catch {}
+              }
+              if (caption && result.id) {
+                try {
+                  await meals.update(result.id, {
                     name: result.name,
                     calories: Number(result.calories),
                     proteinG: Number(result.proteinG),
                     carbsG: Number(result.carbsG),
                     fatG: Number(result.fatG),
-                    description: caption || result.description || '',
+                    description: caption,
                   });
-                  if (caption) setResult(prev => ({ ...prev, description: caption }));
+                  setResult(prev => ({ ...prev, description: caption }));
                 } catch {}
-              } else if (caption) {
-                setResult(prev => ({ ...prev, description: caption }));
               }
             }}
             onCancel={() => setShowFilter(false)}
@@ -915,7 +916,7 @@ export default function ScanPage() {
                     <input
                       type="number"
                       min="0.1"
-                      step="0.5"
+                      step="0.1"
                       value={barcodeServings}
                       onChange={(e) => handleBarcodeServingsChange(e.target.value)}
                     />
