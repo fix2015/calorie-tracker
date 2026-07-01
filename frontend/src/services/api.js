@@ -88,6 +88,11 @@ export const meals = {
     return request(`/meals?${params}`);
   },
   update: (id, data) => request(`/meals/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
+  uploadPhoto: (id, blob) => {
+    const fd = new FormData();
+    fd.append('photo', blob, 'filtered.jpg');
+    return request(`/meals/${id}/photo`, { method: 'POST', body: fd });
+  },
   remove: (id) => request(`/meals/${id}`, { method: 'DELETE' }),
 };
 
