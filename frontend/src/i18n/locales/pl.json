@@ -234,6 +234,8 @@
     "orEnterManually": "Lub wpisz kod kreskowy ręcznie",
     "barcodePlaceholder": "np. 5901234123457",
     "lookup": "Szukaj",
+    "scanFromPhoto": "Skanuj ze zdjęcia",
+    "barcodeNotFoundInPhoto": "Nie znaleziono kodu kreskowego na zdjęciu. Spróbuj wyraźniejszy obraz.",
     "searchTab": "Szukaj"
   },
   "reports": {

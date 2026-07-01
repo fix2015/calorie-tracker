@@ -234,6 +234,8 @@
     "orEnterManually": "Oder Barcode manuell eingeben",
     "barcodePlaceholder": "z.B. 5901234123457",
     "lookup": "Suchen",
+    "scanFromPhoto": "Aus Foto scannen",
+    "barcodeNotFoundInPhoto": "Kein Barcode im Foto gefunden. Versuchen Sie ein klareres Bild.",
     "searchTab": "Suche"
   },
   "reports": {
