@@ -13,6 +13,85 @@ const FILTERS = [
   { id: 'fade', label: 'Fade', css: 'contrast(0.85) brightness(1.1) saturate(0.8)' },
 ];
 
+// Pixel-level filter functions (works on all browsers)
+function clamp(v) { return Math.max(0, Math.min(255, v)); }
+
+function applyBrightness(pixels, amount) {
+  for (let i = 0; i < pixels.length; i += 4) {
+    pixels[i] = clamp(pixels[i] * amount);
+    pixels[i + 1] = clamp(pixels[i + 1] * amount);
+    pixels[i + 2] = clamp(pixels[i + 2] * amount);
+  }
+}
+
+function applyContrast(pixels, amount) {
+  const factor = (259 * (amount * 255 + 255)) / (255 * (259 - amount * 255));
+  const intercept = 128 * (1 - factor);
+  for (let i = 0; i < pixels.length; i += 4) {
+    pixels[i] = clamp(factor * pixels[i] + intercept);
+    pixels[i + 1] = clamp(factor * pixels[i + 1] + intercept);
+    pixels[i + 2] = clamp(factor * pixels[i + 2] + intercept);
+  }
+}
+
+function applySaturate(pixels, amount) {
+  for (let i = 0; i < pixels.length; i += 4) {
+    const gray = 0.2126 * pixels[i] + 0.7152 * pixels[i + 1] + 0.0722 * pixels[i + 2];
+    pixels[i] = clamp(gray + (pixels[i] - gray) * amount);
+    pixels[i + 1] = clamp(gray + (pixels[i + 1] - gray) * amount);
+    pixels[i + 2] = clamp(gray + (pixels[i + 2] - gray) * amount);
+  }
+}
+
+function applySepia(pixels, amount) {
+  for (let i = 0; i < pixels.length; i += 4) {
+    const r = pixels[i], g = pixels[i + 1], b = pixels[i + 2];
+    const sr = Math.min(255, 0.393 * r + 0.769 * g + 0.189 * b);
+    const sg = Math.min(255, 0.349 * r + 0.686 * g + 0.168 * b);
+    const sb = Math.min(255, 0.272 * r + 0.534 * g + 0.131 * b);
+    pixels[i] = clamp(r + (sr - r) * amount);
+    pixels[i + 1] = clamp(g + (sg - g) * amount);
+    pixels[i + 2] = clamp(b + (sb - b) * amount);
+  }
+}
+
+function applyGrayscale(pixels) {
+  for (let i = 0; i < pixels.length; i += 4) {
+    const gray = 0.2126 * pixels[i] + 0.7152 * pixels[i + 1] + 0.0722 * pixels[i + 2];
+    pixels[i] = pixels[i + 1] = pixels[i + 2] = gray;
+  }
+}
+
+function applyHueRotate(pixels, degrees) {
+  const rad = (degrees * Math.PI) / 180;
+  const cos = Math.cos(rad), sin = Math.sin(rad);
+  for (let i = 0; i < pixels.length; i += 4) {
+    const r = pixels[i], g = pixels[i + 1], b = pixels[i + 2];
+    pixels[i] = clamp(r * (0.213 + cos * 0.787 - sin * 0.213) + g * (0.715 - cos * 0.715 - sin * 0.715) + b * (0.072 - cos * 0.072 + sin * 0.928));
+    pixels[i + 1] = clamp(r * (0.213 - cos * 0.213 + sin * 0.143) + g * (0.715 + cos * 0.285 + sin * 0.140) + b * (0.072 - cos * 0.072 - sin * 0.283));
+    pixels[i + 2] = clamp(r * (0.213 - cos * 0.213 - sin * 0.787) + g * (0.715 - cos * 0.715 + sin * 0.715) + b * (0.072 + cos * 0.928 + sin * 0.072));
+  }
+}
+
+// Parse CSS filter string and apply via pixel manipulation
+function applyFilterToImageData(imageData, cssFilter) {
+  if (!cssFilter) return;
+  const d = imageData.data;
+  const parts = cssFilter.match(/[\w-]+\([^)]+\)/g) || [];
+  for (const part of parts) {
+    const [fn, rawVal] = part.split('(');
+    const val = parseFloat(rawVal);
+    switch (fn) {
+      case 'brightness': applyBrightness(d, val); break;
+      case 'contrast': applyContrast(d, val - 1); break;
+      case 'saturate': applySaturate(d, val); break;
+      case 'sepia': applySepia(d, val); break;
+      case 'grayscale': if (val >= 1) applyGrayscale(d); break;
+      case 'hue-rotate': applyHueRotate(d, val); break;
+    }
+  }
+}
+
 export default function PhotoFilterEditor({ photoUrl, onApply, onCancel }) {
   const { t } = useTranslation();
   const [activeFilter, setActiveFilter] = useState('original');
@@ -26,7 +105,6 @@ export default function PhotoFilterEditor({ photoUrl, onApply, onCancel }) {
     setApplying(true);
     try {
       const img = new Image();
-      img.crossOrigin = 'anonymous';
       await new Promise((resolve, reject) => {
         img.onload = resolve;
         img.onerror = reject;
@@ -46,12 +124,18 @@ export default function PhotoFilterEditor({ photoUrl, onApply, onCancel }) {
       canvas.height = h;
 
       const ctx = canvas.getContext('2d');
-      ctx.filter = currentFilter.css || 'none';
+
+      // Draw original image
       ctx.drawImage(img, 0, 0, w, h);
 
-      // Reset filter for text
-      ctx.filter = 'none';
+      // Apply filter via pixel manipulation (cross-browser)
+      if (currentFilter.css) {
+        const imageData = ctx.getImageData(0, 0, w, h);
+        applyFilterToImageData(imageData, currentFilter.css);
+        ctx.putImageData(imageData, 0, 0);
+      }
 
+      // Draw caption text
       if (caption.trim()) {
         const fontSize = Math.max(16, Math.round(w * 0.045));
         ctx.font = `bold ${fontSize}px -apple-system, "SF Pro Display", "Inter", system-ui, sans-serif`;
@@ -81,11 +165,15 @@ export default function PhotoFilterEditor({ photoUrl, onApply, onCancel }) {
         // Semi-transparent background
         ctx.fillStyle = 'rgba(0, 0, 0, 0.45)';
         const bgX = (w - maxWidth) / 2 - padding;
-        ctx.beginPath();
         const radius = fontSize * 0.4;
         const bgW = maxWidth + padding * 2;
         const bgH = blockHeight + padding * 2;
-        ctx.roundRect(bgX, y, bgW, bgH, radius);
+        ctx.beginPath();
+        if (ctx.roundRect) {
+          ctx.roundRect(bgX, y, bgW, bgH, radius);
+        } else {
+          ctx.rect(bgX, y, bgW, bgH);
+        }
         ctx.fill();
 
         // Text
@@ -95,10 +183,11 @@ export default function PhotoFilterEditor({ photoUrl, onApply, onCancel }) {
         });
       }
 
-      const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.9));
+      const blob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/jpeg', 0.9));
+      if (!blob) throw new Error('Canvas export failed');
       onApply(blob, activeFilter, caption.trim());
-    } catch {
-      // If canvas export fails (CORS), apply without filter
+    } catch (err) {
+      console.error('Filter export failed:', err);
       onApply(null, activeFilter, caption.trim());
     } finally {
       setApplying(false);
