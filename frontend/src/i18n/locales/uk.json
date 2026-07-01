@@ -234,6 +234,8 @@
     "orEnterManually": "Або введіть штрих-код вручну",
     "barcodePlaceholder": "напр. 5901234123457",
     "lookup": "Знайти",
+    "scanFromPhoto": "Сканувати з фото",
+    "barcodeNotFoundInPhoto": "Штрих-код не знайдено на фото. Спробуйте чіткіше зображення.",
     "searchTab": "Пошук"
   },
   "reports": {

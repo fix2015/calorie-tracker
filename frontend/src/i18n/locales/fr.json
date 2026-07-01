@@ -234,6 +234,8 @@
     "orEnterManually": "Ou entrez le code-barres manuellement",
     "barcodePlaceholder": "ex. 5901234123457",
     "lookup": "Rechercher",
+    "scanFromPhoto": "Scanner depuis une photo",
+    "barcodeNotFoundInPhoto": "Aucun code-barres trouvé dans cette photo. Essayez une image plus nette.",
     "searchTab": "Recherche"
   },
   "reports": {

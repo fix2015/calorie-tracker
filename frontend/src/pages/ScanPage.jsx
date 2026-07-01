@@ -29,6 +29,7 @@ export default function ScanPage() {
   const startTimeRef = useRef(null);
 
   const barcodeContainerRef = useRef(null);
+  const barcodeFileRef = useRef(null);
   const quaggaRunningRef = useRef(false);
 
   const modeParam = searchParams.get('mode');
@@ -395,6 +396,34 @@ export default function ScanPage() {
     } catch {}
   };
 
+  // --- Barcode from photo ---
+  const handleBarcodePhoto = useCallback((e) => {
+    const f = e.target.files[0];
+    if (!f) return;
+    setError('');
+    setLoading(true);
+
+    const src = URL.createObjectURL(f);
+    Quagga.decodeSingle({
+      src,
+      numOfWorkers: 0,
+      decoder: {
+        readers: ['ean_reader', 'ean_8_reader', 'upc_reader', 'upc_e_reader', 'code_128_reader', 'code_39_reader'],
+      },
+      locate: true,
+    }, (result) => {
+      URL.revokeObjectURL(src);
+      setLoading(false);
+      if (result && result.codeResult && result.codeResult.code) {
+        handleBarcodeDetected(result.codeResult.code);
+      } else {
+        setError(t('scan.barcodeNotFoundInPhoto'));
+      }
+    });
+    // Reset input so same file can be selected again
+    e.target.value = '';
+  }, [t]);
+
   // --- Product search ---
   const doProductSearch = useCallback((q, p = 1) => {
     if (!q.trim() || q.trim().length < 2) return;
@@ -683,6 +712,24 @@ export default function ScanPage() {
                 {t('scan.stopScanner')}
               </button>
             )}
+
+            <div style={{ marginTop: 'var(--space-md)', textAlign: 'center' }}>
+              <input
+                type="file"
+                accept="image/*"
+                ref={barcodeFileRef}
+                onChange={handleBarcodePhoto}
+                style={{ display: 'none' }}
+              />
+              <button
+                className="btn btn-secondary"
+                onClick={() => barcodeFileRef.current?.click()}
+                disabled={loading}
+                style={{ gap: 'var(--space-xs)' }}
+              >
+                🖼️ {t('scan.scanFromPhoto')}
+              </button>
+            </div>
 
             <div style={{ width: '100%', marginTop: 'var(--space-lg)', borderTop: '1px solid var(--color-border, #e2e8f0)', paddingTop: 'var(--space-lg)' }}>
               <p style={{ color: 'var(--color-text-secondary)', fontSize: 'var(--font-size-sm)', textAlign: 'center', marginBottom: 'var(--space-sm)' }}>
