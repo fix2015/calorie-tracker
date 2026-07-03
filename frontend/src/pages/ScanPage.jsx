@@ -369,9 +369,9 @@ export default function ScanPage() {
   };
 
   const handleBarcodeServingsChange = async (newServings) => {
-    const count = Math.max(0.1, parseFloat(newServings) || 1);
-    setBarcodeServings(count);
-    if (!barcodeProduct || !result) return;
+    setBarcodeServings(newServings);
+    const count = parseFloat(newServings);
+    if (!count || count <= 0 || !barcodeProduct || !result) return;
 
     // Recalculate based on product nutriments
     const src = barcodeProduct.nutrimentsPerServing || barcodeProduct.nutrimentsPer100g;
