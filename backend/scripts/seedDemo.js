@@ -7,7 +7,7 @@
  *   docker exec -e PEXELS_API_KEY=... <backend> node scripts/seedDemo.js [--users N] [--dry-run]
  *   docker exec <backend> node scripts/seedDemo.js --wipe     # removes all isDemo users (cascades)
  *
- * Idempotent: existing sample users (matched by email) and their meals are left as-is.
+ * Idempotent: existing sample users (matched by email) are reused and only missing planned meals are added.
  */
 
 const fs = require('fs');
@@ -227,27 +227,33 @@ async function seed() {
   for (const plan of plans) {
     const existing = await prisma.user.findUnique({
       where: { email: plan.email },
-      select: { id: true, isDemo: true, _count: { select: { meals: true } } },
+      select: { id: true, isDemo: true, meals: { select: { name: true, consumedAt: true } } },
     });
     if (existing && !existing.isDemo) throw new Error(`${plan.email} exists but is not a sample user`);
-    if (existing?._count.meals) {
+
+    // Resume: only create planned meals that aren't there yet (same name + time).
+    const have = new Set((existing?.meals || []).map(m => `${m.name}|${m.consumedAt.getTime()}`));
+    const missing = plan.meals.filter(m => !have.has(`${m.name}|${m.consumedAt.getTime()}`));
+    if (existing && missing.length === 0) {
       console.log(`skip ${plan.username} (already seeded)`);
       continue;
     }
 
-    const photoMeals = plan.meals.filter(m => m.photoQuery).length;
+    const photoMeals = missing.filter(m => m.photoQuery).length;
     if (DRY_RUN) {
-      console.log(`[dry-run] ${existing ? 'reuse' : 'create'} ${plan.username}: ${plan.meals.length} meals, ${photoMeals} with photos`);
+      console.log(`[dry-run] ${existing ? 'resume' : 'create'} ${plan.username}: ${missing.length} meals, ${photoMeals} with photos`);
       createdUsers += existing ? 0 : 1;
-      createdMeals += plan.meals.length;
-      photos += photoMeals + 1;
+      createdMeals += missing.length;
+      photos += photoMeals + (existing ? 0 : 1);
       continue;
     }
 
     let userId = existing?.id;
     if (!userId) {
       const portrait = await pexelsPhoto(plan.portraitQuery);
-      const avatarUrl = portrait ? await storePhoto(portrait, { maxWidth: 256, maxHeight: 256, cover: true }) : null;
+      const avatarUrl = portrait
+        ? await storePhoto(portrait, { maxWidth: 256, maxHeight: 256, cover: true }).catch(() => null)
+        : null;
       const user = await prisma.user.create({
         data: {
           email: plan.email,
@@ -268,16 +274,20 @@ async function seed() {
       if (avatarUrl) photos++;
     }
 
-    for (const meal of plan.meals) {
+    for (const meal of missing) {
       const { photoQuery, ...data } = meal;
       let photoUrl = null;
       let description = null;
       if (photoQuery) {
         const photo = await pexelsPhoto(photoQuery);
         if (photo) {
-          photoUrl = await storePhoto(photo);
-          description = `Photo: ${photo.photographer} / Pexels`;
-          photos++;
+          try {
+            photoUrl = await storePhoto(photo);
+            description = `Photo: ${photo.photographer} / Pexels`;
+            photos++;
+          } catch (err) {
+            console.warn(`  no photo for "${data.name}": ${err.message}`);
+          }
         }
       }
       await prisma.meal.create({
