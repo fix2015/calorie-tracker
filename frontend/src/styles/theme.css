@@ -3597,3 +3597,19 @@ a:hover { text-decoration: underline; }
   font-size: var(--font-size-xs);
   color: var(--color-text-secondary);
 }
+
+/* ===== Sample (demo) account badge ===== */
+.sample-badge {
+  display: inline-block;
+  margin-left: var(--space-xs);
+  padding: 0 var(--space-xs);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xs);
+  background: var(--color-bg);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  line-height: 1.5;
+  vertical-align: middle;
+  white-space: nowrap;
+}

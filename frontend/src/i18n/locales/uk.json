@@ -392,5 +392,10 @@
     "sodium": "Натрій",
     "loadMore": "Завантажити ще",
     "poweredBy": "На основі Open Food Facts"
+  },
+  "sample": {
+    "badge": "Зразок",
+    "account": "Демо-акаунт",
+    "tooltip": "Демо-профіль — не реальна людина"
   }
 }

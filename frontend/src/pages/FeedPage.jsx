@@ -8,6 +8,7 @@ import { useTranslation } from '../i18n';
 import FeedCard from '../components/FeedCard';
 import PublicMealDetailModal from '../components/PublicMealDetailModal';
 import StoryRing from '../components/StoryRing';
+import SampleBadge from '../components/SampleBadge';
 
 // hasSaved/savedMeals state removed - saved is now in TopBar
 
@@ -132,7 +133,7 @@ export default function FeedPage() {
                       {u.name?.charAt(0)?.toUpperCase() || '?'}
                     </div>
                   )}
-                  <span className="suggestion-name">{u.name}</span>
+                  <span className="suggestion-name">{u.name}<SampleBadge user={u} /></span>
                   <span className="suggestion-handle">@{u.username}</span>
                 </Link>
                 <button

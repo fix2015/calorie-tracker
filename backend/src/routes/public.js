@@ -35,7 +35,7 @@ router.get('/saved', authenticate, async (req, res, next) => {
       select: {
         id: true, name: true, calories: true, proteinG: true, carbsG: true, fatG: true,
         photoUrl: true, consumedAt: true, tags: true,
-        user: { select: { id: true, name: true, username: true, avatarUrl: true } },
+        user: { select: { id: true, name: true, username: true, avatarUrl: true, isDemo: true } },
         _count: { select: { likes: true, comments: true } },
       },
     });
@@ -66,7 +66,7 @@ router.get('/search', optionalAuth, async (req, res, next) => {
     const users = await prisma.user.findMany({
       where,
       select: {
-        id: true, name: true, username: true, bio: true, avatarUrl: true,
+        id: true, name: true, username: true, bio: true, avatarUrl: true, isDemo: true,
         _count: { select: { followers: true } },
       },
       take: 20,
@@ -96,7 +96,7 @@ router.get('/trending', optionalAuth, async (req, res, next) => {
       select: {
         id: true, name: true, calories: true, proteinG: true, carbsG: true, fatG: true,
         photoUrl: true, consumedAt: true, source: true, tags: true,
-        user: { select: { id: true, name: true, username: true, avatarUrl: true } },
+        user: { select: { id: true, name: true, username: true, avatarUrl: true, isDemo: true } },
         _count: { select: { likes: true, comments: true } },
       },
     });
@@ -121,7 +121,7 @@ router.get('/popular-users', optionalAuth, async (req, res, next) => {
     const users = await prisma.user.findMany({
       where,
       select: {
-        id: true, name: true, username: true, bio: true, avatarUrl: true,
+        id: true, name: true, username: true, bio: true, avatarUrl: true, isDemo: true,
         _count: { select: { followers: true, meals: true } },
       },
       orderBy: { followers: { _count: 'desc' } },
@@ -145,9 +145,9 @@ router.get('/suggestions', authenticate, async (req, res, next) => {
     const excludeIds = [req.userId, ...followingIds];
 
     const users = await prisma.user.findMany({
-      where: { isPublic: true, username: { not: null }, id: { notIn: excludeIds } },
+      where: { isPublic: true, isDemo: false, username: { not: null }, id: { notIn: excludeIds } },
       select: {
-        id: true, name: true, username: true, bio: true, avatarUrl: true,
+        id: true, name: true, username: true, bio: true, avatarUrl: true, isDemo: true,
         _count: { select: { followers: true } },
       },
       orderBy: { followers: { _count: 'desc' } },
@@ -176,7 +176,7 @@ router.get('/feed', authenticate, async (req, res, next) => {
       take: limit + 1,
       ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
       include: {
-        user: { select: { id: true, name: true, username: true, avatarUrl: true } },
+        user: { select: { id: true, name: true, username: true, avatarUrl: true, isDemo: true } },
         _count: { select: { likes: true, comments: true } },
       },
     });
@@ -207,7 +207,7 @@ router.get('/u/:username', optionalAuth, async (req, res, next) => {
       where: { username: req.params.username },
       select: {
         id: true, name: true, username: true, bio: true,
-        avatarUrl: true, linkUrl: true, createdAt: true, isPublic: true, followersOnly: true,
+        avatarUrl: true, linkUrl: true, createdAt: true, isPublic: true, followersOnly: true, isDemo: true,
         _count: { select: { followers: true, following: true, meals: true } },
       },
     });
@@ -238,8 +238,9 @@ router.get('/u/:username', optionalAuth, async (req, res, next) => {
 // POST /u/:username/follow — toggle follow
 router.post('/u/:username/follow', authenticate, async (req, res, next) => {
   try {
-    const target = await prisma.user.findUnique({ where: { username: req.params.username }, select: { id: true, isPublic: true } });
+    const target = await prisma.user.findUnique({ where: { username: req.params.username }, select: { id: true, isPublic: true, isDemo: true } });
     if (!target || !target.isPublic) return res.status(404).json({ error: 'User not found' });
+    if (target.isDemo) return res.status(403).json({ error: 'Sample accounts cannot be followed' });
     if (target.id === req.userId) return res.status(400).json({ error: 'Cannot follow yourself' });
 
     const svc = await ms.toggleFollow(req.userId, target.id);
@@ -261,7 +262,7 @@ router.get('/u/:username/followers', async (req, res, next) => {
 
     const users = await prisma.user.findMany({
       where: { id: { in: svc.users } },
-      select: { id: true, name: true, username: true, avatarUrl: true, bio: true },
+      select: { id: true, name: true, username: true, avatarUrl: true, bio: true, isDemo: true },
     });
     res.json({ users, nextCursor: null });
   } catch (err) {
@@ -280,7 +281,7 @@ router.get('/u/:username/following', async (req, res, next) => {
 
     const users = await prisma.user.findMany({
       where: { id: { in: svc.users } },
-      select: { id: true, name: true, username: true, avatarUrl: true, bio: true },
+      select: { id: true, name: true, username: true, avatarUrl: true, bio: true, isDemo: true },
     });
     res.json({ users, nextCursor: null });
   } catch (err) {
@@ -309,7 +310,7 @@ router.get('/blocked', authenticate, async (req, res, next) => {
     // Fallback to local for listing since social service checkBlocked is pair-based
     const blocks = await prisma.blockedUser.findMany({
       where: { blockerId: req.userId },
-      include: { blocked: { select: { id: true, name: true, username: true, avatarUrl: true } } },
+      include: { blocked: { select: { id: true, name: true, username: true, avatarUrl: true, isDemo: true } } },
       orderBy: { createdAt: 'desc' },
     });
     res.json({ users: blocks.map(b => b.blocked) });
@@ -370,7 +371,7 @@ router.get('/meals/:mealId', optionalAuth, async (req, res, next) => {
     const meal = await prisma.meal.findUnique({
       where: { id: req.params.mealId },
       include: {
-        user: { select: { id: true, username: true, name: true, avatarUrl: true, isPublic: true } },
+        user: { select: { id: true, username: true, name: true, avatarUrl: true, isPublic: true, isDemo: true } },
         _count: { select: { likes: true, comments: true } },
       },
     });
@@ -390,7 +391,7 @@ router.get('/meals/:mealId', optionalAuth, async (req, res, next) => {
       const authorIds = [...new Set(svcComments.comments.map(c => c.userId))];
       const authors = await prisma.user.findMany({
         where: { id: { in: authorIds } },
-        select: { id: true, name: true, username: true, avatarUrl: true },
+        select: { id: true, name: true, username: true, avatarUrl: true, isDemo: true },
       });
       const authorMap = Object.fromEntries(authors.map(a => [a.id, a]));
       commentsWithLiked = svcComments.comments.map(c => ({
@@ -403,7 +404,7 @@ router.get('/meals/:mealId', optionalAuth, async (req, res, next) => {
     const { user, ...mealData } = meal;
     res.json({
       ...mealData,
-      owner: { id: user.id, username: user.username, name: user.name, avatarUrl: user.avatarUrl },
+      owner: { id: user.id, username: user.username, name: user.name, avatarUrl: user.avatarUrl, isDemo: user.isDemo },
       isLiked, isSaved,
       comments: commentsWithLiked,
     });
@@ -443,7 +444,7 @@ router.post('/meals/:mealId/comments', authenticate, async (req, res, next) => {
 
     const author = await prisma.user.findUnique({
       where: { id: req.userId },
-      select: { id: true, name: true, username: true, avatarUrl: true },
+      select: { id: true, name: true, username: true, avatarUrl: true, isDemo: true },
     });
 
     createNotification(meal.user.id, req.userId, 'comment', { mealId: meal.id, commentId: svc.id });
@@ -490,7 +491,7 @@ router.get('/meals/:mealId/comments', async (req, res, next) => {
     const authorIds = [...new Set(svc.comments.map(c => c.userId))];
     const authors = await prisma.user.findMany({
       where: { id: { in: authorIds } },
-      select: { id: true, name: true, username: true, avatarUrl: true },
+      select: { id: true, name: true, username: true, avatarUrl: true, isDemo: true },
     });
     const authorMap = Object.fromEntries(authors.map(a => [a.id, a]));
     const comments = svc.comments.map(c => ({ ...c, user: authorMap[c.userId] || null }));

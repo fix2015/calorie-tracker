@@ -14,7 +14,7 @@ router.get('/', authenticate, async (req, res, next) => {
     const actorIds = [...new Set(svc.notifications.map(n => n.actorId))];
     const actors = await prisma.user.findMany({
       where: { id: { in: actorIds } },
-      select: { id: true, name: true, username: true, avatarUrl: true },
+      select: { id: true, name: true, username: true, avatarUrl: true, isDemo: true },
     });
     const actorMap = Object.fromEntries(actors.map(a => [a.id, a]));
     const enriched = svc.notifications.map(n => ({ ...n, actor: actorMap[n.actorId] || null }));

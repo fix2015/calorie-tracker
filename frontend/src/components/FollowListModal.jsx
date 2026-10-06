@@ -4,6 +4,7 @@ import { publicApi } from '../services/api';
 import { photoSrc } from '../services/photoUrl';
 import { useInfiniteScroll } from '../services/useInfiniteScroll';
 import { useTranslation } from '../i18n';
+import SampleBadge from './SampleBadge';
 
 export default function FollowListModal({ username, type, onClose }) {
   const { t } = useTranslation();
@@ -58,7 +59,7 @@ export default function FollowListModal({ username, type, onClose }) {
                   </div>
                 )}
                 <div className="follow-list-info">
-                  <span className="follow-list-name">{u.name}</span>
+                  <span className="follow-list-name">{u.name}<SampleBadge user={u} /></span>
                   <span className="follow-list-handle">@{u.username}</span>
                 </div>
               </Link>

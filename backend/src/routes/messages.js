@@ -19,7 +19,7 @@ router.get('/', authenticate, async (req, res, next) => {
     const userIds = svc.conversations.map(c => c.otherUserId).filter(Boolean);
     const users = await prisma.user.findMany({
       where: { id: { in: userIds } },
-      select: { id: true, name: true, username: true, avatarUrl: true },
+      select: { id: true, name: true, username: true, avatarUrl: true, isDemo: true },
     });
     const userMap = Object.fromEntries(users.map(u => [u.id, u]));
     const enriched = svc.conversations.map(c => ({
@@ -36,11 +36,13 @@ router.post('/', authenticate, async (req, res, next) => {
   try {
     const { userId: targetId } = startSchema.parse(req.body);
     if (targetId === req.userId) return res.status(400).json({ error: 'Cannot message yourself' });
+    const target = await prisma.user.findUnique({ where: { id: targetId }, select: { isDemo: true } });
+    if (target?.isDemo) return res.status(403).json({ error: 'Sample accounts cannot be messaged' });
 
     const svc = await ms.findOrCreateConversation([req.userId, targetId]);
     if (!svc) return res.status(503).json({ error: 'Messaging service unavailable' });
 
-    const otherUser = await prisma.user.findUnique({ where: { id: targetId }, select: { id: true, name: true, username: true, avatarUrl: true } });
+    const otherUser = await prisma.user.findUnique({ where: { id: targetId }, select: { id: true, name: true, username: true, avatarUrl: true, isDemo: true } });
     res.json({ id: svc.id, otherUser });
   } catch (err) {
     next(err);
@@ -55,7 +57,7 @@ router.get('/:conversationId', authenticate, async (req, res, next) => {
     if (!svc) return res.json({ messages: [], nextCursor: null });
 
     const senderIds = [...new Set(svc.messages.map(m => m.senderId))];
-    const senders = await prisma.user.findMany({ where: { id: { in: senderIds } }, select: { id: true, name: true, username: true, avatarUrl: true } });
+    const senders = await prisma.user.findMany({ where: { id: { in: senderIds } }, select: { id: true, name: true, username: true, avatarUrl: true, isDemo: true } });
     const senderMap = Object.fromEntries(senders.map(s => [s.id, s]));
     const enriched = svc.messages.map(m => ({ ...m, sender: senderMap[m.senderId] || null }));
     res.json({ messages: enriched, nextCursor: svc.nextCursor });
@@ -71,7 +73,7 @@ router.post('/:conversationId', authenticate, async (req, res, next) => {
     const svc = await ms.sendMessage(req.params.conversationId, req.userId, text);
     if (!svc) return res.status(503).json({ error: 'Messaging service unavailable' });
 
-    const sender = await prisma.user.findUnique({ where: { id: req.userId }, select: { id: true, name: true, username: true, avatarUrl: true } });
+    const sender = await prisma.user.findUnique({ where: { id: req.userId }, select: { id: true, name: true, username: true, avatarUrl: true, isDemo: true } });
     const convData = await ms.getUserConversations(req.userId).catch(() => null);
     const conv = convData?.conversations?.find(c => c.id === req.params.conversationId);
     if (conv?.otherUserId) createNotification(conv.otherUserId, req.userId, 'message');

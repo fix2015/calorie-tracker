@@ -392,5 +392,10 @@
     "sodium": "Sód",
     "loadMore": "Załaduj więcej",
     "poweredBy": "Dane z Open Food Facts"
+  },
+  "sample": {
+    "badge": "Przykład",
+    "account": "Konto przykładowe",
+    "tooltip": "Profil demonstracyjny — to nie jest prawdziwa osoba"
   }
 }

@@ -4,6 +4,7 @@ import { useAuth } from '../services/AuthContext';
 import { photoSrc } from '../services/photoUrl';
 import { shareText } from '../services/share';
 import { useTranslation } from '../i18n';
+import SampleBadge from './SampleBadge';
 
 function formatDate(dateStr) {
   return new Date(dateStr).toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' });
@@ -47,7 +48,7 @@ function CommentItem({ comment: c, user, t }) {
     <div className="comment-item">
       <div className="comment-body">
         <div>
-          <a href={c.user.username ? `/u/${c.user.username}` : '#'} className="comment-author" onClick={(e) => e.stopPropagation()}>{c.user.name}</a>
+          <a href={c.user.username ? `/u/${c.user.username}` : '#'} className="comment-author" onClick={(e) => e.stopPropagation()}>{c.user.name}</a><SampleBadge user={c.user} />
           <CommentText text={c.text} />
         </div>
         <button className={`comment-like-btn${liked ? ' liked' : ''}`} onClick={handleLike} disabled={!user}>
@@ -174,6 +175,7 @@ export default function PublicMealDetailModal({ mealId, username, onClose, onDel
                   </div>
                 )}
                 <span style={{ fontWeight: 600, fontSize: 'var(--font-size-sm)' }}>{meal.owner.username || meal.owner.name}</span>
+                <SampleBadge user={meal.owner} />
               </a>
             )}
             <h2 style={{ margin: '0 0 var(--space-xs)', fontSize: 'var(--font-size-lg)' }}>{meal.name}</h2>

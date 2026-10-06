@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { photoSrc } from '../services/photoUrl';
+import SampleBadge from '../components/SampleBadge';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
 
@@ -255,7 +256,7 @@ export default function AdminPage() {
                         </div>
                       )}
                       <div>
-                        <div style={{ fontWeight: 600 }}>{u.name}</div>
+                        <div style={{ fontWeight: 600 }}>{u.name}<SampleBadge user={u} /></div>
                         <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)' }}>@{u.username || '—'}</div>
                       </div>
                     </td>

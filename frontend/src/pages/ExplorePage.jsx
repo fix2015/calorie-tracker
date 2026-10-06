@@ -6,6 +6,7 @@ import { photoSrc } from '../services/photoUrl';
 import { useInfiniteScroll } from '../services/useInfiniteScroll';
 import { useTranslation } from '../i18n';
 import PublicMealDetailModal from '../components/PublicMealDetailModal';
+import SampleBadge from '../components/SampleBadge';
 
 const FILTER_KEYS = [
   { key: 'All', label: 'explore.filterAll' },
@@ -134,7 +135,7 @@ export default function ExplorePage() {
                     </div>
                   )}
                   <div className="explore-result-info">
-                    <span className="explore-result-name">{u.name}</span>
+                    <span className="explore-result-name">{u.name}<SampleBadge user={u} /></span>
                     <span className="explore-result-username">@{u.username}</span>
                   </div>
                 </Link>

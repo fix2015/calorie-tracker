@@ -60,7 +60,7 @@ router.get('/feed', authenticate, async (req, res, next) => {
     const allUserIds = svc.users.map(u => u.userId);
     const users = await prisma.user.findMany({
       where: { id: { in: allUserIds } },
-      select: { id: true, name: true, username: true, avatarUrl: true },
+      select: { id: true, name: true, username: true, avatarUrl: true, isDemo: true },
     });
     const userMap = Object.fromEntries(users.map(u => [u.id, u]));
 
@@ -123,7 +123,7 @@ router.get('/:id/viewers', authenticate, async (req, res, next) => {
     const viewerIds = svc.viewers.map(v => v.viewerId);
     const users = await prisma.user.findMany({
       where: { id: { in: viewerIds } },
-      select: { id: true, name: true, username: true, avatarUrl: true },
+      select: { id: true, name: true, username: true, avatarUrl: true, isDemo: true },
     });
     const userMap = Object.fromEntries(users.map(u => [u.id, u]));
 

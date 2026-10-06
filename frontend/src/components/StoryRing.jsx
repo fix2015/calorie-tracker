@@ -3,6 +3,7 @@ import { storiesApi } from '../services/api';
 import { useAuth } from '../services/AuthContext';
 import { photoSrc } from '../services/photoUrl';
 import { useTranslation } from '../i18n';
+import SampleBadge from './SampleBadge';
 
 function StoryViewer({ userStories, startIndex, onClose }) {
   const [currentUser, setCurrentUser] = useState(startIndex);
@@ -74,7 +75,7 @@ function StoryViewer({ userStories, startIndex, onClose }) {
           ) : (
             <div className="story-header-avatar-placeholder">{userGroup.user?.name?.charAt(0)?.toUpperCase() || '?'}</div>
           )}
-          <span className="story-header-name">{userGroup.user?.username || userGroup.user?.name}</span>
+          <span className="story-header-name">{userGroup.user?.username || userGroup.user?.name}<SampleBadge user={userGroup.user} /></span>
           <button className="story-close" onClick={onClose}>&times;</button>
         </div>
 
@@ -156,7 +157,7 @@ export default function StoryRing() {
                 <div className="story-avatar-placeholder">{su.user?.name?.charAt(0)?.toUpperCase() || '?'}</div>
               )}
             </div>
-            <span className="story-name">{su.user?.username || su.user?.name}</span>
+            <span className="story-name">{su.user?.username || su.user?.name}<SampleBadge user={su.user} /></span>
           </div>
         ))}
 

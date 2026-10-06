@@ -392,5 +392,10 @@
     "sodium": "Natrium",
     "loadMore": "Mehr laden",
     "poweredBy": "Daten von Open Food Facts"
+  },
+  "sample": {
+    "badge": "Beispiel",
+    "account": "Beispielkonto",
+    "tooltip": "Demoprofil – keine echte Person"
   }
 }

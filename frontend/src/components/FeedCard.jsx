@@ -4,6 +4,7 @@ import { publicApi } from '../services/api';
 import { photoSrc } from '../services/photoUrl';
 import { shareText } from '../services/share';
 import { useTranslation } from '../i18n';
+import SampleBadge from './SampleBadge';
 
 function timeAgo(dateStr) {
   const diff = Date.now() - new Date(dateStr).getTime();
@@ -62,7 +63,7 @@ export default function FeedCard({ meal, onOpenDetail }) {
             </div>
           )}
           <div>
-            <span className="feed-username">{meal.user?.username || meal.user?.name}</span>
+            <span className="feed-username">{meal.user?.username || meal.user?.name}<SampleBadge user={meal.user} /></span>
             <span className="feed-date">{new Date(meal.consumedAt).toLocaleDateString([], { day: 'numeric', month: 'short', year: 'numeric' })}</span>
           </div>
         </Link>
@@ -111,7 +112,7 @@ export default function FeedCard({ meal, onOpenDetail }) {
         )}
 
         <p className="feed-meal-name">
-          <Link to={`/u/${meal.user?.username}`} className="feed-caption-user">{meal.user?.username || meal.user?.name}</Link>
+          <Link to={`/u/${meal.user?.username}`} className="feed-caption-user">{meal.user?.username || meal.user?.name}</Link><SampleBadge user={meal.user} />
           {' '}{meal.name}
         </p>
 

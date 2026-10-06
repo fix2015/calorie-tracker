@@ -98,7 +98,7 @@ router.get('/users', async (req, res, next) => {
       orderBy: { createdAt: 'desc' },
       select: {
         id: true, email: true, name: true, username: true,
-        avatarUrl: true, isPublic: true, followersOnly: true,
+        avatarUrl: true, isPublic: true, followersOnly: true, isDemo: true,
         weightKg: true, targetWeightKg: true, goal: true,
         dailyCalorieTarget: true, createdAt: true,
         _count: { select: { meals: true, followers: true, following: true, likes: true, comments: true } },

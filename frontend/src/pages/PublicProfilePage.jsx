@@ -8,6 +8,7 @@ import { photoSrc } from '../services/photoUrl';
 import { useTranslation } from '../i18n';
 import PublicMealDetailModal from '../components/PublicMealDetailModal';
 import FollowListModal from '../components/FollowListModal';
+import SampleBadge from '../components/SampleBadge';
 
 function formatDayLabel(dateStr, t) {
   const d = new Date(dateStr);
@@ -142,8 +143,13 @@ export default function PublicProfilePage() {
         ) : (
           <div className="public-avatar-placeholder">{initial}</div>
         )}
-        <h1 style={{ margin: '0 0 var(--space-xs)', fontSize: 'var(--font-size-xl)' }}>{profile.name}</h1>
+        <h1 style={{ margin: '0 0 var(--space-xs)', fontSize: 'var(--font-size-xl)' }}>{profile.name}<SampleBadge user={profile} /></h1>
         <p style={{ margin: 0, fontSize: 'var(--font-size-sm)', color: 'var(--color-text-secondary)' }}>@{profile.username}</p>
+        {profile.isDemo && (
+          <p style={{ margin: 'var(--space-xs) 0 0', fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)' }}>
+            {t('sample.account')} · {t('sample.tooltip')}
+          </p>
+        )}
 
         <div className="profile-stats">
           <span><strong>{profile._count?.meals || 0}</strong> {t('publicProfile.mealsCount')}</span>
@@ -158,7 +164,7 @@ export default function PublicProfilePage() {
         {profile.bio && <p className="public-bio">{profile.bio}</p>}
 
         <div className="profile-actions-row">
-          {currentUser && currentUser.id !== profile.id && (
+          {currentUser && currentUser.id !== profile.id && !profile.isDemo && (
             <>
               <button
                 className={`action-icon-btn action-icon-follow${isFollowing ? ' following' : ''}`}
@@ -197,7 +203,7 @@ export default function PublicProfilePage() {
               </button>
             </>
           )}
-          {!currentUser && (
+          {!currentUser && !profile.isDemo && (
             <>
               <Link to="/login" className="action-icon-btn action-icon-follow" title={t('common.follow')}>
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
