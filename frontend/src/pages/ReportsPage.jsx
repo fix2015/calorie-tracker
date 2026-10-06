@@ -165,6 +165,7 @@ export default function ReportsPage() {
         <div className="suggestion-card">
           <h3 style={{ marginBottom: 'var(--space-sm)' }}>💡 {t('reports.aiSuggestion')}</h3>
           <p className="suggestion-text">{suggestion}</p>
+          <p className="suggestion-disclaimer">{t('reports.disclaimer')}</p>
         </div>
       )}
 

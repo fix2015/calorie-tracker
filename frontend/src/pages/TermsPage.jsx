@@ -15,7 +15,7 @@ export default function TermsPage() {
         <section>
           <h2>1. Acceptance of Terms</h2>
           <p>
-            By accessing or using Calorie Tracker ("the Service"), you agree to be bound by these Terms of Service.
+            By accessing or using Calorize ("the Service"), you agree to be bound by these Terms of Service.
             If you do not agree, do not use the Service.
           </p>
         </section>
@@ -23,7 +23,7 @@ export default function TermsPage() {
         <section>
           <h2>2. Description of Service</h2>
           <p>
-            Calorie Tracker is a nutrition tracking application that allows users to log meals manually or via
+            Calorize is a nutrition tracking application that allows users to log meals manually or via
             AI-powered photo recognition, view calorie and macronutrient summaries, and receive personalized
             nutrition suggestions. The Service is provided for informational purposes only and does not constitute
             medical or dietary advice.

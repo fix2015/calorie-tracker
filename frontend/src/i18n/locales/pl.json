@@ -247,7 +247,8 @@
     "weeklyOverview": "Przegląd tygodnia",
     "noWeeklyData": "Brak danych tygodniowych.",
     "aiSuggestion": "Sugestia AI",
-    "targetLabel": "Cel:"
+    "targetLabel": "Cel:",
+    "disclaimer": "To ogólne informacje żywieniowe, a nie porada medyczna. Przed zmianą diety skonsultuj się z lekarzem lub dietetykiem."
   },
   "feed": {
     "forYou": "Dla Ciebie",

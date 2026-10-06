@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Calorize</string>
+    <string name="title_activity_main">Calorize</string>
+    <string name="package_name">app.probooking.calorize</string>
+    <string name="custom_url_scheme">app.probooking.calorize</string>
+</resources>

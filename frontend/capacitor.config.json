@@ -1,5 +1,7 @@
 {
-  "appId": "com.calorietracker.app",
-  "appName": "Calorie Tracker",
-  "webDir": "dist"
+  "appId": "app.probooking.calorize",
+  "appName": "Calorize",
+  "webDir": "dist",
+  "server": { "androidScheme": "https" },
+  "ios": { "contentInset": "automatic" }
 }

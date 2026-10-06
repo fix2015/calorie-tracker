@@ -247,7 +247,8 @@
     "weeklyOverview": "Weekly Overview",
     "noWeeklyData": "No weekly data yet.",
     "aiSuggestion": "AI Suggestion",
-    "targetLabel": "Target:"
+    "targetLabel": "Target:",
+    "disclaimer": "This is general nutrition information, not medical advice. Consult a doctor or dietitian before changing your diet."
   },
   "feed": {
     "forYou": "For you",

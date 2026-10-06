@@ -1,0 +1,6 @@
+# Copy to android/key.properties (git-ignored) and fill in after creating the keystore:
+#   keytool -genkey -v -keystore ~/keystores/calorize-upload.jks -keyalg RSA -keysize 2048 -validity 10000 -alias upload
+storeFile=/Users/vitaliisemianchuk/keystores/calorize-upload.jks
+storePassword=CHANGE_ME
+keyAlias=upload
+keyPassword=CHANGE_ME

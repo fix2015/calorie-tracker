@@ -11,13 +11,13 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="description" content="AI-powered calorie and macro tracking" />
-    <title>Calorie Tracker</title>
+    <title>Calorize</title>
   </head>
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
     <script>
-      if ('serviceWorker' in navigator) {
+      if ('serviceWorker' in navigator && !/^(capacitor|ionic):/.test(location.protocol) && location.hostname !== 'localhost') {
         window.addEventListener('load', () => {
           navigator.serviceWorker.register('/sw.js');
         });

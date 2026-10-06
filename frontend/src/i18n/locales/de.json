@@ -247,7 +247,8 @@
     "weeklyOverview": "Wochenübersicht",
     "noWeeklyData": "Noch keine Wochendaten vorhanden.",
     "aiSuggestion": "KI-Empfehlung",
-    "targetLabel": "Ziel:"
+    "targetLabel": "Ziel:",
+    "disclaimer": "Dies sind allgemeine Ernährungsinformationen, keine medizinische Beratung. Sprechen Sie vor einer Ernährungsumstellung mit einem Arzt oder Ernährungsberater."
   },
   "feed": {
     "forYou": "Für dich",
