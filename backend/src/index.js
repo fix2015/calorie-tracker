@@ -18,8 +18,10 @@ const app = express();
 app.set('trust proxy', 1);
 const PORT = process.env.PORT || 3001;
 
+// Web origin(s) from CORS_ORIGIN (comma-separated), plus the Capacitor web views of the iOS / Android apps
+const NATIVE_APP_ORIGINS = ['capacitor://localhost', 'https://localhost'];
 app.use(cors({
-  origin: process.env.CORS_ORIGIN || 'http://localhost:5173',
+  origin: [...(process.env.CORS_ORIGIN || 'http://localhost:5173').split(',').map((o) => o.trim()), ...NATIVE_APP_ORIGINS],
   credentials: true,
 }));
 app.use(express.json());
