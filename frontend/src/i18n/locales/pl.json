@@ -438,5 +438,23 @@
     "already": "To zostało już przez Ciebie zgłoszone",
     "failed": "Nie udało się wysłać zgłoszenia. Spróbuj ponownie.",
     "blocksSender": "Zgłoszenie blokuje też tę osobę, więc nie będzie mogła do Ciebie pisać."
+  },
+  "onboarding": {
+    "skip": "Pomiń",
+    "stepOf": "Krok {0} z {1}",
+    "welcomeTitle": "Witaj w Calorize",
+    "welcomeBody": "Zapisuj, co jesz, w kilka sekund i obserwuj, jak kalorie i makroskładniki zbliżają Cię do dziennego celu.",
+    "pointPhoto": "Zrób zdjęcie posiłku",
+    "pointVoice": "Albo po prostu powiedz, co zjadłeś",
+    "pointProgress": "Śledź dzień, tydzień i wagę",
+    "scanTitle": "Jak działa skanowanie",
+    "scanStep1": "Zrób zdjęcie talerza",
+    "scanStep2": "AI rozpoznaje każdy produkt i szacuje gramy oraz kalorie",
+    "scanStep3": "W razie potrzeby zmień porcje przyciskami + / − i stuknij Gotowe",
+    "scanNote": "Szacunki są przybliżone i nie stanowią porady medycznej.",
+    "goalTitle": "Ustal swój cel",
+    "goalBody": "Użyjemy go do obliczenia dziennego limitu kalorii. Możesz go zmienić w każdej chwili w Profilu.",
+    "start": "Zaczynamy",
+    "saveFailed": "Nie udało się zapisać celu. Spróbuj ponownie."
   }
 }

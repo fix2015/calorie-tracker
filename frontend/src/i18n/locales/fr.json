@@ -438,5 +438,23 @@
     "already": "Vous avez déjà signalé ce contenu",
     "failed": "Impossible d'envoyer le signalement. Réessayez.",
     "blocksSender": "Le signalement bloque aussi cette personne : elle ne pourra plus vous écrire."
+  },
+  "onboarding": {
+    "skip": "Passer",
+    "stepOf": "Étape {0} sur {1}",
+    "welcomeTitle": "Bienvenue sur Calorize",
+    "welcomeBody": "Notez ce que vous mangez en quelques secondes et suivez vos calories et macros par rapport à votre objectif quotidien.",
+    "pointPhoto": "Prenez votre repas en photo",
+    "pointVoice": "Ou dites simplement ce que vous avez mangé",
+    "pointProgress": "Suivez votre journée, votre semaine et votre poids",
+    "scanTitle": "Comment fonctionne le scan",
+    "scanStep1": "Prenez une photo de votre assiette",
+    "scanStep2": "L'IA reconnaît chaque aliment et estime les grammes et les calories",
+    "scanStep3": "Ajustez les portions avec + / − si besoin, puis touchez Terminé",
+    "scanNote": "Les estimations sont approximatives et ne constituent pas un avis médical.",
+    "goalTitle": "Fixez votre objectif",
+    "goalBody": "Nous l'utiliserons pour calculer votre objectif calorique quotidien. Modifiable à tout moment dans Profil.",
+    "start": "Commencer",
+    "saveFailed": "Impossible d'enregistrer votre objectif. Réessayez."
   }
 }

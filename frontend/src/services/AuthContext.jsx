@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { auth, users, setTokens, clearTokens, setAuthErrorHandler } from './api';
+import { markOnboardingPending } from './onboarding';
 
 const AuthContext = createContext(null);
 
@@ -34,6 +35,8 @@ export function AuthProvider({ children }) {
     const res = await auth.register(data);
     setTokens(res.accessToken, res.refreshToken);
     const full = await auth.me();
+    // Flag before setUser: PublicRoute redirects into the app as soon as the user is set
+    markOnboardingPending(full.id);
     setUser(full);
     return full;
   };

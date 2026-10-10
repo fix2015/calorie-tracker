@@ -3,20 +3,8 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../services/AuthContext';
 import { users } from '../services/api';
 import { useTranslation } from '../i18n';
-
-const ACTIVITY_LEVEL_KEYS = [
-  { value: 'sedentary', key: 'activityLevel.sedentaryDesc' },
-  { value: 'light', key: 'activityLevel.lightDesc' },
-  { value: 'moderate', key: 'activityLevel.moderateDesc' },
-  { value: 'active', key: 'activityLevel.activeDesc' },
-  { value: 'very_active', key: 'activityLevel.veryActiveDesc' },
-];
-
-const GOAL_KEYS = [
-  { value: 'lose', key: 'goalType.lose' },
-  { value: 'maintain', key: 'goalType.maintain' },
-  { value: 'gain', key: 'goalType.gain' },
-];
+import GoalFields from '../components/GoalFields';
+import { ACTIVITY_LEVEL_KEYS, GOAL_KEYS } from '../services/goalOptions';
 
 export default function RegisterPage() {
   const [step, setStep] = useState(1);
@@ -123,10 +111,6 @@ export default function RegisterPage() {
     }
   };
 
-  const weightDiff = form.weightKg && form.targetWeightKg
-    ? Math.abs(Number(form.weightKg) - Number(form.targetWeightKg)).toFixed(1)
-    : null;
-
   return (
     <div className="auth-page">
       <div className="auth-card" style={{ maxWidth: 480 }}>
@@ -221,35 +205,7 @@ export default function RegisterPage() {
 
           {step === 3 && (
             <>
-              <div className="form-group">
-                <label htmlFor="goal">{t('register.whatsYourGoal')}</label>
-                <select id="goal" value={form.goal} onChange={set('goal')}>
-                  {GOAL_KEYS.map((g) => (
-                    <option key={g.value} value={g.value}>{t(g.key)}</option>
-                  ))}
-                </select>
-              </div>
-
-              {form.goal !== 'maintain' && (
-                <div className="form-group">
-                  <label htmlFor="targetWeightKg">{t('register.targetWeight')}</label>
-                  <input id="targetWeightKg" type="number" step="0.1" value={form.targetWeightKg} onChange={set('targetWeightKg')} required min="30" max="300" placeholder={t('register.yourGoalWeight')} />
-                  {weightDiff && (
-                    <span style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-text-secondary)' }}>
-                      {form.goal === 'lose' ? t('register.kgToLose', weightDiff) : t('register.kgToGain', weightDiff)}
-                    </span>
-                  )}
-                </div>
-              )}
-
-              <div className="form-group">
-                <label htmlFor="activityLevel">{t('register.activityLevel')}</label>
-                <select id="activityLevel" value={form.activityLevel} onChange={set('activityLevel')}>
-                  {ACTIVITY_LEVEL_KEYS.map((a) => (
-                    <option key={a.value} value={a.value}>{t(a.key)}</option>
-                  ))}
-                </select>
-              </div>
+              <GoalFields form={form} set={set} />
 
               <div style={{ display: 'flex', gap: 'var(--space-sm)' }}>
                 <button type="button" className="btn btn-secondary" style={{ flex: 1 }} onClick={back}>{t('common.back')}</button>

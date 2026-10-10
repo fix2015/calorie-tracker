@@ -438,5 +438,23 @@
     "already": "You've already reported this",
     "failed": "Couldn't send the report. Please try again.",
     "blocksSender": "Reporting also blocks this person, so they can't message you."
+  },
+  "onboarding": {
+    "skip": "Skip",
+    "stepOf": "Step {0} of {1}",
+    "welcomeTitle": "Welcome to Calorize",
+    "welcomeBody": "Log what you eat in seconds and see your calories and macros add up toward your daily goal.",
+    "pointPhoto": "Snap a photo of your meal",
+    "pointVoice": "Or just say what you ate",
+    "pointProgress": "Track your day, week and weight",
+    "scanTitle": "How scanning works",
+    "scanStep1": "Take a photo of your plate",
+    "scanStep2": "AI recognises each food and estimates grams and calories",
+    "scanStep3": "Adjust portions with + / − if needed, then tap Done",
+    "scanNote": "Estimates are approximate and not medical advice.",
+    "goalTitle": "Set your goal",
+    "goalBody": "We'll use it to calculate your daily calorie target. You can change it any time in Profile.",
+    "start": "Start tracking",
+    "saveFailed": "Couldn't save your goal. Please try again."
   }
 }

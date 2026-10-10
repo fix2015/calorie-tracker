@@ -4,6 +4,7 @@ import { LanguageProvider, useTranslation } from './i18n';
 import Navbar from './components/Navbar';
 import TopBar from './components/TopBar';
 import ToastHost from './components/ToastHost';
+import OnboardingGate from './components/Onboarding';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import DashboardPage from './pages/DashboardPage';
@@ -57,6 +58,7 @@ function ProtectedLayout() {
         <TopBar title={title} />
         <Outlet />
       </div>
+      <OnboardingGate key={user.id} userId={user.id} />
     </div>
   );
 }

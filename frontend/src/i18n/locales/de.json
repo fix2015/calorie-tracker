@@ -438,5 +438,23 @@
     "already": "Du hast das bereits gemeldet",
     "failed": "Meldung konnte nicht gesendet werden. Bitte versuche es erneut.",
     "blocksSender": "Durch die Meldung wird diese Person auch blockiert und kann dir nicht mehr schreiben."
+  },
+  "onboarding": {
+    "skip": "Überspringen",
+    "stepOf": "Schritt {0} von {1}",
+    "welcomeTitle": "Willkommen bei Calorize",
+    "welcomeBody": "Erfasse in Sekunden, was du isst, und sieh, wie sich Kalorien und Makros deinem Tagesziel nähern.",
+    "pointPhoto": "Fotografiere deine Mahlzeit",
+    "pointVoice": "Oder sag einfach, was du gegessen hast",
+    "pointProgress": "Verfolge Tag, Woche und Gewicht",
+    "scanTitle": "So funktioniert das Scannen",
+    "scanStep1": "Fotografiere deinen Teller",
+    "scanStep2": "Die KI erkennt jedes Lebensmittel und schätzt Gramm und Kalorien",
+    "scanStep3": "Passe die Portionen bei Bedarf mit + / − an und tippe auf Fertig",
+    "scanNote": "Die Schätzungen sind ungefähr und keine medizinische Beratung.",
+    "goalTitle": "Lege dein Ziel fest",
+    "goalBody": "Damit berechnen wir dein tägliches Kalorienziel. Du kannst es jederzeit im Profil ändern.",
+    "start": "Los geht's",
+    "saveFailed": "Ziel konnte nicht gespeichert werden. Bitte versuche es erneut."
   }
 }
