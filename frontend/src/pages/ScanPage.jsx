@@ -6,6 +6,11 @@ import { resizeImage } from '../services/imageResize';
 import { photoSrc } from '../services/photoUrl';
 import { useTranslation } from '../i18n';
 import PhotoFilterEditor from '../components/PhotoFilterEditor';
+import { useAuth } from '../services/AuthContext';
+import ScanItemsEditor from '../components/ScanItemsEditor';
+import { toEditableItems, totalsOf } from '../services/scanItems';
+import RecentScans from '../components/RecentScans';
+import { addRecentScan } from '../services/recentScans';
 
 const NUTRISCORE_COLORS = {
   a: '#038141', b: '#85BB2F', c: '#FECB02', d: '#EE8100', e: '#E63E11',
@@ -19,6 +24,7 @@ function formatTime(seconds) {
 
 export default function ScanPage() {
   const { t } = useTranslation();
+  const { user } = useAuth();
   const fileRef = useRef(null);
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -45,6 +51,7 @@ export default function ScanPage() {
   const [showWeightPrompt, setShowWeightPrompt] = useState(false);
   const [weight, setWeight] = useState('');
   const [pendingBlob, setPendingBlob] = useState(null);
+  const [notFood, setNotFood] = useState(false);
 
   // Voice state
   const [isRecording, setIsRecording] = useState(false);
@@ -113,6 +120,7 @@ export default function ScanPage() {
     setResult(null);
     setEditing(false);
     setError('');
+    setNotFood(false);
     setContext('');
   };
 
@@ -145,6 +153,8 @@ export default function ScanPage() {
         photoUrl: m.photoUrl,
         confidence: m.aiConfidence,
         lowConfidence: res.low_confidence,
+        fromPhoto: true,
+        items: toEditableItems(res.items),
       };
       setResult(resultData);
       if (m.photoUrl && !res.low_confidence) {
@@ -152,11 +162,36 @@ export default function ScanPage() {
       }
       if (res.low_confidence) setEditing(true);
     } catch (err) {
-      setError(err.message || 'Scan failed');
+      setNotFood(!!err.data?.not_food);
+      setError(err.data?.not_food ? t('scan.notFoodError') : (err.message || 'Scan failed'));
     } finally {
       setLoading(false);
       setScanning(false);
     }
+  };
+
+  // "Not food? Retake": drop the meal the scan created and reopen the camera / picker
+  const handleRetake = async () => {
+    if (result?.id && result.fromPhoto) {
+      try { await meals.remove(result.id); } catch { /* ignore */ }
+    }
+    setResult(null);
+    setEditing(false);
+    setShowFilter(false);
+    setPreview(null);
+    setFile(null);
+    setError('');
+    setNotFood(false);
+    setContext('');
+    setTimeout(() => fileRef.current?.click(), 50);
+  };
+
+  const handleItemsChange = (items) => {
+    setResult((r) => ({ ...r, items, ...totalsOf(items), itemsEdited: true }));
+  };
+
+  const rememberScan = (r) => {
+    if (r?.fromPhoto) addRecentScan(user?.id, r);
   };
 
   const handleScan = async () => {
@@ -477,6 +512,7 @@ export default function ScanPage() {
         carbsG: Number(result.carbsG),
         fatG: Number(result.fatG),
       });
+      rememberScan(result);
       navigate('/dashboard');
     } catch (err) {
       setError(err.message || 'Save failed');
@@ -617,8 +653,14 @@ export default function ScanPage() {
 
             {loading && <div className="spinner" />}
             <p className={`error-text${error ? ' visible' : ''}`}><span>{error}</span></p>
+            {notFood && (
+              <button type="button" className="btn btn-primary" onClick={handleRetake}>{t('scan.retake')}</button>
+            )}
           </div>
         </div>
+      )}
+      {!result && mode === 'photo' && !preview && (
+        <RecentScans userId={user?.id} onLogged={() => navigate('/dashboard')} />
       )}
 
       {/* Voice mode */}
@@ -974,6 +1016,13 @@ export default function ScanPage() {
                   </div>
                 </div>
               )}
+              {result.items?.length > 0 && (
+                <>
+                  <h3 className="scan-items-title">{t('scan.detectedItems')}</h3>
+                  <ScanItemsEditor items={result.items} onChange={handleItemsChange} />
+                </>
+              )}
+              {result.items?.length > 0 && <p className="scan-items-total">{t('scan.total')}</p>}
               <div className="macro-bar" style={{ marginBottom: 'var(--space-lg)' }}>
                 <div className="macro-item">
                   <span className="macro-value">{result.calories}</span>
@@ -1007,14 +1056,29 @@ export default function ScanPage() {
                   {t('common.edit')}
                 </button>
                 <button className="btn btn-primary" style={{ flex: 1 }} onClick={async () => {
-                  if (result.description && result.id) {
-                    try { await meals.update(result.id, { name: result.name, calories: result.calories, proteinG: result.proteinG, carbsG: result.carbsG, fatG: result.fatG, description: result.description }); } catch { /* ignore */ }
+                  if ((result.description || result.itemsEdited) && result.id) {
+                    try {
+                      await meals.update(result.id, {
+                        name: result.name,
+                        calories: Math.round(Number(result.calories)),
+                        proteinG: Number(result.proteinG),
+                        carbsG: Number(result.carbsG),
+                        fatG: Number(result.fatG),
+                        ...(result.description ? { description: result.description } : {}),
+                      });
+                    } catch { /* ignore */ }
                   }
+                  rememberScan(result);
                   navigate('/dashboard');
                 }}>
                   {t('common.done')} ✓
                 </button>
               </div>
+              {result.fromPhoto && (
+                <button type="button" className="link-btn not-food-link" onClick={handleRetake}>
+                  {t('scan.notFoodRetake')}
+                </button>
+              )}
             </>
           ) : (
             <>

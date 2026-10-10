@@ -1,4 +1,5 @@
 const { Router } = require('express');
+const fs = require('fs');
 const rateLimit = require('express-rate-limit');
 const prisma = require('../utils/prisma');
 const { authenticate } = require('../middleware/auth');
@@ -87,6 +88,11 @@ router.post('/photo', authenticate, aiLimiter, upload.single('photo'), async (re
       const language = req.headers['x-language'] || 'en';
       result = await analyzePhoto(req.file.path, user.weightKg, context, language);
     } catch (aiErr) {
+      if (aiErr.code === 'NOT_FOOD') {
+        // Don't keep non-food photos
+        fs.promises.unlink(req.file.path).catch(() => {});
+        return res.status(422).json({ error: aiErr.message, not_food: true });
+      }
       // Still upload the photo to S3 even if AI fails
       const s3Url = await uploadImage(req.file.path);
       return res.status(422).json({
@@ -120,6 +126,7 @@ router.post('/photo', authenticate, aiLimiter, upload.single('photo'), async (re
     refreshDailyStat(req.userId, meal.consumedAt).catch(() => {});
     res.status(201).json({
       meal,
+      items: result.items,
       low_confidence: lowConfidence,
     });
   } catch (err) {

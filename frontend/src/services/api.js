@@ -51,8 +51,11 @@ async function request(path, options = {}) {
   }
 
   if (!res.ok) {
-    const err = await res.json().catch(() => ({ error: 'Request failed' }));
-    throw new Error(err.error || 'Request failed');
+    const body = await res.json().catch(() => ({ error: 'Request failed' }));
+    const err = new Error(body.error || 'Request failed');
+    err.status = res.status;
+    err.data = body;
+    throw err;
   }
 
   return res.json();

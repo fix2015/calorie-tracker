@@ -240,7 +240,21 @@
     "lookup": "Buscar",
     "scanFromPhoto": "Escanear desde foto",
     "barcodeNotFoundInPhoto": "No se encontró código de barras en la foto. Intenta con una imagen más clara.",
-    "searchTab": "Buscar"
+    "searchTab": "Buscar",
+    "detectedItems": "Alimentos detectados",
+    "itemName": "Alimento",
+    "grams": "Gramos",
+    "decreasePortion": "Porción más pequeña",
+    "increasePortion": "Porción más grande",
+    "removeItem": "Quitar alimento",
+    "total": "Total",
+    "notFoodRetake": "¿No es comida? Repetir foto",
+    "notFoodError": "Esto no parece comida. Prueba con otra foto.",
+    "retake": "Repetir foto",
+    "recent": "Recientes",
+    "relogged": "{0} añadido a hoy",
+    "relogFailed": "No se pudo registrar esta comida. Inténtalo de nuevo.",
+    "relogAria": "Registrar {0} otra vez, {1} kcal"
   },
   "reports": {
     "dailySummary": "Resumen diario",
