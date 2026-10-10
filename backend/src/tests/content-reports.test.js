@@ -9,6 +9,10 @@
 const { describe, test, before, after } = require('node:test');
 const assert = require('node:assert');
 const crypto = require('node:crypto');
+
+// The admin API has no default password, so give the tests one before the app loads.
+process.env.ADMIN_PASS ||= 'test-admin-pass';
+
 const app = require('../index');
 const prisma = require('../utils/prisma');
 
@@ -22,7 +26,7 @@ const ids = {};
 let mealId;
 
 const ADMIN_AUTH = 'Basic ' + Buffer.from(
-  `${process.env.ADMIN_USER || 'admin'}:${process.env.ADMIN_PASS || 'caltrack2026!'}`,
+  `${process.env.ADMIN_USER || 'admin'}:${process.env.ADMIN_PASS}`,
 ).toString('base64');
 
 async function api(path, opts = {}) {

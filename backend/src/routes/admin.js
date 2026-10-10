@@ -3,12 +3,15 @@ const prisma = require('../utils/prisma');
 
 const router = Router();
 
-// Hardcoded admin credentials
+// Admin credentials come from the environment only; without ADMIN_PASS the admin API stays locked.
 const ADMIN_USER = process.env.ADMIN_USER || 'admin';
-const ADMIN_PASS = process.env.ADMIN_PASS || 'caltrack2026!';
+const ADMIN_PASS = process.env.ADMIN_PASS;
 
 // Simple admin auth middleware
 function adminAuth(req, res, next) {
+  if (!ADMIN_PASS) {
+    return res.status(503).json({ error: 'Admin access is not configured' });
+  }
   const auth = req.headers.authorization;
   if (!auth || !auth.startsWith('Basic ')) {
     return res.status(401).json({ error: 'Admin auth required' });
