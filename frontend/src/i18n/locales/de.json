@@ -471,5 +471,14 @@
     "weighInBody": "Wöchentliches Wiegen: erfasse dein Gewicht, um dein Ziel im Blick zu behalten",
     "permissionDenied": "Mitteilungen für Calorize sind deaktiviert. Aktiviere sie in den Geräteeinstellungen.",
     "scheduleFailed": "Erinnerungen konnten nicht aktualisiert werden. Bitte versuche es erneut."
+  },
+  "offline": {
+    "banner": "Offline — Scans werden später synchronisiert",
+    "queued": "{0} wartend",
+    "queuedToast": "Du bist offline — wir scannen dieses Foto, sobald du wieder online bist",
+    "queueFailed": "Foto konnte nicht für später gespeichert werden. Versuche es online erneut.",
+    "synced": "Scan synchronisiert: {0}",
+    "needsWeight": "Aktualisiere dein Gewicht, um die wartenden Scans zu synchronisieren",
+    "syncFailed": "Ein wartender Scan konnte nicht analysiert werden und wurde entfernt"
   }
 }

@@ -471,5 +471,14 @@
     "weighInBody": "Cotygodniowe ważenie: zapisz wagę, aby trzymać się celu",
     "permissionDenied": "Powiadomienia Calorize są wyłączone. Włącz je w Ustawieniach urządzenia.",
     "scheduleFailed": "Nie udało się zaktualizować przypomnień. Spróbuj ponownie."
+  },
+  "offline": {
+    "banner": "Offline — skany zsynchronizują się później",
+    "queued": "oczekuje: {0}",
+    "queuedToast": "Jesteś offline — zeskanujemy to zdjęcie, gdy wrócisz do sieci",
+    "queueFailed": "Nie udało się zapisać zdjęcia na później. Spróbuj ponownie online.",
+    "synced": "Zsynchronizowano skan: {0}",
+    "needsWeight": "Zaktualizuj wagę, aby dokończyć synchronizację skanów",
+    "syncFailed": "Jednego skanu z kolejki nie udało się przeanalizować i został usunięty"
   }
 }

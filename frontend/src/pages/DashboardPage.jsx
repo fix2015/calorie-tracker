@@ -7,13 +7,15 @@ import { photoSrc } from '../services/photoUrl';
 import { useTranslation } from '../i18n';
 import AddMealModal from '../components/AddMealModal';
 import MealDetailModal from '../components/MealDetailModal';
+import { readCache } from '../services/offlineCache';
 
 export default function DashboardPage() {
   const { t } = useTranslation();
   const { user, refreshUser } = useAuth();
   const navigate = useNavigate();
-  const [daily, setDaily] = useState(null);
-  const [loading, setLoading] = useState(true);
+  // Render the last cached report immediately (also covers offline), then refresh
+  const [daily, setDaily] = useState(() => readCache(`daily:${new Date().toISOString().split('T')[0]}`));
+  const [loading, setLoading] = useState(() => !daily);
   const [showAddMeal, setShowAddMeal] = useState(false);
   const [selectedMeal, setSelectedMeal] = useState(null);
   const [showWeighIn, setShowWeighIn] = useState(false);
@@ -22,8 +24,8 @@ export default function DashboardPage() {
   const [aiAnalysis, setAiAnalysis] = useState(null);
   const [aiLoading, setAiLoading] = useState(false);
   const [showAnalysis, setShowAnalysis] = useState(false);
-  const [weeklyData, setWeeklyData] = useState([]);
-  const [weightHistory, setWeightHistory] = useState([]);
+  const [weeklyData, setWeeklyData] = useState(() => readCache('weekly:0')?.days || []);
+  const [weightHistory, setWeightHistory] = useState(() => readCache('weightHistory')?.logs || []);
   const [dashTab, setDashTab] = useState('meals');
   const [selectedDate, setSelectedDate] = useState(() => new Date().toISOString().split('T')[0]);
   const [weekOffset, setWeekOffset] = useState(0);

@@ -19,7 +19,8 @@ export function AuthProvider({ children }) {
     setAuthErrorHandler(logout);
     const token = localStorage.getItem('accessToken');
     if (token) {
-      auth.me().then(setUser).catch(() => clearTokens()).finally(() => setLoading(false));
+      // Only an HTTP auth failure ends the session; offline (no cached profile) keeps the tokens
+      auth.me().then(setUser).catch((err) => { if (err.status) clearTokens(); }).finally(() => setLoading(false));
     }
   }, [logout]);
 

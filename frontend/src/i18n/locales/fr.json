@@ -471,5 +471,14 @@
     "weighInBody": "Pesée hebdomadaire : notez votre poids pour suivre votre objectif",
     "permissionDenied": "Les notifications de Calorize sont désactivées. Activez-les dans les Réglages de l'appareil.",
     "scheduleFailed": "Impossible de mettre à jour les rappels. Réessayez."
+  },
+  "offline": {
+    "banner": "Hors ligne — les scans seront synchronisés",
+    "queued": "{0} en attente",
+    "queuedToast": "Vous êtes hors ligne — nous analyserons cette photo dès votre retour en ligne",
+    "queueFailed": "Impossible d'enregistrer la photo pour plus tard. Réessayez une fois en ligne.",
+    "synced": "Scan synchronisé : {0}",
+    "needsWeight": "Mettez à jour votre poids pour terminer la synchronisation des scans en attente",
+    "syncFailed": "Un scan en attente n'a pas pu être analysé et a été supprimé"
   }
 }

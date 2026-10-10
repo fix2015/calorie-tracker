@@ -11,6 +11,9 @@ import ScanItemsEditor from '../components/ScanItemsEditor';
 import { toEditableItems, totalsOf } from '../services/scanItems';
 import RecentScans from '../components/RecentScans';
 import { addRecentScan } from '../services/recentScans';
+import { enqueueScan } from '../services/scanQueue';
+import { isNetworkError } from '../services/offlineCache';
+import { showToast } from '../services/toast';
 
 const NUTRISCORE_COLORS = {
   a: '#038141', b: '#85BB2F', c: '#FECB02', d: '#EE8100', e: '#E63E11',
@@ -162,6 +165,10 @@ export default function ScanPage() {
       }
       if (res.low_confidence) setEditing(true);
     } catch (err) {
+      if (isNetworkError(err)) {
+        await queueForLater(blob);
+        return;
+      }
       setNotFood(!!err.data?.not_food);
       setError(err.data?.not_food ? t('scan.notFoodError') : (err.message || 'Scan failed'));
     } finally {
@@ -194,8 +201,27 @@ export default function ScanPage() {
     if (r?.fromPhoto) addRecentScan(user?.id, r);
   };
 
+  // Offline: keep the photo in the queue; OfflineSync uploads it when the connection is back
+  const queueForLater = async (blob) => {
+    try {
+      await enqueueScan(blob, context.trim());
+      showToast(t('offline.queuedToast'), { type: 'info' });
+      setPreview(null);
+      setFile(null);
+      setContext('');
+      setError('');
+    } catch {
+      setError(t('offline.queueFailed'));
+    }
+  };
+
   const handleScan = async () => {
     if (!file) return;
+    if (!navigator.onLine) {
+      const blob = await resizeImage(file);
+      queueForLater(blob);
+      return;
+    }
     setScanning(true);
     setLoading(true);
     const blob = await resizeImage(file);

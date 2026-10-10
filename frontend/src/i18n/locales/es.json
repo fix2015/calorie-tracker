@@ -471,5 +471,14 @@
     "weighInBody": "Pesaje semanal: registra tu peso para seguir tu objetivo",
     "permissionDenied": "Las notificaciones de Calorize están desactivadas. Actívalas en los Ajustes del dispositivo.",
     "scheduleFailed": "No se pudieron actualizar los recordatorios. Inténtalo de nuevo."
+  },
+  "offline": {
+    "banner": "Sin conexión — los escaneos se sincronizarán",
+    "queued": "{0} en espera",
+    "queuedToast": "Estás sin conexión — escanearemos esta foto cuando vuelvas a estar en línea",
+    "queueFailed": "No se pudo guardar la foto para después. Inténtalo cuando tengas conexión.",
+    "synced": "Escaneo sincronizado: {0}",
+    "needsWeight": "Actualiza tu peso para terminar de sincronizar los escaneos pendientes",
+    "syncFailed": "Un escaneo pendiente no se pudo analizar y se eliminó"
   }
 }

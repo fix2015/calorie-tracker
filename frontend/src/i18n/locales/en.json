@@ -471,5 +471,14 @@
     "weighInBody": "Weekly weigh-in: log your weight to keep your goal on track",
     "permissionDenied": "Notifications are turned off for Calorize. Enable them in your device Settings to use reminders.",
     "scheduleFailed": "Couldn't update reminders. Please try again."
+  },
+  "offline": {
+    "banner": "Offline — scans will sync",
+    "queued": "{0} waiting",
+    "queuedToast": "You're offline — we'll scan this photo when you're back online",
+    "queueFailed": "Couldn't save the photo for later. Please try again when you're online.",
+    "synced": "Synced scan: {0}",
+    "needsWeight": "Update your weight to finish syncing your queued scans",
+    "syncFailed": "A queued scan couldn't be analysed and was removed"
   }
 }

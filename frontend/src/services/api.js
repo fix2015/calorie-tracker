@@ -1,3 +1,5 @@
+import { withCache, clearOfflineCache } from './offlineCache';
+
 const API = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
 
 let accessToken = localStorage.getItem('accessToken');
@@ -16,6 +18,7 @@ export function setTokens(access, refresh) {
 export function clearTokens() {
   accessToken = null;
   refreshToken = null;
+  clearOfflineCache();
   localStorage.removeItem('accessToken');
   localStorage.removeItem('refreshToken');
 }
@@ -65,7 +68,7 @@ export const auth = {
   register: (data) => request('/auth/register', { method: 'POST', body: JSON.stringify(data) }),
   login: (data) => request('/auth/login', { method: 'POST', body: JSON.stringify(data) }),
   logout: () => request('/auth/logout', { method: 'POST' }),
-  me: () => request('/auth/me'),
+  me: () => withCache('me', () => request('/auth/me')),
 };
 
 export const users = {
@@ -100,11 +103,11 @@ export const meals = {
 };
 
 export const reports = {
-  daily: (date) => request(`/reports/daily${date ? `?date=${date}` : ''}`),
-  weekly: (offset = 0) => request(`/reports/weekly?offset=${offset}`),
+  daily: (date) => withCache(`daily:${date || 'today'}`, () => request(`/reports/daily${date ? `?date=${date}` : ''}`)),
+  weekly: (offset = 0) => withCache(`weekly:${offset}`, () => request(`/reports/weekly?offset=${offset}`)),
   suggestion: () => request('/reports/suggestion'),
   analyze: () => request('/reports/analyze'),
-  weightHistory: () => request('/reports/weight-history'),
+  weightHistory: () => withCache('weightHistory', () => request('/reports/weight-history')),
 };
 
 // Content reports (App Store guideline 1.2) — targetType: MEAL | COMMENT | USER | MESSAGE

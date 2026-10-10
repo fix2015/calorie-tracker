@@ -3875,3 +3875,18 @@ a:hover { text-decoration: underline; }
 .reminder-when { display: flex; gap: var(--space-xs); }
 .reminder-when input, .reminder-when select { min-height: 44px; font-size: var(--font-size-input); border: 1px solid var(--color-border); border-radius: var(--radius-sm); padding: 0 var(--space-sm); background: var(--color-surface); color: var(--color-text); }
 .reminder-when :disabled { opacity: 0.5; }
+
+/* ─── Offline banner ─── */
+.offline-banner {
+  position: fixed;
+  top: env(safe-area-inset-top, 0px);
+  left: 0;
+  right: 0;
+  z-index: var(--z-banner);
+  background: #374151;
+  color: #FFFFFF;
+  text-align: center;
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  padding: 6px var(--space-md);
+}
