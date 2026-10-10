@@ -456,5 +456,20 @@
     "goalBody": "Damit berechnen wir dein tägliches Kalorienziel. Du kannst es jederzeit im Profil ändern.",
     "start": "Los geht's",
     "saveFailed": "Ziel konnte nicht gespeichert werden. Bitte versuche es erneut."
+  },
+  "reminders": {
+    "title": "Erinnerungen",
+    "hint": "Standardmäßig aus. Wir fragen nach der Mitteilungs-Berechtigung, sobald du eine Erinnerung einschaltest.",
+    "appOnly": "Erinnerungen gibt es in der Calorize-App für iOS und Android.",
+    "lunch": "Mittagessen erfassen",
+    "dinner": "Abendessen erfassen",
+    "weighIn": "Wöchentliches Wiegen",
+    "time": "Uhrzeit",
+    "weekday": "Wochentag",
+    "lunchBody": "Mittagszeit — fotografiere dein Essen, um es zu erfassen 🍽️",
+    "dinnerBody": "Abendessen — vergiss nicht, deine Mahlzeit zu erfassen",
+    "weighInBody": "Wöchentliches Wiegen: erfasse dein Gewicht, um dein Ziel im Blick zu behalten",
+    "permissionDenied": "Mitteilungen für Calorize sind deaktiviert. Aktiviere sie in den Geräteeinstellungen.",
+    "scheduleFailed": "Erinnerungen konnten nicht aktualisiert werden. Bitte versuche es erneut."
   }
 }

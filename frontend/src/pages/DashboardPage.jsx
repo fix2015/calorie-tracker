@@ -4,7 +4,6 @@ import { useAuth } from '../services/AuthContext';
 import { reports, users, meals } from '../services/api';
 import { calcMacroTargets } from '../services/macroCalc';
 import { photoSrc } from '../services/photoUrl';
-import { requestNotificationPermission, startNotificationScheduler } from '../services/notifications';
 import { useTranslation } from '../i18n';
 import AddMealModal from '../components/AddMealModal';
 import MealDetailModal from '../components/MealDetailModal';
@@ -44,12 +43,6 @@ export default function DashboardPage() {
       setSelectedDate(d.toISOString().split('T')[0]);
     }
   };
-
-  useEffect(() => {
-    requestNotificationPermission().then((granted) => {
-      if (granted) startNotificationScheduler();
-    });
-  }, []);
 
   const fetchData = async () => {
     try {

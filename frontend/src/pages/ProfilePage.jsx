@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../services/AuthContext';
 import { users, reports } from '../services/api';
 import AvatarUpload from '../components/AvatarUpload';
+import ReminderSettings from '../components/ReminderSettings';
 import { useTranslation, LANGUAGES } from '../i18n';
 
 const ACTIVITY_LEVEL_KEYS = [
@@ -350,6 +351,10 @@ export default function ProfilePage() {
             {saving ? t('profile.saving') : t('profile.saveAndRecalculate')}
           </button>
         </form>
+
+        <hr style={{ margin: 'var(--space-xl) 0', border: 'none', borderTop: '1px solid var(--color-border)' }} />
+
+        {user && <ReminderSettings userId={user.id} />}
 
         <hr style={{ margin: 'var(--space-xl) 0', border: 'none', borderTop: '1px solid var(--color-border)' }} />
 

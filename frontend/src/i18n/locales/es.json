@@ -456,5 +456,20 @@
     "goalBody": "Lo usaremos para calcular tu objetivo diario de calorías. Puedes cambiarlo cuando quieras en Perfil.",
     "start": "Empezar",
     "saveFailed": "No se pudo guardar tu objetivo. Inténtalo de nuevo."
+  },
+  "reminders": {
+    "title": "Recordatorios",
+    "hint": "Desactivados por defecto. Pediremos permiso de notificaciones cuando actives uno.",
+    "appOnly": "Los recordatorios están disponibles en la app de Calorize para iOS y Android.",
+    "lunch": "Registrar comida",
+    "dinner": "Registrar cena",
+    "weighIn": "Pesaje semanal",
+    "time": "Hora",
+    "weekday": "Día de la semana",
+    "lunchBody": "Hora de comer — haz una foto de tu plato para registrarlo 🍽️",
+    "dinnerBody": "Hora de cenar — no olvides registrar tu comida",
+    "weighInBody": "Pesaje semanal: registra tu peso para seguir tu objetivo",
+    "permissionDenied": "Las notificaciones de Calorize están desactivadas. Actívalas en los Ajustes del dispositivo.",
+    "scheduleFailed": "No se pudieron actualizar los recordatorios. Inténtalo de nuevo."
   }
 }

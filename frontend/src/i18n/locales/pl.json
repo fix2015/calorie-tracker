@@ -456,5 +456,20 @@
     "goalBody": "Użyjemy go do obliczenia dziennego limitu kalorii. Możesz go zmienić w każdej chwili w Profilu.",
     "start": "Zaczynamy",
     "saveFailed": "Nie udało się zapisać celu. Spróbuj ponownie."
+  },
+  "reminders": {
+    "title": "Przypomnienia",
+    "hint": "Domyślnie wyłączone. Poprosimy o zgodę na powiadomienia, gdy włączysz przypomnienie.",
+    "appOnly": "Przypomnienia są dostępne w aplikacji Calorize na iOS i Androida.",
+    "lunch": "Zapisz obiad",
+    "dinner": "Zapisz kolację",
+    "weighIn": "Cotygodniowe ważenie",
+    "time": "Godzina",
+    "weekday": "Dzień tygodnia",
+    "lunchBody": "Pora obiadu — zrób zdjęcie posiłku, aby go zapisać 🍽️",
+    "dinnerBody": "Pora kolacji — nie zapomnij zapisać posiłku",
+    "weighInBody": "Cotygodniowe ważenie: zapisz wagę, aby trzymać się celu",
+    "permissionDenied": "Powiadomienia Calorize są wyłączone. Włącz je w Ustawieniach urządzenia.",
+    "scheduleFailed": "Nie udało się zaktualizować przypomnień. Spróbuj ponownie."
   }
 }

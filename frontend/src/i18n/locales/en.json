@@ -456,5 +456,20 @@
     "goalBody": "We'll use it to calculate your daily calorie target. You can change it any time in Profile.",
     "start": "Start tracking",
     "saveFailed": "Couldn't save your goal. Please try again."
+  },
+  "reminders": {
+    "title": "Reminders",
+    "hint": "Off by default. We'll ask for notification permission when you turn one on.",
+    "appOnly": "Reminders are available in the Calorize iOS and Android app.",
+    "lunch": "Log lunch",
+    "dinner": "Log dinner",
+    "weighIn": "Weekly weigh-in",
+    "time": "Time",
+    "weekday": "Day of the week",
+    "lunchBody": "Lunch time — snap your meal to log it 🍽️",
+    "dinnerBody": "Dinner time — don't forget to log your meal",
+    "weighInBody": "Weekly weigh-in: log your weight to keep your goal on track",
+    "permissionDenied": "Notifications are turned off for Calorize. Enable them in your device Settings to use reminders.",
+    "scheduleFailed": "Couldn't update reminders. Please try again."
   }
 }
