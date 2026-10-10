@@ -480,5 +480,18 @@
     "synced": "Scan synchronisiert: {0}",
     "needsWeight": "Aktualisiere dein Gewicht, um die wartenden Scans zu synchronisieren",
     "syncFailed": "Ein wartender Scan konnte nicht analysiert werden und wurde entfernt"
+  },
+  "a11y": {
+    "close": "Schließen",
+    "back": "Zurück",
+    "dismiss": "Ausblenden",
+    "previousDay": "Vorheriger Tag",
+    "nextDay": "Nächster Tag",
+    "previousWeek": "Vorherige Woche",
+    "nextWeek": "Nächste Woche",
+    "comments": "Kommentare",
+    "save": "Speichern",
+    "unsave": "Aus Gespeicherten entfernen",
+    "help": "Hilfe"
   }
 }

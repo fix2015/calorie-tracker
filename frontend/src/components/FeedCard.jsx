@@ -87,17 +87,17 @@ export default function FeedCard({ meal, onOpenDetail }) {
         {/* Actions */}
         <div className="feed-actions">
           <div className="feed-actions-left">
-            <button className={`feed-action-btn feed-action-like${liked ? ' liked' : ''}`} onClick={handleLike}>
+            <button aria-label={liked ? t('publicMeal.unlike') : t('publicMeal.likeAction')} aria-pressed={liked} className={`feed-action-btn feed-action-like${liked ? ' liked' : ''}`} onClick={handleLike}>
               <svg width="22" height="22" viewBox="0 0 24 24" fill={liked ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
             </button>
-            <button className="feed-action-btn feed-action-comment" onClick={() => onOpenDetail(meal)}>
+            <button aria-label={t('a11y.comments')} className="feed-action-btn feed-action-comment" onClick={() => onOpenDetail(meal)}>
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
             </button>
-            <button className="feed-action-btn feed-action-share" onClick={handleShare}>
+            <button aria-label={t('common.share')} className="feed-action-btn feed-action-share" onClick={handleShare}>
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
             </button>
           </div>
-          <button className={`feed-action-btn feed-action-save${saved ? ' saved' : ''}`} onClick={async () => {
+          <button aria-label={saved ? t('a11y.unsave') : t('a11y.save')} aria-pressed={saved} className={`feed-action-btn feed-action-save${saved ? ' saved' : ''}`} onClick={async () => {
             try {
               const res = await publicApi.toggleSave(meal.id);
               setSaved(res.saved);

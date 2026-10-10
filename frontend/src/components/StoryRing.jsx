@@ -6,6 +6,7 @@ import { useTranslation } from '../i18n';
 import SampleBadge from './SampleBadge';
 
 function StoryViewer({ userStories, startIndex, onClose }) {
+  const { t } = useTranslation();
   const [currentUser, setCurrentUser] = useState(startIndex);
   const [currentStory, setCurrentStory] = useState(0);
   const [progress, setProgress] = useState(0);
@@ -76,7 +77,7 @@ function StoryViewer({ userStories, startIndex, onClose }) {
             <div className="story-header-avatar-placeholder">{userGroup.user?.name?.charAt(0)?.toUpperCase() || '?'}</div>
           )}
           <span className="story-header-name">{userGroup.user?.username || userGroup.user?.name}<SampleBadge user={userGroup.user} /></span>
-          <button className="story-close" onClick={onClose}>&times;</button>
+          <button aria-label={t('a11y.close')} className="story-close" onClick={onClose}>&times;</button>
         </div>
 
         {/* Video */}

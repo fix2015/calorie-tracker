@@ -631,8 +631,11 @@ export default function ScanPage() {
                     <span
                       className="context-help-icon"
                       onClick={() => setShowContextTip(!showContextTip)}
+                      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setShowContextTip(!showContextTip); } }}
                       role="button"
                       tabIndex={0}
+                      aria-label={t('a11y.help')}
+                      aria-expanded={showContextTip}
                     >
                       ?
                     </span>

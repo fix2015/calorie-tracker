@@ -165,13 +165,13 @@ export default function ProfilePage() {
         {error && (
           <div className="profile-toast profile-toast-error">
             <span>{error}</span>
-            <button onClick={() => setError('')}>&times;</button>
+            <button aria-label={t('a11y.dismiss')} onClick={() => setError('')}>&times;</button>
           </div>
         )}
         {success && (
           <div className="profile-toast profile-toast-success">
             <span>{success}</span>
-            <button onClick={() => setSuccess('')}>&times;</button>
+            <button aria-label={t('a11y.dismiss')} onClick={() => setSuccess('')}>&times;</button>
           </div>
         )}
 

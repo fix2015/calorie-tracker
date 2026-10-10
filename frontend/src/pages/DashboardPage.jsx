@@ -213,13 +213,13 @@ export default function DashboardPage() {
       <div className="card dash-today-card">
         <div className="dash-today-header">
           <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-sm)' }}>
-            <button onClick={() => changeDate(-1)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4, color: 'var(--color-text-secondary)' }}>
+            <button className="icon-nav-btn" aria-label={t('a11y.previousDay')} onClick={() => changeDate(-1)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4, color: 'var(--color-text-secondary)' }}>
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M15 18l-6-6 6-6"/></svg>
             </button>
             <h2 style={{ margin: 0, fontSize: 'var(--font-size-lg)' }}>
               {isToday ? t('common.today') : new Date(selectedDate + 'T12:00:00').toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric' })}
             </h2>
-            <button onClick={() => changeDate(1)} disabled={isToday} style={{ background: 'none', border: 'none', cursor: isToday ? 'default' : 'pointer', padding: 4, color: isToday ? 'var(--color-border)' : 'var(--color-text-secondary)' }}>
+            <button className="icon-nav-btn" aria-label={t('a11y.nextDay')} onClick={() => changeDate(1)} disabled={isToday} style={{ background: 'none', border: 'none', cursor: isToday ? 'default' : 'pointer', padding: 4, color: isToday ? 'var(--color-border)' : 'var(--color-text-secondary)' }}>
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 18l6-6-6-6"/></svg>
             </button>
           </div>
@@ -374,13 +374,13 @@ export default function DashboardPage() {
           <div className="card" style={{ marginBottom: 'var(--space-md)' }}>
             <div className="dash-today-header">
               <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-sm)' }}>
-                <button onClick={() => setWeekOffset(weekOffset + 1)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4, color: 'var(--color-text-secondary)' }}>
+                <button className="icon-nav-btn" aria-label={t('a11y.previousWeek')} onClick={() => setWeekOffset(weekOffset + 1)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4, color: 'var(--color-text-secondary)' }}>
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M15 18l-6-6 6-6"/></svg>
                 </button>
                 <h2 style={{ margin: 0, fontSize: 'var(--font-size-lg)' }}>
                   {weekOffset === 0 ? t('dashboard.thisWeek') : weekOffset === 1 ? t('dashboard.lastWeek') : t('dashboard.weeksAgo', weekOffset)}
                 </h2>
-                <button onClick={() => setWeekOffset(Math.max(0, weekOffset - 1))} disabled={weekOffset === 0} style={{ background: 'none', border: 'none', cursor: weekOffset === 0 ? 'default' : 'pointer', padding: 4, color: weekOffset === 0 ? 'var(--color-border)' : 'var(--color-text-secondary)' }}>
+                <button className="icon-nav-btn" aria-label={t('a11y.nextWeek')} onClick={() => setWeekOffset(Math.max(0, weekOffset - 1))} disabled={weekOffset === 0} style={{ background: 'none', border: 'none', cursor: weekOffset === 0 ? 'default' : 'pointer', padding: 4, color: weekOffset === 0 ? 'var(--color-border)' : 'var(--color-text-secondary)' }}>
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 18l6-6-6-6"/></svg>
                 </button>
               </div>
@@ -513,7 +513,7 @@ export default function DashboardPage() {
           <div className="modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: 520 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-md)' }}>
               <h2 style={{ margin: 0 }}>{t('dashboard.aiAnalysis')}</h2>
-              <button onClick={() => setShowAnalysis(false)} style={{ background: 'none', border: 'none', fontSize: 20, cursor: 'pointer', color: 'var(--color-text-secondary)' }}>&times;</button>
+              <button className="icon-close-btn" aria-label={t('a11y.close')} onClick={() => setShowAnalysis(false)} style={{ background: 'none', border: 'none', fontSize: 20, cursor: 'pointer', color: 'var(--color-text-secondary)' }}>&times;</button>
             </div>
             {aiLoading ? (
               <div style={{ textAlign: 'center', padding: 'var(--space-xl) 0' }}>

@@ -480,5 +480,18 @@
     "synced": "Synced scan: {0}",
     "needsWeight": "Update your weight to finish syncing your queued scans",
     "syncFailed": "A queued scan couldn't be analysed and was removed"
+  },
+  "a11y": {
+    "close": "Close",
+    "back": "Back",
+    "dismiss": "Dismiss",
+    "previousDay": "Previous day",
+    "nextDay": "Next day",
+    "previousWeek": "Previous week",
+    "nextWeek": "Next week",
+    "comments": "Comments",
+    "save": "Save",
+    "unsave": "Remove from saved",
+    "help": "Help"
   }
 }

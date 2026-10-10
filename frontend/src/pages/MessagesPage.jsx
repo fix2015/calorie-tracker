@@ -114,7 +114,7 @@ function ChatView({ conversationId }) {
   return (
     <>
       <div className="chat-header">
-        <button className="btn btn-secondary" style={{ padding: 'var(--space-xs) var(--space-sm)' }} onClick={() => navigate('/messages')}>
+        <button aria-label={t('a11y.back')} className="btn btn-secondary" style={{ padding: 'var(--space-xs) var(--space-sm)' }} onClick={() => navigate('/messages')}>
           &larr;
         </button>
         {otherUser && (

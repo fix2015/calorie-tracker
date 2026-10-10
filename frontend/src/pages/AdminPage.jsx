@@ -376,7 +376,7 @@ export default function AdminPage() {
           <div className="modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: 600, maxHeight: '80vh', overflow: 'auto' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-md)' }}>
               <h2 style={{ margin: 0 }}>AI Suggestions ({suggestions.length})</h2>
-              <button onClick={() => setShowSuggestions(false)} style={{ background: 'none', border: 'none', fontSize: 20, cursor: 'pointer', color: 'var(--color-text-secondary)' }}>&times;</button>
+              <button className="icon-close-btn" aria-label="Close" onClick={() => setShowSuggestions(false)} style={{ background: 'none', border: 'none', fontSize: 20, cursor: 'pointer', color: 'var(--color-text-secondary)' }}>&times;</button>
             </div>
             {suggestions.length === 0 ? (
               <p style={{ color: 'var(--color-text-secondary)', textAlign: 'center' }}>No suggestions yet</p>

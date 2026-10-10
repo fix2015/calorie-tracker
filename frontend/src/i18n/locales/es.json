@@ -480,5 +480,18 @@
     "synced": "Escaneo sincronizado: {0}",
     "needsWeight": "Actualiza tu peso para terminar de sincronizar los escaneos pendientes",
     "syncFailed": "Un escaneo pendiente no se pudo analizar y se eliminó"
+  },
+  "a11y": {
+    "close": "Cerrar",
+    "back": "Atrás",
+    "dismiss": "Descartar",
+    "previousDay": "Día anterior",
+    "nextDay": "Día siguiente",
+    "previousWeek": "Semana anterior",
+    "nextWeek": "Semana siguiente",
+    "comments": "Comentarios",
+    "save": "Guardar",
+    "unsave": "Quitar de guardados",
+    "help": "Ayuda"
   }
 }

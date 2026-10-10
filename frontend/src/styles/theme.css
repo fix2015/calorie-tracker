@@ -11,23 +11,26 @@
   --color-text: #111827;
   --color-text-secondary: #6B7280;
   --color-border: #E5E7EB;
-  --color-border-hover: var(--color-border-hover);
+  /* Text on tinted/light surfaces that must meet WCAG AA (4.5:1) at small sizes */
+  --color-text-secondary-strong: #4B5563; /* ≥ 6.8:1 on white, bg and primary-bg tints */
+  --color-primary-text: #15803D;          /* green text/links: ≥ 4.5:1 on white and #DCFCE7 */
+  --color-border-hover: #D1D5DB;
 
   /* Colors — Semantic surfaces */
-  --color-success-bg: var(--color-success-bg);
-  --color-success-text: var(--color-success-text);
-  --color-success-border: var(--color-success-border);
-  --color-danger-bg: var(--color-danger-bg);
-  --color-danger-text: var(--color-danger-text);
-  --color-danger-border: var(--color-danger-border);
-  --color-warning-bg: var(--color-warning-bg);
-  --color-warning-bg-hover: var(--color-warning-bg-hover);
-  --color-info-bg: var(--color-info-bg);
-  --color-primary-bg: var(--color-primary-bg);
-  --color-primary-bg-alt: var(--color-primary-bg-alt);
-  --color-primary-border-light: var(--color-primary-border-light);
-  --color-accent-blue: var(--color-accent-blue);
-  --color-accent-blue-dark: var(--color-accent-blue-dark);
+  --color-success-bg: #ECFDF5;
+  --color-success-text: #065F46;
+  --color-success-border: #A7F3D0;
+  --color-danger-bg: #FEF2F2;
+  --color-danger-text: #991B1B;
+  --color-danger-border: #FECACA;
+  --color-warning-bg: #FFFBEB;
+  --color-warning-bg-hover: #FEF3C7;
+  --color-info-bg: #EFF6FF;
+  --color-primary-bg: #F0FDF4;
+  --color-primary-bg-alt: #DCFCE7;
+  --color-primary-border-light: #BBF7D0;
+  --color-accent-blue: #3B82F6;
+  --color-accent-blue-dark: #2563EB;
   --color-like: #EF4444;
   --color-like-bg: var(--color-danger-bg);
 
@@ -3595,7 +3598,8 @@ a:hover { text-decoration: underline; }
 .suggestion-card .suggestion-disclaimer {
   margin-top: var(--space-sm);
   font-size: var(--font-size-xs);
-  color: var(--color-text-secondary);
+  /* text-secondary (#6B7280) is only 4.40:1 on the card's #DCFCE7 gradient stop */
+  color: var(--color-text-secondary-strong);
 }
 
 /* ===== Sample (demo) account badge ===== */
@@ -3803,7 +3807,7 @@ a:hover { text-decoration: underline; }
 .link-btn {
   background: none;
   border: none;
-  color: var(--color-primary-dark);
+  color: var(--color-primary-text);
   font: inherit;
   font-size: var(--font-size-sm);
   font-weight: 600;
@@ -3834,7 +3838,7 @@ a:hover { text-decoration: underline; }
   font: inherit;
 }
 .recent-scan-chip img, .recent-scan-dot { width: 44px; height: 44px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
-.recent-scan-dot { display: flex; align-items: center; justify-content: center; background: var(--color-bg); color: var(--color-primary-dark); font-weight: 700; }
+.recent-scan-dot { display: flex; align-items: center; justify-content: center; background: var(--color-bg); color: var(--color-primary-text); font-weight: 700; }
 .recent-scan-text { display: flex; flex-direction: column; min-width: 0; }
 .recent-scan-name { font-size: var(--font-size-sm); font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .recent-scan-kcal { font-size: var(--font-size-xs); color: var(--color-text-secondary); }
@@ -3889,4 +3893,67 @@ a:hover { text-decoration: underline; }
   font-size: var(--font-size-sm);
   font-weight: 600;
   padding: 6px var(--space-md);
+}
+
+/* ─── Accessibility: minimum 44×44pt tap targets ───
+   Icon controls keep their visual size; an invisible ::after extends the hit area. */
+.action-icon-btn,
+.comment-like-btn,
+.story-close,
+.context-help-icon,
+.profile-toast button,
+.report-btn-text {
+  position: relative;
+}
+.modal-close::after,
+.action-icon-btn::after,
+.comment-like-btn::after,
+.story-close::after,
+.context-help-icon::after,
+.profile-toast button::after,
+.report-btn-text::after,
+.report-btn.action-icon-btn::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: max(100%, 44px);
+  height: max(100%, 44px);
+  transform: translate(-50%, -50%);
+}
+.icon-nav-btn,
+.icon-close-btn {
+  min-width: 44px;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.dash-tab,
+.scan-mode-btn,
+.profile-stat-btn,
+.inbox-item {
+  min-height: 44px;
+}
+.meal-owner-link { min-height: 44px; }
+.back-link { display: inline-flex; align-items: center; min-height: 44px; }
+.feed-tab,
+.discover-chip,
+.dash-edit-goal,
+.action-btn,
+.comment-input-row .btn {
+  position: relative;
+}
+.feed-tab::after,
+.discover-chip::after,
+.dash-edit-goal::after,
+.action-btn::after,
+.comment-input-row .btn::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: max(100%, 44px);
+  height: max(100%, 44px);
+  transform: translate(-50%, -50%);
 }

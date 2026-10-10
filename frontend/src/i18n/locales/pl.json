@@ -480,5 +480,18 @@
     "synced": "Zsynchronizowano skan: {0}",
     "needsWeight": "Zaktualizuj wagę, aby dokończyć synchronizację skanów",
     "syncFailed": "Jednego skanu z kolejki nie udało się przeanalizować i został usunięty"
+  },
+  "a11y": {
+    "close": "Zamknij",
+    "back": "Wstecz",
+    "dismiss": "Odrzuć",
+    "previousDay": "Poprzedni dzień",
+    "nextDay": "Następny dzień",
+    "previousWeek": "Poprzedni tydzień",
+    "nextWeek": "Następny tydzień",
+    "comments": "Komentarze",
+    "save": "Zapisz",
+    "unsave": "Usuń z zapisanych",
+    "help": "Pomoc"
   }
 }

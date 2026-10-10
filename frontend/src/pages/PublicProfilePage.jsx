@@ -135,7 +135,7 @@ function PublicProfileView({ username }) {
     <div className="page public-profile-page" style={{ maxWidth: 700, margin: '0 auto' }}>
       {currentUser && (
         <div style={{ marginBottom: 'var(--space-md)' }}>
-          <Link to="/" style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-primary)' }}>&larr; {t('publicProfile.backToApp')}</Link>
+          <Link to="/" className="back-link" style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-primary)' }}>&larr; {t('publicProfile.backToApp')}</Link>
         </div>
       )}
 
@@ -168,7 +168,7 @@ function PublicProfileView({ username }) {
         <div className="profile-actions-row">
           {currentUser && currentUser.id !== profile.id && !profile.isDemo && (
             <>
-              <button
+              <button aria-label={isFollowing ? t('common.following') : t('common.follow')} aria-pressed={isFollowing}
                 className={`action-icon-btn action-icon-follow${isFollowing ? ' following' : ''}`}
                 title={isFollowing ? t('common.following') : t('common.follow')}
                 onClick={async () => {
@@ -186,7 +186,7 @@ function PublicProfileView({ username }) {
                   {!isFollowing && <><line x1="19" y1="8" x2="19" y2="14" /><line x1="16" y1="11" x2="22" y2="11" /></>}
                 </svg>
               </button>
-              <button
+              <button aria-label={t('publicProfile.message')}
                 className="action-icon-btn action-icon-message"
                 title={t('publicProfile.message')}
                 onClick={async () => {
@@ -207,13 +207,13 @@ function PublicProfileView({ username }) {
           )}
           {!currentUser && !profile.isDemo && (
             <>
-              <Link to="/login" className="action-icon-btn action-icon-follow" title={t('common.follow')}>
+              <Link aria-label={t('common.follow')} to="/login" className="action-icon-btn action-icon-follow" title={t('common.follow')}>
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" />
                   <line x1="19" y1="8" x2="19" y2="14" /><line x1="16" y1="11" x2="22" y2="11" />
                 </svg>
               </Link>
-              <Link to="/login" className="action-icon-btn action-icon-message" title={t('publicProfile.message')}>
+              <Link aria-label={t('publicProfile.message')} to="/login" className="action-icon-btn action-icon-message" title={t('publicProfile.message')}>
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
                   <circle cx="9" cy="10" r="1" fill="currentColor" stroke="none" />
@@ -223,7 +223,7 @@ function PublicProfileView({ username }) {
               </Link>
             </>
           )}
-          <button className="action-icon-btn action-icon-share" title={t('common.share')} onClick={handleShare}>
+          <button aria-label={t('common.share')} className="action-icon-btn action-icon-share" title={t('common.share')} onClick={handleShare}>
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" />
               <polyline points="16 6 12 2 8 6" />
