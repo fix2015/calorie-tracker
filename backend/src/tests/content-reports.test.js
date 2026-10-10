@@ -71,10 +71,17 @@ after(async () => {
   server.close();
 });
 
+// Walks every trending page: other test files seed meals concurrently, so the first page isn't enough.
 async function trendingHasMeal() {
-  const { status, data } = await api('/public/trending?limit=48');
-  assert.strictEqual(status, 200);
-  return data.meals.some((m) => m.id === mealId);
+  let cursor = null;
+  for (let page = 0; page < 200; page++) {
+    const { status, data } = await api(`/public/trending?limit=48${cursor ? `&cursor=${cursor}` : ''}`);
+    assert.strictEqual(status, 200);
+    if (data.meals.some((m) => m.id === mealId)) return true;
+    if (!data.nextCursor) return false;
+    cursor = data.nextCursor;
+  }
+  throw new Error('trending pagination did not terminate');
 }
 
 describe('POST /api/reports', () => {
