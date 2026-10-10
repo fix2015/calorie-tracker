@@ -1,14 +1,5 @@
 import { createContext, useContext, useState, useCallback, useMemo } from 'react';
-import { detectBrowserLanguage } from './detectLanguage';
-
-import en from './locales/en.json';
-import uk from './locales/uk.json';
-import es from './locales/es.json';
-import fr from './locales/fr.json';
-import de from './locales/de.json';
-import pl from './locales/pl.json';
-
-const translations = { en, uk, es, fr, de, pl };
+import { translations, loadLanguage, getInitialLanguage, isSupported } from './translations';
 
 // eslint-disable-next-line react-refresh/only-export-components -- constant shared with the provider
 export const LANGUAGES = {
@@ -20,14 +11,6 @@ export const LANGUAGES = {
   pl: { label: 'Polish', nativeName: 'Polski', flag: '🇵🇱' },
 };
 
-function getInitialLanguage() {
-  const stored = localStorage.getItem('appLanguage');
-  if (stored && translations[stored]) return stored;
-  const detected = detectBrowserLanguage();
-  localStorage.setItem('appLanguage', detected);
-  return detected;
-}
-
 function resolve(obj, path) {
   return path.split('.').reduce((acc, key) => acc?.[key], obj);
 }
@@ -38,11 +21,12 @@ export function LanguageProvider({ children }) {
   const [language, setLang] = useState(getInitialLanguage);
 
   const setLanguage = useCallback((code) => {
-    if (translations[code]) {
+    if (!isSupported(code)) return;
+    loadLanguage(code).then(() => {
       setLang(code);
       localStorage.setItem('appLanguage', code);
       document.documentElement.lang = code;
-    }
+    }).catch(() => { /* offline and not cached yet — keep the current language */ });
   }, []);
 
   const t = useCallback((key, ...args) => {

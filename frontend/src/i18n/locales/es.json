@@ -40,7 +40,9 @@
     "deleting": "Eliminando...",
     "adding": "Añadiendo...",
     "posting": "...",
-    "failed": "Error"
+    "failed": "Error",
+    "pageLoadFailed": "No se pudo cargar esta página. Revisa tu conexión e inténtalo de nuevo.",
+    "retry": "Reintentar"
   },
   "nav": {
     "home": "Inicio",

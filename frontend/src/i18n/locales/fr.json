@@ -40,7 +40,9 @@
     "deleting": "Suppression...",
     "adding": "Ajout...",
     "posting": "...",
-    "failed": "Échec"
+    "failed": "Échec",
+    "pageLoadFailed": "Impossible de charger cette page. Vérifiez votre connexion et réessayez.",
+    "retry": "Réessayer"
   },
   "nav": {
     "home": "Accueil",

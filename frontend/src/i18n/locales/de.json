@@ -40,7 +40,9 @@
     "deleting": "Löschen...",
     "adding": "Hinzufügen...",
     "posting": "...",
-    "failed": "Fehlgeschlagen"
+    "failed": "Fehlgeschlagen",
+    "pageLoadFailed": "Diese Seite konnte nicht geladen werden. Prüfe deine Verbindung und versuche es erneut.",
+    "retry": "Erneut versuchen"
   },
   "nav": {
     "home": "Startseite",

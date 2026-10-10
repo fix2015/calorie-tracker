@@ -40,7 +40,9 @@
     "deleting": "Deleting...",
     "adding": "Adding...",
     "posting": "...",
-    "failed": "Failed"
+    "failed": "Failed",
+    "pageLoadFailed": "Couldn't load this page. Check your connection and try again.",
+    "retry": "Retry"
   },
   "nav": {
     "home": "Home",

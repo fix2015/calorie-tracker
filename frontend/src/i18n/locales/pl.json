@@ -40,7 +40,9 @@
     "deleting": "Usuwanie...",
     "adding": "Dodawanie...",
     "posting": "...",
-    "failed": "Niepowodzenie"
+    "failed": "Niepowodzenie",
+    "pageLoadFailed": "Nie udało się załadować strony. Sprawdź połączenie i spróbuj ponownie.",
+    "retry": "Spróbuj ponownie"
   },
   "nav": {
     "home": "Strona główna",

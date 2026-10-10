@@ -1,3 +1,4 @@
+import { lazy, Suspense, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, Outlet, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './services/AuthContext';
 import { LanguageProvider, useTranslation } from './i18n';
@@ -6,22 +7,45 @@ import TopBar from './components/TopBar';
 import ToastHost from './components/ToastHost';
 import OnboardingGate from './components/Onboarding';
 import OfflineSync from './components/OfflineSync';
+import ChunkErrorBoundary from './components/ChunkErrorBoundary';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import DashboardPage from './pages/DashboardPage';
-import ScanPage from './pages/ScanPage';
-import ReportsPage from './pages/ReportsPage';
 import ProfilePage from './pages/ProfilePage';
-import TermsPage from './pages/TermsPage';
-import PrivacyPage from './pages/PrivacyPage';
-import PublicProfilePage from './pages/PublicProfilePage';
-import ExplorePage from './pages/ExplorePage';
 import FeedPage from './pages/FeedPage';
-import SavedPage from './pages/SavedPage';
-import NotificationsPage from './pages/NotificationsPage';
-import MessagesPage from './pages/MessagesPage';
-import AdminPage from './pages/AdminPage';
-import ProductSearchPage from './pages/ProductSearchPage';
+
+// Route-level code splitting: heavy or rarely-first pages load on demand
+// (Reports pulls in recharts, Scan pulls in quagga2).
+const ScanPage = lazy(() => import('./pages/ScanPage'));
+const ReportsPage = lazy(() => import('./pages/ReportsPage'));
+const ExplorePage = lazy(() => import('./pages/ExplorePage'));
+const MessagesPage = lazy(() => import('./pages/MessagesPage'));
+const AdminPage = lazy(() => import('./pages/AdminPage'));
+const PublicProfilePage = lazy(() => import('./pages/PublicProfilePage'));
+const NotificationsPage = lazy(() => import('./pages/NotificationsPage'));
+const SavedPage = lazy(() => import('./pages/SavedPage'));
+const ProductSearchPage = lazy(() => import('./pages/ProductSearchPage'));
+const TermsPage = lazy(() => import('./pages/TermsPage'));
+const PrivacyPage = lazy(() => import('./pages/PrivacyPage'));
+
+const pageSpinner = <div className="page"><div className="spinner" /></div>;
+
+// After first paint, warm the chunks of frequently used routes so they also open offline
+const PREFETCH = [
+  () => import('./pages/ScanPage'),
+  () => import('./pages/ExplorePage'),
+  () => import('./pages/MessagesPage'),
+  () => import('./pages/PublicProfilePage'),
+  () => import('./pages/NotificationsPage'),
+];
+function usePrefetchRoutes() {
+  useEffect(() => {
+    const idle = window.requestIdleCallback || ((cb) => setTimeout(cb, 2000));
+    const cancel = window.cancelIdleCallback || clearTimeout;
+    const id = idle(() => PREFETCH.forEach((load) => load().catch(() => {})));
+    return () => cancel(id);
+  }, []);
+}
 
 function ProtectedLayout() {
   const { user, loading } = useAuth();
@@ -57,7 +81,9 @@ function ProtectedLayout() {
       <Navbar />
       <div className="main-content">
         <TopBar title={title} />
-        <Outlet />
+        <Suspense fallback={pageSpinner}>
+          <Outlet />
+        </Suspense>
       </div>
       <OnboardingGate key={user.id} userId={user.id} />
       <OfflineSync userId={user.id} />
@@ -93,20 +119,29 @@ function ExploreWrapper() {
         <Navbar />
         <div className="main-content">
           <TopBar title={t('nav.discover')} />
-          <ExplorePage />
+          <Suspense fallback={pageSpinner}>
+            <ExplorePage />
+          </Suspense>
         </div>
       </div>
     );
   }
 
-  return <ExplorePage />;
+  return (
+    <Suspense fallback={pageSpinner}>
+      <ExplorePage />
+    </Suspense>
+  );
 }
 
 function App() {
+  usePrefetchRoutes();
   return (
     <BrowserRouter basename={import.meta.env.VITE_BASE_PATH || '/'}>
       <LanguageProvider>
         <AuthProvider>
+          <ChunkErrorBoundary>
+          <Suspense fallback={pageSpinner}>
           <Routes>
             <Route path="/login" element={<PublicRoute><LoginPage /></PublicRoute>} />
             <Route path="/register" element={<PublicRoute><RegisterPage /></PublicRoute>} />
@@ -131,6 +166,8 @@ function App() {
             <Route path="/privacy" element={<PrivacyPage />} />
             <Route path="*" element={<Navigate to="/explore" replace />} />
           </Routes>
+          </Suspense>
+          </ChunkErrorBoundary>
           <ToastHost />
         </AuthProvider>
       </LanguageProvider>
