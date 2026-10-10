@@ -267,6 +267,7 @@ export default function ScanPage() {
   };
 
   // --- Barcode ---
+  const barcodeHandlerRef = useRef(null);
   const stopBarcodeScanner = useCallback(() => {
     if (quaggaRunningRef.current) {
       Quagga.offDetected();
@@ -339,7 +340,7 @@ export default function ScanPage() {
         handled = true;
         Quagga.offDetected();
         stopBarcodeScanner();
-        handleBarcodeDetected(code);
+        barcodeHandlerRef.current?.(code);
       }
     });
   }, [t, stopBarcodeScanner]);
@@ -368,6 +369,9 @@ export default function ScanPage() {
     }
   };
 
+  // startBarcodeScanner is declared earlier, so it calls the latest handler through a ref
+  useEffect(() => { barcodeHandlerRef.current = handleBarcodeDetected; });
+
   const handleBarcodeServingsChange = async (newServings) => {
     setBarcodeServings(newServings);
     const count = parseFloat(newServings);
@@ -393,7 +397,7 @@ export default function ScanPage() {
         carbsG: updated.carbsG,
         fatG: updated.fatG,
       });
-    } catch {}
+    } catch { /* ignore */ }
   };
 
   // --- Barcode from photo ---
@@ -899,7 +903,7 @@ export default function ScanPage() {
                 try {
                   const res = await meals.uploadPhoto(result.id, blob);
                   setResult(prev => ({ ...prev, photoUrl: res.photoUrl }));
-                } catch {}
+                } catch { /* ignore */ }
               }
               if (caption && result.id) {
                 try {
@@ -912,7 +916,7 @@ export default function ScanPage() {
                     description: caption,
                   });
                   setResult(prev => ({ ...prev, description: caption }));
-                } catch {}
+                } catch { /* ignore */ }
               }
             }}
             onCancel={() => setShowFilter(false)}
@@ -1004,7 +1008,7 @@ export default function ScanPage() {
                 </button>
                 <button className="btn btn-primary" style={{ flex: 1 }} onClick={async () => {
                   if (result.description && result.id) {
-                    try { await meals.update(result.id, { name: result.name, calories: result.calories, proteinG: result.proteinG, carbsG: result.carbsG, fatG: result.fatG, description: result.description }); } catch {}
+                    try { await meals.update(result.id, { name: result.name, calories: result.calories, proteinG: result.proteinG, carbsG: result.carbsG, fatG: result.fatG, description: result.description }); } catch { /* ignore */ }
                   }
                   navigate('/dashboard');
                 }}>

@@ -77,7 +77,6 @@ function ChatView({ conversationId }) {
   const messagesEndRef = useRef(null);
 
   useEffect(() => {
-    setLoading(true);
     // Get messages and conversation info
     messagesApi.getMessages(conversationId).then((data) => {
       setMessages(data.messages.reverse());
@@ -167,7 +166,7 @@ export default function MessagesPage() {
   return (
     <div className="page messages-page">
       {conversationId ? (
-        <ChatView conversationId={conversationId} />
+        <ChatView key={conversationId} conversationId={conversationId} />
       ) : (
         <Inbox />
       )}

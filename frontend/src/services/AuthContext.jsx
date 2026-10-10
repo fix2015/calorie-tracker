@@ -5,7 +5,8 @@ const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+  // Only show the loading state when there is a stored session to restore
+  const [loading, setLoading] = useState(() => !!localStorage.getItem('accessToken'));
 
   const logout = useCallback(() => {
     auth.logout().catch(() => {});
@@ -18,8 +19,6 @@ export function AuthProvider({ children }) {
     const token = localStorage.getItem('accessToken');
     if (token) {
       auth.me().then(setUser).catch(() => clearTokens()).finally(() => setLoading(false));
-    } else {
-      setLoading(false);
     }
   }, [logout]);
 
@@ -57,6 +56,7 @@ export function AuthProvider({ children }) {
   );
 }
 
+// eslint-disable-next-line react-refresh/only-export-components -- hook lives next to its provider
 export function useAuth() {
   const ctx = useContext(AuthContext);
   if (!ctx) throw new Error('useAuth must be used within AuthProvider');

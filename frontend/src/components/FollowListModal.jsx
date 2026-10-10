@@ -16,7 +16,6 @@ export default function FollowListModal({ username, type, onClose }) {
   const fetchFn = type === 'followers' ? publicApi.getFollowers : publicApi.getFollowing;
 
   useEffect(() => {
-    setLoading(true);
     fetchFn(username).then((data) => {
       setUsers(data.users);
       setNextCursor(data.nextCursor);

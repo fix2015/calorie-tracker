@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { publicApi } from '../services/api';
 import { useAuth } from '../services/AuthContext';
 import { photoSrc } from '../services/photoUrl';
@@ -20,7 +20,6 @@ const FILTER_KEYS = [
 export default function ExplorePage() {
   const { t } = useTranslation();
   const { user } = useAuth();
-  const navigate = useNavigate();
   const [query, setQuery] = useState('');
   const [results, setResults] = useState([]);
   const [searchLoading, setSearchLoading] = useState(false);
@@ -40,10 +39,15 @@ export default function ExplorePage() {
   };
 
   // Load trending meals
-  useEffect(() => {
+  const selectTag = (key) => {
+    if (key === activeTag) return;
     setTrendingLoading(true);
     setTrending([]);
     setTrendingCursor(null);
+    setActiveTag(key);
+  };
+
+  useEffect(() => {
     const tag = activeTag === 'All' ? undefined : activeTag;
     publicApi.trending(null, 12, tag).then((data) => {
       setTrending(filterUser(data.meals, 'userId'));
@@ -153,7 +157,7 @@ export default function ExplorePage() {
               <button
                 key={key}
                 className={`discover-chip${activeTag === key ? ' active' : ''}`}
-                onClick={() => setActiveTag(key)}
+                onClick={() => selectTag(key)}
               >
                 {t(label)}
               </button>

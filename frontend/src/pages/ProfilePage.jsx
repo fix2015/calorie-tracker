@@ -60,9 +60,11 @@ export default function ProfilePage() {
     followersOnly: false,
   });
 
-  useEffect(() => {
-    if (user) {
-      setForm({
+  // Re-sync the form whenever the user object changes (adjust-state-on-prop-change pattern)
+  const [formUser, setFormUser] = useState(null);
+  if (user && user !== formUser) {
+    setFormUser(user);
+    setForm({
         name: user.name || '',
         age: user.age || '',
         gender: user.gender || 'male',
@@ -77,8 +79,7 @@ export default function ProfilePage() {
         isPublic: user.isPublic || false,
         followersOnly: user.followersOnly || false,
       });
-    }
-  }, [user]);
+  }
 
   const set = (field) => (e) => {
     setForm({ ...form, [field]: e.target.value });

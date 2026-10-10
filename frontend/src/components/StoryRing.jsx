@@ -10,7 +10,6 @@ function StoryViewer({ userStories, startIndex, onClose }) {
   const [currentStory, setCurrentStory] = useState(0);
   const [progress, setProgress] = useState(0);
   const videoRef = useRef(null);
-  const timerRef = useRef(null);
 
   const userGroup = userStories[currentUser];
   const story = userGroup?.stories?.[currentStory];
@@ -21,7 +20,6 @@ function StoryViewer({ userStories, startIndex, onClose }) {
   }, [story?.id]);
 
   useEffect(() => {
-    setProgress(0);
     if (videoRef.current) {
       videoRef.current.currentTime = 0;
       videoRef.current.play().catch(() => {});
@@ -29,6 +27,7 @@ function StoryViewer({ userStories, startIndex, onClose }) {
   }, [currentUser, currentStory]);
 
   const goNext = useCallback(() => {
+    setProgress(0);
     if (currentStory < (userGroup?.stories?.length || 0) - 1) {
       setCurrentStory(currentStory + 1);
     } else if (currentUser < userStories.length - 1) {
@@ -40,6 +39,7 @@ function StoryViewer({ userStories, startIndex, onClose }) {
   }, [currentStory, currentUser, userGroup, userStories, onClose]);
 
   const goPrev = useCallback(() => {
+    setProgress(0);
     if (currentStory > 0) {
       setCurrentStory(currentStory - 1);
     } else if (currentUser > 0) {

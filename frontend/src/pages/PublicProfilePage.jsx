@@ -37,9 +37,14 @@ function groupMealsByDay(meals) {
   return groups;
 }
 
+// Keyed by username so navigating between profiles starts from fresh state
 export default function PublicProfilePage() {
-  const { t } = useTranslation();
   const { username } = useParams();
+  return <PublicProfileView key={username} username={username} />;
+}
+
+function PublicProfileView({ username }) {
+  const { t } = useTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
   const { user: currentUser } = useAuth();
   const navigate = useNavigate();
@@ -57,10 +62,6 @@ export default function PublicProfilePage() {
   const [canSeeMeals, setCanSeeMeals] = useState(true);
 
   useEffect(() => {
-    setLoading(true);
-    setMeals([]);
-    setNextCursor(null);
-    setNotFound(false);
     publicApi.getProfile(username).then((data) => {
       setProfile(data);
       setIsFollowing(data.isFollowing || false);
@@ -174,7 +175,7 @@ export default function PublicProfilePage() {
                     const res = await publicApi.follow(profile.username);
                     setIsFollowing(res.following);
                     setFollowersCount(res.followersCount);
-                  } catch {}
+                  } catch { /* ignore */ }
                 }}
               >
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -191,7 +192,7 @@ export default function PublicProfilePage() {
                   try {
                     const conv = await messagesApi.start(profile.id);
                     navigate(`/messages/${conv.id}`);
-                  } catch {}
+                  } catch { /* ignore */ }
                 }}
               >
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -232,11 +233,12 @@ export default function PublicProfilePage() {
             <button
               className="action-icon-btn action-icon-block"
               title={t('publicProfile.block')}
+              aria-label={t('publicProfile.block')}
               onClick={async () => {
                 if (!window.confirm(t('publicProfile.blockConfirm'))) return;
                 try {
                   await publicApi.blockUser(profile.username);
-                } catch {}
+                } catch { /* ignore */ }
               }}
             >
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

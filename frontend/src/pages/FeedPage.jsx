@@ -1,7 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { publicApi } from '../services/api';
-import { useAuth } from '../services/AuthContext';
 import { useInfiniteScroll } from '../services/useInfiniteScroll';
 import { photoSrc } from '../services/photoUrl';
 import { useTranslation } from '../i18n';
@@ -14,7 +13,6 @@ import SampleBadge from '../components/SampleBadge';
 
 export default function FeedPage() {
   const { t } = useTranslation();
-  const { user } = useAuth();
   const [tab, setTab] = useState('following');
   const [meals, setMeals] = useState([]);
   const [nextCursor, setNextCursor] = useState(null);
@@ -23,20 +21,16 @@ export default function FeedPage() {
   const [suggestions, setSuggestions] = useState([]);
   const [selectedMeal, setSelectedMeal] = useState(null);
   const [followingSet, setFollowingSet] = useState(new Set());
-  const [followingUsers, setFollowingUsers] = useState([]);
 
-  const loadFeed = useCallback((cursor = null) => {
-    const fetchFn = tab === 'following'
-      ? publicApi.feed(cursor, 8)
-      : publicApi.trending(cursor, 8);
-    return fetchFn;
-  }, [tab]);
-
-  useEffect(() => {
+  const changeTab = (next) => {
+    if (next === tab) return;
     setLoading(true);
     setMeals([]);
     setNextCursor(null);
+    setTab(next);
+  };
 
+  useEffect(() => {
     const feedPromise = tab === 'following'
       ? publicApi.feed(null, 8).catch(() => ({ meals: [], nextCursor: null }))
       : publicApi.trending(null, 8).catch(() => ({ meals: [], nextCursor: null }));
@@ -50,20 +44,7 @@ export default function FeedPage() {
       setSuggestions(suggestData.users);
       setLoading(false);
     });
-
-    // Check if user has saved meals
-    publicApi.savedMeals(null).then((data) => {
-      setHasSaved((data.meals || []).length > 0);
-      setSavedMeals(data.meals || []);
-    }).catch(() => {});
-
-    // Load following users for avatar row
-    if (user?.username) {
-      publicApi.getFollowing(user.username).then((data) => {
-        setFollowingUsers(data.users || []);
-      }).catch(() => {});
-    }
-  }, [tab, user?.username]);
+  }, [tab]);
 
   const fetchMore = useCallback(() => {
     if (!nextCursor || loadingMore) return;
@@ -92,7 +73,7 @@ export default function FeedPage() {
           setNextCursor(data.nextCursor);
         }).catch(() => {});
       }
-    } catch {}
+    } catch { /* ignore */ }
   }, []);
 
   if (loading) {
@@ -107,10 +88,10 @@ export default function FeedPage() {
     <div className="page feed-page">
       {/* Tabs row */}
       <div className="feed-tabs-row">
-        <button className={`feed-tab${tab === 'foryou' ? ' active' : ''}`} onClick={() => setTab('foryou')}>
+        <button className={`feed-tab${tab === 'foryou' ? ' active' : ''}`} onClick={() => changeTab('foryou')}>
           {t('feed.forYou')}
         </button>
-        <button className={`feed-tab${tab === 'following' ? ' active' : ''}`} onClick={() => setTab('following')}>
+        <button className={`feed-tab${tab === 'following' ? ' active' : ''}`} onClick={() => changeTab('following')}>
           {t('feed.following')}
         </button>
       </div>

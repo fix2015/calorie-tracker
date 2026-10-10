@@ -45,7 +45,7 @@ export default function AdminPage() {
   const [users, setUsers] = useState([]);
   const [meals, setMeals] = useState([]);
   const [mealsCursor, setMealsCursor] = useState(null);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(authed);
   const [editUser, setEditUser] = useState(null);
   const [userSearch, setUserSearch] = useState('');
   const [mealSearch, setMealSearch] = useState('');
@@ -73,8 +73,8 @@ export default function AdminPage() {
     adminFetch('/users').then((d) => setUsers(d.users)).catch(() => {});
   }, []);
 
+  // Callers that show a spinner set loading=true themselves (keeps setState out of effects)
   const loadMeals = useCallback((cursor = null, source = '', search = '') => {
-    setLoading(true);
     const params = new URLSearchParams({ limit: '50' });
     if (cursor) params.set('cursor', cursor);
     if (source) params.set('source', source);
@@ -346,7 +346,7 @@ export default function AdminPage() {
             {meals.length === 0 && !loading && <p style={{ textAlign: 'center', color: 'var(--color-text-secondary)', padding: 'var(--space-lg)' }}>No meals found</p>}
           </div>
           {mealsCursor && (
-            <button className="btn btn-secondary btn-block" style={{ marginTop: 'var(--space-md)' }} onClick={() => loadMeals(mealsCursor, mealSource, mealSearch)} disabled={loading}>
+            <button className="btn btn-secondary btn-block" style={{ marginTop: 'var(--space-md)' }} onClick={() => { setLoading(true); loadMeals(mealsCursor, mealSource, mealSearch); }} disabled={loading}>
               {loading ? 'Loading...' : 'Load more'}
             </button>
           )}

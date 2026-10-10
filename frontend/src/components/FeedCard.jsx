@@ -39,7 +39,7 @@ export default function FeedCard({ meal, onOpenDetail }) {
       const res = await publicApi.toggleLike(meal.id);
       setLiked(res.liked);
       setLikesCount(res.likesCount);
-    } catch {}
+    } catch { /* ignore */ }
   }, [meal.id]);
 
   const handleShare = useCallback(async () => {
@@ -101,7 +101,7 @@ export default function FeedCard({ meal, onOpenDetail }) {
             try {
               const res = await publicApi.toggleSave(meal.id);
               setSaved(res.saved);
-            } catch {}
+            } catch { /* ignore */ }
           }}>
             <svg width="22" height="22" viewBox="0 0 24 24" fill={saved ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
           </button>

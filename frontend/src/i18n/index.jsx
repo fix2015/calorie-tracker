@@ -10,6 +10,7 @@ import pl from './locales/pl.json';
 
 const translations = { en, uk, es, fr, de, pl };
 
+// eslint-disable-next-line react-refresh/only-export-components -- constant shared with the provider
 export const LANGUAGES = {
   en: { label: 'English', nativeName: 'English', flag: '🇬🇧' },
   uk: { label: 'Ukrainian', nativeName: 'Українська', flag: '🇺🇦' },
@@ -61,6 +62,7 @@ export function LanguageProvider({ children }) {
   );
 }
 
+// eslint-disable-next-line react-refresh/only-export-components -- hook lives next to its provider
 export function useTranslation() {
   return useContext(LanguageContext);
 }

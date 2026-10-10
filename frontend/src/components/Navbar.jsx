@@ -28,7 +28,7 @@ export default function Navbar() {
   const prevNotifRef = useRef(0);
   const prevMsgRef = useRef(0);
   const locationRef = useRef(location.pathname);
-  locationRef.current = location.pathname;
+  useEffect(() => { locationRef.current = location.pathname; }, [location.pathname]);
   const initialLoadRef = useRef(true);
 
   useEffect(() => {
@@ -105,7 +105,7 @@ export default function Navbar() {
       {/* Mobile bottom nav: Home, Discover, +Scan, Stats, Avatar->Profile */}
       <nav className="bottom-nav">
         {links.map((link) => (
-          <NavLink key={link.to} to={link.to} end={link.to === '/'} className={link.isScan ? 'scan-nav-btn' : ''}>
+          <NavLink key={link.to} to={link.to} end={link.to === '/'} className={link.isScan ? 'scan-nav-btn' : ''} aria-label={link.isScan ? link.label : undefined}>
             <span className="nav-icon">
               {link.isScan ? (
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>

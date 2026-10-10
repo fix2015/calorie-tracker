@@ -29,6 +29,7 @@ export default function DashboardPage() {
   const [selectedDate, setSelectedDate] = useState(() => new Date().toISOString().split('T')[0]);
   const [weekOffset, setWeekOffset] = useState(0);
   const [swipedMealId, setSwipedMealId] = useState(null);
+  const [renderNow] = useState(() => Date.now());
   const swipeRef = useRef({ startX: 0, startY: 0, currentX: 0, swiping: false });
 
   const target = user?.dailyCalorieTarget || 2000;
@@ -61,7 +62,12 @@ export default function DashboardPage() {
     }
   };
 
-  useEffect(() => { fetchData(); }, [selectedDate]);
+  useEffect(() => {
+    reports.daily(selectedDate)
+      .then(setDaily)
+      .catch((err) => console.error('Failed to load dashboard:', err))
+      .finally(() => setLoading(false));
+  }, [selectedDate]);
   useEffect(() => { reports.weekly(weekOffset).then((data) => setWeeklyData(data.days || [])).catch(() => {}); }, [weekOffset]);
 
   useEffect(() => {
@@ -85,7 +91,7 @@ export default function DashboardPage() {
     setDaily((prev) => prev ? { ...prev, meals: prev.meals.filter((m) => m.id !== mealId) } : prev);
     try {
       await meals.remove(mealId);
-    } catch {}
+    } catch { /* ignore */ }
     fetchData();
   }, []);
 
@@ -142,7 +148,7 @@ export default function DashboardPage() {
   }, [handleSwipeDelete]);
 
   const needsWeighIn = user?.weightUpdatedAt
-    ? (Date.now() - new Date(user.weightUpdatedAt).getTime()) > 7 * 24 * 60 * 60 * 1000
+    ? (renderNow - new Date(user.weightUpdatedAt).getTime()) > 7 * 24 * 60 * 60 * 1000
     : true;
 
   const handleWeighIn = async (e) => {
