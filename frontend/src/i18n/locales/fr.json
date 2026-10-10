@@ -1,6 +1,6 @@
 {
   "common": {
-    "appName": "CalTracker",
+    "appName": "Calorize",
     "save": "Enregistrer",
     "cancel": "Annuler",
     "delete": "Supprimer",
@@ -98,7 +98,11 @@
     "agreeTerms": "En vous inscrivant, vous acceptez nos",
     "terms": "Conditions d'utilisation",
     "privacyPolicy": "Politique de confidentialité",
-    "failed": "Échec de l'inscription"
+    "failed": "Échec de l'inscription",
+    "iAgree": "J'accepte les",
+    "and": "et la",
+    "zeroTolerance": "Aucun contenu répréhensible ni comportement abusif n'est toléré.",
+    "mustAgree": "Veuillez accepter les Conditions pour continuer"
   },
   "profile": {
     "dailyCalorieTarget": "Objectif calorique quotidien",
@@ -271,7 +275,7 @@
     "hearty": "Copieux"
   },
   "explore": {
-    "joinBanner": "Rejoignez CalTracker pour aimer, commenter, suivre et partager vos repas",
+    "joinBanner": "Rejoignez Calorize pour aimer, commenter, suivre et partager vos repas",
     "searchPlaceholder": "Rechercher repas, utilisateurs, hashtags...",
     "noResults": "Aucun résultat trouvé",
     "noMealsFound": "Aucun repas {0} trouvé",
@@ -397,5 +401,28 @@
     "badge": "Exemple",
     "account": "Compte d’exemple",
     "tooltip": "Profil de démonstration — pas une vraie personne"
+  },
+  "report": {
+    "action": "Signaler",
+    "title": {
+      "MEAL": "Signaler ce repas",
+      "COMMENT": "Signaler ce commentaire",
+      "USER": "Signaler cet utilisateur",
+      "MESSAGE": "Signaler cette conversation"
+    },
+    "subtitle": "Pourquoi signalez-vous ce contenu ?",
+    "reasons": {
+      "SPAM": "Spam",
+      "INAPPROPRIATE": "Contenu inapproprié",
+      "HARASSMENT": "Harcèlement ou intimidation",
+      "OTHER": "Autre"
+    },
+    "notePlaceholder": "Ajoutez des détails (facultatif)",
+    "submit": "Envoyer",
+    "submitting": "Envoi…",
+    "thanks": "Merci — nous examinerons ce signalement sous 24 heures",
+    "already": "Vous avez déjà signalé ce contenu",
+    "failed": "Impossible d'envoyer le signalement. Réessayez.",
+    "blocksSender": "Le signalement bloque aussi cette personne : elle ne pourra plus vous écrire."
   }
 }

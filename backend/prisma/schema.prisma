@@ -34,6 +34,25 @@ enum MealSource {
   barcode
 }
 
+enum ReportTargetType {
+  MEAL
+  COMMENT
+  USER
+  MESSAGE
+}
+
+enum ReportReason {
+  SPAM
+  INAPPROPRIATE
+  HARASSMENT
+  OTHER
+}
+
+enum ReportStatus {
+  OPEN
+  RESOLVED
+}
+
 model User {
   id                  String         @id @default(cuid())
   email               String         @unique
@@ -78,6 +97,7 @@ model User {
   sentMessages        Message[]
   notifications       Notification[]         @relation("notifications")
   actorNotifications  Notification[]         @relation("actorNotifications")
+  contentReports      Report[]
 
   @@map("users")
 }
@@ -301,4 +321,25 @@ model BlockedUser {
   @@unique([blockerId, blockedId])
   @@index([blockedId])
   @@map("blocked_users")
+}
+
+// User-submitted content reports (App Store guideline 1.2). targetId is a meal, comment,
+// user or conversation id depending on targetType; comments/conversations may live in
+// the social/messaging microservices, so there is no foreign key on targetId.
+model Report {
+  id         String           @id @default(cuid())
+  reporterId String           @map("reporter_id")
+  targetType ReportTargetType @map("target_type")
+  targetId   String           @map("target_id")
+  reason     ReportReason
+  note       String?
+  status     ReportStatus     @default(OPEN)
+  createdAt  DateTime         @default(now()) @map("created_at")
+
+  reporter   User             @relation(fields: [reporterId], references: [id], onDelete: Cascade)
+
+  @@unique([reporterId, targetType, targetId])
+  @@index([targetType, targetId, status])
+  @@index([status, createdAt])
+  @@map("content_reports")
 }

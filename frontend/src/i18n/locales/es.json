@@ -1,6 +1,6 @@
 {
   "common": {
-    "appName": "CalTracker",
+    "appName": "Calorize",
     "save": "Guardar",
     "cancel": "Cancelar",
     "delete": "Eliminar",
@@ -98,7 +98,11 @@
     "agreeTerms": "Al registrarte, aceptas nuestros",
     "terms": "Términos",
     "privacyPolicy": "Política de privacidad",
-    "failed": "Error en el registro"
+    "failed": "Error en el registro",
+    "iAgree": "Acepto los",
+    "and": "y la",
+    "zeroTolerance": "No se tolera contenido inapropiado ni usuarios abusivos.",
+    "mustAgree": "Acepta los Términos para continuar"
   },
   "profile": {
     "dailyCalorieTarget": "Objetivo diario de calorías",
@@ -271,7 +275,7 @@
     "hearty": "Abundante"
   },
   "explore": {
-    "joinBanner": "Únete a CalTracker para dar me gusta, comentar, seguir y compartir tus comidas",
+    "joinBanner": "Únete a Calorize para dar me gusta, comentar, seguir y compartir tus comidas",
     "searchPlaceholder": "Buscar comidas, usuarios, hashtags...",
     "noResults": "No se encontraron resultados",
     "noMealsFound": "No se encontraron comidas de {0}",
@@ -397,5 +401,28 @@
     "badge": "Ejemplo",
     "account": "Cuenta de ejemplo",
     "tooltip": "Perfil de demostración — no es una persona real"
+  },
+  "report": {
+    "action": "Denunciar",
+    "title": {
+      "MEAL": "Denunciar esta comida",
+      "COMMENT": "Denunciar este comentario",
+      "USER": "Denunciar a este usuario",
+      "MESSAGE": "Denunciar esta conversación"
+    },
+    "subtitle": "¿Por qué lo denuncias?",
+    "reasons": {
+      "SPAM": "Spam",
+      "INAPPROPRIATE": "Contenido inapropiado",
+      "HARASSMENT": "Acoso o intimidación",
+      "OTHER": "Otro motivo"
+    },
+    "notePlaceholder": "Añade detalles (opcional)",
+    "submit": "Enviar",
+    "submitting": "Enviando…",
+    "thanks": "Gracias — lo revisaremos en un plazo de 24 horas",
+    "already": "Ya has denunciado esto",
+    "failed": "No se pudo enviar la denuncia. Inténtalo de nuevo.",
+    "blocksSender": "Al denunciar también bloqueas a esta persona, así que no podrá escribirte."
   }
 }

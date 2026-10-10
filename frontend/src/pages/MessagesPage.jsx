@@ -4,6 +4,7 @@ import { messagesApi } from '../services/api';
 import { useAuth } from '../services/AuthContext';
 import { photoSrc } from '../services/photoUrl';
 import { useTranslation } from '../i18n';
+import { ReportButton } from '../components/ReportSheet';
 
 function timeAgo(dateStr) {
   const diff = Date.now() - new Date(dateStr).getTime();
@@ -128,6 +129,13 @@ function ChatView({ conversationId }) {
             <span className="chat-header-name">{otherUser.name}</span>
           </Link>
         )}
+        <ReportButton
+          targetType="MESSAGE"
+          targetId={conversationId}
+          variant="label"
+          className="chat-header-report"
+          onReported={() => navigate('/messages')}
+        />
       </div>
 
       {loading ? (

@@ -1,6 +1,6 @@
 {
   "common": {
-    "appName": "CalTracker",
+    "appName": "Calorize",
     "save": "Zapisz",
     "cancel": "Anuluj",
     "delete": "Usuń",
@@ -98,7 +98,11 @@
     "agreeTerms": "Rejestrując się, akceptujesz nasze",
     "terms": "Regulamin",
     "privacyPolicy": "Polityka prywatności",
-    "failed": "Rejestracja nie powiodła się"
+    "failed": "Rejestracja nie powiodła się",
+    "iAgree": "Akceptuję",
+    "and": "oraz",
+    "zeroTolerance": "Nie tolerujemy nieodpowiednich treści ani obraźliwych użytkowników.",
+    "mustAgree": "Zaakceptuj Regulamin, aby kontynuować"
   },
   "profile": {
     "dailyCalorieTarget": "Dzienny cel kaloryczny",
@@ -271,7 +275,7 @@
     "hearty": "Sycący"
   },
   "explore": {
-    "joinBanner": "Dołącz do CalTracker, aby polubić, komentować, obserwować i udostępniać posiłki",
+    "joinBanner": "Dołącz do Calorize, aby polubić, komentować, obserwować i udostępniać posiłki",
     "searchPlaceholder": "Szukaj posiłków, użytkowników, hashtagów...",
     "noResults": "Brak wyników",
     "noMealsFound": "Nie znaleziono posiłków: {0}",
@@ -397,5 +401,28 @@
     "badge": "Przykład",
     "account": "Konto przykładowe",
     "tooltip": "Profil demonstracyjny — to nie jest prawdziwa osoba"
+  },
+  "report": {
+    "action": "Zgłoś",
+    "title": {
+      "MEAL": "Zgłoś ten posiłek",
+      "COMMENT": "Zgłoś ten komentarz",
+      "USER": "Zgłoś tego użytkownika",
+      "MESSAGE": "Zgłoś tę rozmowę"
+    },
+    "subtitle": "Dlaczego to zgłaszasz?",
+    "reasons": {
+      "SPAM": "Spam",
+      "INAPPROPRIATE": "Nieodpowiednie treści",
+      "HARASSMENT": "Nękanie lub zastraszanie",
+      "OTHER": "Coś innego"
+    },
+    "notePlaceholder": "Dodaj szczegóły (opcjonalnie)",
+    "submit": "Wyślij",
+    "submitting": "Wysyłanie…",
+    "thanks": "Dziękujemy — sprawdzimy to w ciągu 24 godzin",
+    "already": "To zostało już przez Ciebie zgłoszone",
+    "failed": "Nie udało się wysłać zgłoszenia. Spróbuj ponownie.",
+    "blocksSender": "Zgłoszenie blokuje też tę osobę, więc nie będzie mogła do Ciebie pisać."
   }
 }

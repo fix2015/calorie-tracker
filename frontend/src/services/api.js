@@ -104,6 +104,11 @@ export const reports = {
   weightHistory: () => request('/reports/weight-history'),
 };
 
+// Content reports (App Store guideline 1.2) — targetType: MEAL | COMMENT | USER | MESSAGE
+export const reportsApi = {
+  create: (data) => request('/reports', { method: 'POST', body: JSON.stringify(data) }),
+};
+
 export const storiesApi = {
   feed: () => request('/stories/feed'),
   userStories: (userId) => request(`/stories/user/${userId}`),

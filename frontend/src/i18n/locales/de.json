@@ -1,6 +1,6 @@
 {
   "common": {
-    "appName": "CalTracker",
+    "appName": "Calorize",
     "save": "Speichern",
     "cancel": "Abbrechen",
     "delete": "Löschen",
@@ -98,7 +98,11 @@
     "agreeTerms": "Mit der Registrierung stimmst du unseren",
     "terms": "Nutzungsbedingungen",
     "privacyPolicy": "Datenschutzrichtlinie",
-    "failed": "Registrierung fehlgeschlagen"
+    "failed": "Registrierung fehlgeschlagen",
+    "iAgree": "Ich akzeptiere die",
+    "and": "und die",
+    "zeroTolerance": "Anstößige Inhalte und missbräuchliches Verhalten werden nicht toleriert.",
+    "mustAgree": "Bitte stimme den Nutzungsbedingungen zu, um fortzufahren"
   },
   "profile": {
     "dailyCalorieTarget": "Tägliches Kalorienziel",
@@ -271,7 +275,7 @@
     "hearty": "Herzhaft"
   },
   "explore": {
-    "joinBanner": "Tritt CalTracker bei, um zu liken, kommentieren, folgen und deine Mahlzeiten zu teilen",
+    "joinBanner": "Tritt Calorize bei, um zu liken, kommentieren, folgen und deine Mahlzeiten zu teilen",
     "searchPlaceholder": "Mahlzeiten, Benutzer, Hashtags suchen...",
     "noResults": "Keine Ergebnisse gefunden",
     "noMealsFound": "Keine {0} Mahlzeiten gefunden",
@@ -397,5 +401,28 @@
     "badge": "Beispiel",
     "account": "Beispielkonto",
     "tooltip": "Demoprofil – keine echte Person"
+  },
+  "report": {
+    "action": "Melden",
+    "title": {
+      "MEAL": "Diese Mahlzeit melden",
+      "COMMENT": "Diesen Kommentar melden",
+      "USER": "Diesen Nutzer melden",
+      "MESSAGE": "Diese Unterhaltung melden"
+    },
+    "subtitle": "Warum meldest du das?",
+    "reasons": {
+      "SPAM": "Spam",
+      "INAPPROPRIATE": "Unangemessene Inhalte",
+      "HARASSMENT": "Belästigung oder Mobbing",
+      "OTHER": "Etwas anderes"
+    },
+    "notePlaceholder": "Details hinzufügen (optional)",
+    "submit": "Senden",
+    "submitting": "Wird gesendet…",
+    "thanks": "Danke — wir prüfen das innerhalb von 24 Stunden",
+    "already": "Du hast das bereits gemeldet",
+    "failed": "Meldung konnte nicht gesendet werden. Bitte versuche es erneut.",
+    "blocksSender": "Durch die Meldung wird diese Person auch blockiert und kann dir nicht mehr schreiben."
   }
 }

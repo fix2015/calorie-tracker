@@ -205,4 +205,62 @@ router.delete('/meals/:id', async (req, res, next) => {
   }
 });
 
+// GET /reports — content reports (default: OPEN), newest first, with a preview of each target
+router.get('/reports', async (req, res, next) => {
+  try {
+    const status = ['OPEN', 'RESOLVED'].includes(req.query.status) ? req.query.status : 'OPEN';
+    const reports = await prisma.report.findMany({
+      where: { status },
+      orderBy: { createdAt: 'desc' },
+      take: 200,
+      include: { reporter: { select: { id: true, name: true, username: true, email: true } } },
+    });
+
+    const idsOf = (type) => [...new Set(reports.filter((r) => r.targetType === type).map((r) => r.targetId))];
+    const [meals, users, comments, openCounts] = await Promise.all([
+      prisma.meal.findMany({
+        where: { id: { in: idsOf('MEAL') } },
+        select: { id: true, name: true, photoUrl: true, user: { select: { id: true, username: true, name: true } } },
+      }),
+      prisma.user.findMany({ where: { id: { in: idsOf('USER') } }, select: { id: true, username: true, name: true } }),
+      prisma.comment.findMany({
+        where: { id: { in: idsOf('COMMENT') } },
+        select: { id: true, text: true, mealId: true, user: { select: { id: true, username: true, name: true } } },
+      }),
+      prisma.report.groupBy({
+        by: ['targetType', 'targetId'],
+        where: { status: 'OPEN', targetId: { in: [...new Set(reports.map((r) => r.targetId))] } },
+        _count: { _all: true },
+      }),
+    ]);
+    const byId = (list) => Object.fromEntries(list.map((x) => [x.id, x]));
+    const previews = { MEAL: byId(meals), USER: byId(users), COMMENT: byId(comments), MESSAGE: {} };
+    const countMap = Object.fromEntries(openCounts.map((g) => [`${g.targetType}:${g.targetId}`, g._count._all]));
+
+    res.json({
+      reports: reports.map((r) => ({
+        ...r,
+        target: previews[r.targetType][r.targetId] || null,
+        openReportsForTarget: countMap[`${r.targetType}:${r.targetId}`] || 0,
+      })),
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// PATCH /reports/:id — { status: 'OPEN' | 'RESOLVED' }
+router.patch('/reports/:id', async (req, res, next) => {
+  try {
+    const { status } = req.body || {};
+    if (!['OPEN', 'RESOLVED'].includes(status)) return res.status(400).json({ error: 'status must be OPEN or RESOLVED' });
+    const existing = await prisma.report.findUnique({ where: { id: req.params.id }, select: { id: true } });
+    if (!existing) return res.status(404).json({ error: 'Report not found' });
+    const report = await prisma.report.update({ where: { id: req.params.id }, data: { status } });
+    res.json(report);
+  } catch (err) {
+    next(err);
+  }
+});
+
 module.exports = router;

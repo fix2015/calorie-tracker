@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { photoSrc } from '../services/photoUrl';
 import SampleBadge from '../components/SampleBadge';
+import AdminReports from '../components/AdminReports';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
 
@@ -53,6 +54,7 @@ export default function AdminPage() {
   const [suggestions, setSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const mealSearchTimer = useRef(null);
+  const [openReportCount, setOpenReportCount] = useState(null);
 
   const handleLogin = (e) => {
     e.preventDefault();
@@ -194,7 +196,12 @@ export default function AdminPage() {
         <button className={`dash-tab${tab === 'overview' ? ' active' : ''}`} onClick={() => setTab('overview')}>Overview</button>
         <button className={`dash-tab${tab === 'users' ? ' active' : ''}`} onClick={() => setTab('users')}>Users</button>
         <button className={`dash-tab${tab === 'meals' ? ' active' : ''}`} onClick={() => { setTab('meals'); if (!mealSource && !mealSearch) loadMeals(); }}>Meals</button>
+        <button className={`dash-tab${tab === 'reports' ? ' active' : ''}`} onClick={() => setTab('reports')}>
+          Reports{openReportCount ? ` (${openReportCount})` : ''}
+        </button>
       </div>
+
+      {tab === 'reports' && <AdminReports adminFetch={adminFetch} onCountChange={setOpenReportCount} />}
 
       {/* Overview */}
       {tab === 'overview' && stats && (

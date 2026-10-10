@@ -1,6 +1,6 @@
 {
   "common": {
-    "appName": "CalTracker",
+    "appName": "Calorize",
     "save": "Save",
     "cancel": "Cancel",
     "delete": "Delete",
@@ -98,7 +98,11 @@
     "agreeTerms": "By signing up, you agree to our",
     "terms": "Terms",
     "privacyPolicy": "Privacy Policy",
-    "failed": "Registration failed"
+    "failed": "Registration failed",
+    "iAgree": "I agree to the",
+    "and": "and",
+    "zeroTolerance": "Objectionable content and abusive users are not tolerated.",
+    "mustAgree": "Please agree to the Terms to continue"
   },
   "profile": {
     "dailyCalorieTarget": "Daily Calorie Target",
@@ -271,7 +275,7 @@
     "hearty": "Hearty"
   },
   "explore": {
-    "joinBanner": "Join CalTracker to like, comment, follow, and share your meals",
+    "joinBanner": "Join Calorize to like, comment, follow, and share your meals",
     "searchPlaceholder": "Search meals, users, hashtags...",
     "noResults": "No results found",
     "noMealsFound": "No {0} meals found",
@@ -397,5 +401,28 @@
     "badge": "Sample",
     "account": "Sample account",
     "tooltip": "Demo profile — not a real person"
+  },
+  "report": {
+    "action": "Report",
+    "title": {
+      "MEAL": "Report this meal",
+      "COMMENT": "Report this comment",
+      "USER": "Report this user",
+      "MESSAGE": "Report this conversation"
+    },
+    "subtitle": "Why are you reporting this?",
+    "reasons": {
+      "SPAM": "Spam",
+      "INAPPROPRIATE": "Inappropriate content",
+      "HARASSMENT": "Harassment or bullying",
+      "OTHER": "Something else"
+    },
+    "notePlaceholder": "Add details (optional)",
+    "submit": "Submit",
+    "submitting": "Sending…",
+    "thanks": "Thanks — we'll review this within 24 hours",
+    "already": "You've already reported this",
+    "failed": "Couldn't send the report. Please try again.",
+    "blocksSender": "Reporting also blocks this person, so they can't message you."
   }
 }

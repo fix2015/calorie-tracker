@@ -10,7 +10,7 @@ export default function TermsPage() {
           Back
         </button>
         <h1 className="page-title">Terms of Service</h1>
-        <p className="legal-updated">Last updated: April 29, 2026</p>
+        <p className="legal-updated">Last updated: October 10, 2026</p>
 
         <section>
           <h2>1. Acceptance of Terms</h2>
@@ -47,11 +47,28 @@ export default function TermsPage() {
             <li>Attempt to gain unauthorized access to the Service or its systems</li>
             <li>Upload malicious content or interfere with the Service's operation</li>
             <li>Resell or redistribute the Service without permission</li>
+            <li>Post content that is objectionable, offensive, sexually explicit, hateful, violent, or that harasses, bullies, or threatens others</li>
+            <li>Post spam or impersonate another person</li>
           </ul>
         </section>
 
         <section>
-          <h2>5. AI-Powered Features</h2>
+          <h2>5. User-Generated Content and Zero Tolerance Policy</h2>
+          <p>
+            Calorize lets users share meals, comments, profiles, and messages. <strong>There is no tolerance for
+            objectionable content or abusive users.</strong> By using the Service you agree not to post or send any
+            such content.
+          </p>
+          <ul>
+            <li>You can report any meal, comment, user, or conversation using the <strong>Report</strong> (flag) action. Reporting a conversation also blocks the sender.</li>
+            <li>You can block any user from their profile. Blocked users cannot view your profile or contact you.</li>
+            <li><strong>We review every report and act on it within 24 hours</strong> by removing the offending content and, where appropriate, suspending or permanently removing the user who posted it.</li>
+            <li>Content that receives multiple reports is hidden automatically until it has been reviewed.</li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>6. AI-Powered Features</h2>
           <p>
             The Service uses artificial intelligence to estimate nutritional content from food photos. These
             estimates are approximate and may not be accurate. You should not rely solely on AI estimates for
@@ -60,7 +77,7 @@ export default function TermsPage() {
         </section>
 
         <section>
-          <h2>6. Limitation of Liability</h2>
+          <h2>7. Limitation of Liability</h2>
           <p>
             The Service is provided "as is" without warranties of any kind. We are not liable for any damages
             arising from your use of the Service, including but not limited to health outcomes based on nutritional
@@ -69,7 +86,7 @@ export default function TermsPage() {
         </section>
 
         <section>
-          <h2>7. Changes to Terms</h2>
+          <h2>8. Changes to Terms</h2>
           <p>
             We may update these Terms at any time. Continued use of the Service after changes constitutes
             acceptance of the updated Terms.
@@ -77,7 +94,7 @@ export default function TermsPage() {
         </section>
 
         <section>
-          <h2>8. Termination</h2>
+          <h2>9. Termination</h2>
           <p>
             We reserve the right to suspend or terminate accounts that violate these Terms. You may stop using
             the Service and delete your account at any time.

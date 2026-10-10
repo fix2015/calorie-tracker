@@ -9,6 +9,7 @@ import { useTranslation } from '../i18n';
 import PublicMealDetailModal from '../components/PublicMealDetailModal';
 import FollowListModal from '../components/FollowListModal';
 import SampleBadge from '../components/SampleBadge';
+import { ReportButton } from '../components/ReportSheet';
 
 function formatDayLabel(dateStr, t) {
   const d = new Date(dateStr);
@@ -246,6 +247,9 @@ function PublicProfileView({ username }) {
                 <line x1="4.93" y1="4.93" x2="19.07" y2="19.07" />
               </svg>
             </button>
+          )}
+          {currentUser && currentUser.id !== profile.id && (
+            <ReportButton targetType="USER" targetId={profile.id} variant="icon" className="action-icon-btn action-icon-report" />
           )}
         </div>
         {shareMsg && <p style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-success)', marginTop: 'var(--space-sm)' }}>{shareMsg}</p>}

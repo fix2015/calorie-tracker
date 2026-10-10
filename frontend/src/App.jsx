@@ -3,6 +3,7 @@ import { AuthProvider, useAuth } from './services/AuthContext';
 import { LanguageProvider, useTranslation } from './i18n';
 import Navbar from './components/Navbar';
 import TopBar from './components/TopBar';
+import ToastHost from './components/ToastHost';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import DashboardPage from './pages/DashboardPage';
@@ -126,6 +127,7 @@ function App() {
             <Route path="/privacy" element={<PrivacyPage />} />
             <Route path="*" element={<Navigate to="/explore" replace />} />
           </Routes>
+          <ToastHost />
         </AuthProvider>
       </LanguageProvider>
     </BrowserRouter>

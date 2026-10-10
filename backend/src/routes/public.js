@@ -4,6 +4,7 @@ const { authenticate, optionalAuth } = require('../middleware/auth');
 const { commentSchema } = require('../utils/validation');
 const { createNotification } = require('../utils/notifications');
 const ms = require('../services/microservices');
+const { withVisibleMeals, filterVisibleComments, isHidden } = require('../utils/moderation');
 
 const router = Router();
 
@@ -31,7 +32,7 @@ router.get('/saved', authenticate, async (req, res, next) => {
 
     const mealIds = svc.saves.map(s => s.contentId);
     const meals = await prisma.meal.findMany({
-      where: { id: { in: mealIds } },
+      where: await withVisibleMeals({ id: { in: mealIds } }),
       select: {
         id: true, name: true, calories: true, proteinG: true, carbsG: true, fatG: true,
         photoUrl: true, consumedAt: true, tags: true,
@@ -89,7 +90,7 @@ router.get('/trending', optionalAuth, async (req, res, next) => {
     if (tag) where.tags = { has: tag };
 
     const meals = await prisma.meal.findMany({
-      where,
+      where: await withVisibleMeals(where),
       orderBy: [{ createdAt: 'desc' }],
       take: limit + 1,
       ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
@@ -171,7 +172,7 @@ router.get('/feed', authenticate, async (req, res, next) => {
     const cursor = req.query.cursor || null;
 
     const meals = await prisma.meal.findMany({
-      where: { userId: { in: ids }, isPublic: true },
+      where: await withVisibleMeals({ userId: { in: ids }, isPublic: true }),
       orderBy: { consumedAt: 'desc' },
       take: limit + 1,
       ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
@@ -345,7 +346,7 @@ router.get('/u/:username/meals', optionalAuth, async (req, res, next) => {
     const limit = Math.min(parseInt(req.query.limit) || 12, 48);
     const cursor = req.query.cursor || null;
     const meals = await prisma.meal.findMany({
-      where: { userId: user.id, isPublic: true },
+      where: await withVisibleMeals({ userId: user.id, isPublic: true }),
       orderBy: { consumedAt: 'desc' },
       take: limit + 1,
       ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
@@ -376,6 +377,7 @@ router.get('/meals/:mealId', optionalAuth, async (req, res, next) => {
       },
     });
     if (!meal || !meal.user.isPublic || !meal.isPublic) return res.status(404).json({ error: 'Meal not found' });
+    if (await isHidden('MEAL', meal.id)) return res.status(404).json({ error: 'Meal not found' });
 
     let isLiked = false;
     let isSaved = false;
@@ -394,7 +396,8 @@ router.get('/meals/:mealId', optionalAuth, async (req, res, next) => {
         select: { id: true, name: true, username: true, avatarUrl: true, isDemo: true },
       });
       const authorMap = Object.fromEntries(authors.map(a => [a.id, a]));
-      commentsWithLiked = svcComments.comments.map(c => ({
+      const visibleComments = await filterVisibleComments(svcComments.comments);
+      commentsWithLiked = visibleComments.map(c => ({
         ...c,
         user: authorMap[c.userId] || null,
         isLiked: c.isLiked || false,
@@ -494,7 +497,8 @@ router.get('/meals/:mealId/comments', async (req, res, next) => {
       select: { id: true, name: true, username: true, avatarUrl: true, isDemo: true },
     });
     const authorMap = Object.fromEntries(authors.map(a => [a.id, a]));
-    const comments = svc.comments.map(c => ({ ...c, user: authorMap[c.userId] || null }));
+    const visible = await filterVisibleComments(svc.comments);
+    const comments = visible.map(c => ({ ...c, user: authorMap[c.userId] || null }));
     res.json({ comments, nextCursor: svc.nextCursor || null });
   } catch (err) {
     next(err);

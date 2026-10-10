@@ -26,6 +26,7 @@ export default function RegisterPage() {
   const navigate = useNavigate();
   const { t } = useTranslation();
 
+  const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [avatarFile, setAvatarFile] = useState(null);
   const [avatarPreview, setAvatarPreview] = useState(null);
   const avatarRef = useRef(null);
@@ -92,6 +93,10 @@ export default function RegisterPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    if (!agreedToTerms) {
+      setError(t('register.mustAgree'));
+      return;
+    }
     setLoading(true);
     try {
       await register({
@@ -274,9 +279,19 @@ export default function RegisterPage() {
                 </p>
               </div>
 
+              <label className="terms-checkbox">
+                <input type="checkbox" checked={agreedToTerms} onChange={(e) => setAgreedToTerms(e.target.checked)} required />
+                <span>
+                  {t('register.iAgree')}{' '}
+                  <Link to="/terms" target="_blank">{t('register.terms')}</Link> {t('register.and')}{' '}
+                  <Link to="/privacy" target="_blank">{t('register.privacyPolicy')}</Link>.{' '}
+                  {t('register.zeroTolerance')}
+                </span>
+              </label>
+
               <div style={{ display: 'flex', gap: 'var(--space-sm)' }}>
                 <button type="button" className="btn btn-secondary" style={{ flex: 1 }} onClick={back}>{t('common.back')}</button>
-                <button type="submit" className="btn btn-primary" style={{ flex: 1 }} disabled={loading}>
+                <button type="submit" className="btn btn-primary" style={{ flex: 1 }} disabled={loading || !agreedToTerms}>
                   {loading ? t('register.creating') : t('register.startTracking')}
                 </button>
               </div>

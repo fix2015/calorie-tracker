@@ -5,6 +5,7 @@ import { photoSrc } from '../services/photoUrl';
 import { shareText } from '../services/share';
 import { useTranslation } from '../i18n';
 import SampleBadge from './SampleBadge';
+import { ReportButton } from './ReportSheet';
 
 function formatDate(dateStr) {
   return new Date(dateStr).toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' });
@@ -58,6 +59,9 @@ function CommentItem({ comment: c, user, t }) {
       <div className="comment-meta">
         <span className="comment-time">{timeAgo(c.createdAt, t)}</span>
         {likesCount > 0 && <span className="comment-likes">{likesCount !== 1 ? t('feedCard.likes', likesCount) : t('feedCard.like', likesCount)}</span>}
+        {user && c.user?.id !== user.id && (
+          <ReportButton targetType="COMMENT" targetId={c.id} variant="text" className="comment-report-btn" />
+        )}
       </div>
     </div>
   );
@@ -233,6 +237,9 @@ export default function PublicMealDetailModal({ mealId, username, onClose, onDel
               <button className="action-btn action-btn-share" style={{ padding: 'var(--space-xs) var(--space-md)' }} onClick={handleShare}>
                 {t('common.share')}
               </button>
+              {user && meal.owner?.id !== user.id && (
+                <ReportButton targetType="MEAL" targetId={meal.id} variant="icon" className="feed-action-btn" />
+              )}
               {user && meal.owner?.id === user.id && (
                 <button
                   className="action-btn"
