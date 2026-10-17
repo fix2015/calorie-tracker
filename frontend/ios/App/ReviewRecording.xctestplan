@@ -1,0 +1,26 @@
+{
+  "configurations": [
+    {
+      "id": "4FD5D0B7-BD26-4459-8513-D836EC4CA483",
+      "name": "Default",
+      "options": {
+      }
+    }
+  ],
+  "defaultOptions": {
+    "preferredScreenCaptureFormat": "screenRecording",
+    "systemAttachmentLifetime": "keepAlways",
+    "userAttachmentLifetime": "keepAlways",
+    "testTimeoutsEnabled": false
+  },
+  "testTargets": [
+    {
+      "target": {
+        "containerPath": "container:App.xcodeproj",
+        "identifier": "50A2268DC8123E453E3FE6AA",
+        "name": "AppUITests"
+      }
+    }
+  ],
+  "version": 1
+}
