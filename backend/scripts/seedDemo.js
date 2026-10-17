@@ -6,6 +6,7 @@
  * Run inside the backend container:
  *   docker exec -e PEXELS_API_KEY=... <backend> node scripts/seedDemo.js [--users N] [--dry-run]
  *   docker exec <backend> node scripts/seedDemo.js --wipe     # removes all isDemo users (cascades)
+ *   Re-run later for a "live" feed: more users + a new photo page, e.g. --users 40 --photo-page 3
  *
  * Idempotent: existing sample users (matched by email) are reused and only missing planned meals are added.
  */
@@ -29,6 +30,9 @@ const DRY_RUN = args.includes('--dry-run');
 const WIPE = args.includes('--wipe');
 const usersArg = args.indexOf('--users');
 const USER_COUNT = usersArg >= 0 ? parseInt(args[usersArg + 1], 10) : 25;
+// Pexels results page to draw photos from. Use a different page on a re-run so photos aren't repeated.
+const pageArg = args.indexOf('--photo-page');
+const PHOTO_PAGE = pageArg >= 0 ? parseInt(args[pageArg + 1], 10) : 1;
 
 // first, last, gender, age, heightCm, weightKg, activityLevel, goal, bio
 const PEOPLE = [
@@ -60,6 +64,22 @@ const PEOPLE = [
   ['Tomás', 'Silva', 'male', 26, 175, 68, 'moderate', 'gain', 'Learning to like breakfast.'],
   ['Grace', 'Kim', 'female', 33, 161, 56, 'moderate', 'maintain', 'Rice bowls and long walks.'],
   ['Henrik', 'Berg', 'male', 47, 186, 90, 'light', 'lose', 'Retired the second dessert.'],
+  // second wave (added 2026-10-17)
+  ['Priya', 'Nair', 'female', 28, 159, 54, 'active', 'maintain', 'Spice cupboard bigger than my wardrobe.'],
+  ['Liam', "O'Connor", 'male', 35, 182, 89, 'moderate', 'lose', 'Swapped the pint for a protein shake (mostly).'],
+  ['Zara', 'Ahmed', 'female', 31, 166, 63, 'moderate', 'maintain', 'Brunch is the most important meal of the day.'],
+  ['Mateo', 'García', 'male', 29, 178, 75, 'very_active', 'gain', 'CrossFit, tortillas, repeat.'],
+  ['Emma', 'Larsen', 'female', 37, 170, 69, 'light', 'lose', 'Two kids, one dog, zero time. Batch cooking.'],
+  ['Nikolai', 'Ivanov', 'male', 44, 184, 95, 'sedentary', 'lose', 'Software engineer learning to cook vegetables.'],
+  ['Amélie', 'Laurent', 'female', 24, 163, 53, 'active', 'gain', 'Climbing gym regular, always hungry.'],
+  ['Kenji', 'Watanabe', 'male', 32, 171, 67, 'moderate', 'maintain', 'Ramen critic, part-time runner.'],
+  ['Leila', 'Mansour', 'female', 40, 165, 71, 'moderate', 'lose', 'Mezze over everything.'],
+  ['Oskar', 'Wójcik', 'male', 27, 186, 82, 'active', 'gain', 'Rower. Breakfast is three breakfasts.'],
+  ['Hana', 'Novák', 'female', 34, 168, 60, 'light', 'maintain', 'Plant-based since 2021, still learning.'],
+  ['Daniel', 'Cohen', 'male', 38, 177, 84, 'moderate', 'lose', 'Weekend griller, weekday salad guy.'],
+  ['Isabella', 'Martins', 'female', 26, 162, 57, 'very_active', 'maintain', 'Beach volleyball and açaí bowls.'],
+  ['Viktor', 'Horvat', 'male', 49, 180, 88, 'light', 'lose', 'Doctor said walk more. I walk to the market.'],
+  ['Maya', 'Goldberg', 'female', 30, 167, 62, 'moderate', 'maintain', 'Sourdough starter is my roommate.'],
   ['Priya', 'Sharma', 'female', 28, 159, 54, 'active', 'gain', 'Lifting and lentils.'],
   ['Noah', 'Fischer', 'male', 35, 178, 76, 'moderate', 'maintain', 'Commuter cyclist, sourdough fan.'],
 ];
@@ -75,6 +95,14 @@ const MEALS = {
     ['Cottage cheese with peaches', 240, 24, 22, 5, 'healthy breakfast bowl'],
     ['Whole-grain pancakes with blueberries', 450, 12, 72, 12, 'pancakes blueberries'],
     ['Veggie omelette', 300, 20, 8, 21, 'omelette breakfast'],
+    ['Shakshuka with crusty bread', 430, 20, 38, 21, 'shakshuka'],
+    ['Overnight oats with apple and cinnamon', 360, 12, 58, 9, 'overnight oats'],
+    ['Breakfast burrito with black beans', 520, 26, 58, 19, 'breakfast burrito'],
+    ['Ricotta toast with honey and figs', 340, 13, 44, 12, 'toast figs ricotta'],
+    ['Chia pudding with kiwi', 290, 9, 34, 13, 'chia pudding'],
+    ['Japanese breakfast: rice, miso, grilled fish', 480, 30, 62, 11, 'japanese breakfast'],
+    ['Bircher muesli with yogurt', 380, 14, 56, 11, 'muesli bowl'],
+    ['Egg and spinach breakfast wrap', 400, 24, 36, 17, 'egg wrap'],
   ],
   lunch: [
     ['Grilled chicken salad', 420, 38, 18, 21, 'grilled chicken salad'],
@@ -85,6 +113,14 @@ const MEALS = {
     ['Caprese sandwich', 470, 21, 48, 21, 'caprese sandwich'],
     ['Tuna Niçoise salad', 450, 33, 22, 25, 'salad lunch'],
     ['Chicken burrito bowl', 610, 40, 68, 18, 'burrito bowl'],
+    ['Falafel bowl with tahini', 590, 19, 70, 26, 'falafel bowl'],
+    ['Chicken pho', 450, 32, 58, 8, 'pho soup'],
+    ['Mediterranean couscous salad', 480, 15, 66, 17, 'couscous salad'],
+    ['Bibimbap with tofu', 560, 22, 78, 17, 'bibimbap'],
+    ['Greek salad with grilled halloumi', 510, 22, 18, 38, 'greek salad'],
+    ['Sushi bento box', 530, 24, 82, 10, 'sushi bento'],
+    ['Minestrone with parmesan', 360, 15, 48, 11, 'minestrone soup'],
+    ['Steak and arugula sandwich', 620, 40, 52, 26, 'steak sandwich'],
   ],
   dinner: [
     ['Grilled salmon with roasted vegetables', 540, 38, 24, 31, 'grilled salmon dinner'],
@@ -95,6 +131,14 @@ const MEALS = {
     ['Vegetable curry with rice', 580, 14, 88, 18, 'vegetable curry'],
     ['Turkey meatballs with zucchini noodles', 450, 36, 20, 24, 'meatballs dinner'],
     ['Shrimp tacos with slaw', 520, 30, 50, 20, 'shrimp tacos'],
+    ['Chicken tikka masala with basmati', 680, 42, 74, 22, 'chicken tikka masala'],
+    ['Mushroom risotto', 610, 15, 88, 20, 'mushroom risotto'],
+    ['Teriyaki salmon with greens', 560, 38, 40, 24, 'teriyaki salmon'],
+    ['Stuffed bell peppers', 470, 26, 44, 19, 'stuffed peppers'],
+    ['Thai green curry with chicken', 620, 36, 58, 26, 'thai green curry'],
+    ['Lamb kofta with tabbouleh', 640, 36, 40, 36, 'kofta'],
+    ['Homemade margherita pizza', 720, 28, 92, 24, 'margherita pizza'],
+    ['Pork and veggie dumplings', 540, 26, 62, 20, 'dumplings'],
   ],
   snack: [
     ['Apple with almond butter', 200, 5, 24, 10, 'apple almond butter'],
@@ -103,6 +147,12 @@ const MEALS = {
     ['Handful of mixed nuts', 190, 6, 7, 16, 'mixed nuts'],
     ['Banana', 105, 1, 27, 0, 'banana'],
     ['Dark chocolate and strawberries', 170, 3, 22, 9, 'chocolate strawberries'],
+    ['Edamame with sea salt', 190, 17, 14, 8, 'edamame'],
+    ['Rice cakes with avocado', 210, 4, 24, 11, 'rice cakes avocado'],
+    ['Frozen yogurt bark', 160, 8, 22, 4, 'yogurt bark'],
+    ['Energy balls with dates and oats', 230, 6, 32, 9, 'energy balls'],
+    ['Cheese and grapes', 220, 10, 18, 12, 'cheese grapes'],
+    ['Popcorn', 150, 4, 28, 3, 'popcorn bowl'],
   ],
 };
 
@@ -173,7 +223,7 @@ const usedPhotoIds = new Set();
 
 async function pexelsPhoto(query) {
   if (!photoPools.has(query)) {
-    const url = `https://api.pexels.com/v1/search?query=${encodeURIComponent(query)}&per_page=80`;
+    const url = `https://api.pexels.com/v1/search?query=${encodeURIComponent(query)}&per_page=80&page=${PHOTO_PAGE}`;
     const res = await fetch(url, { headers: { Authorization: PEXELS_API_KEY } });
     if (!res.ok) throw new Error(`Pexels search "${query}" failed: ${res.status}`);
     const data = await res.json();
