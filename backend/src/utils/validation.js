@@ -18,6 +18,18 @@ const loginSchema = z.object({
   password: z.string().min(1),
 });
 
+const socialLoginSchema = z.object({
+  provider: z.enum(['apple', 'google']),
+  token: z.string().min(1).max(8192),
+  name: z.string().trim().max(100).optional().nullable(),
+  authorizationCode: z.string().max(2048).optional().nullable(),
+});
+
+const setPasswordSchema = z.object({
+  password: z.string().min(8),
+  currentPassword: z.string().optional(),
+});
+
 const updateProfileSchema = z.object({
   name: z.string().min(1).max(100).optional(),
   age: z.number().int().min(10).max(120).optional(),
@@ -47,4 +59,4 @@ const manualMealSchema = z.object({
   consumedAt: z.string().datetime().optional(),
 });
 
-module.exports = { registerSchema, loginSchema, updateProfileSchema, manualMealSchema, commentSchema };
+module.exports = { registerSchema, loginSchema, socialLoginSchema, setPasswordSchema, updateProfileSchema, manualMealSchema, commentSchema };

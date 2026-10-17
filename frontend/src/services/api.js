@@ -69,6 +69,9 @@ export const auth = {
   login: (data) => request('/auth/login', { method: 'POST', body: JSON.stringify(data) }),
   logout: () => request('/auth/logout', { method: 'POST' }),
   me: () => withCache('me', () => request('/auth/me')),
+  providers: () => request('/auth/providers'),
+  social: (data) => request('/auth/social', { method: 'POST', body: JSON.stringify(data) }),
+  setPassword: (data) => request('/auth/password', { method: 'POST', body: JSON.stringify(data) }),
 };
 
 export const users = {

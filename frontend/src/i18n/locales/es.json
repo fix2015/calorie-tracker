@@ -106,6 +106,22 @@
     "zeroTolerance": "No se tolera contenido inapropiado ni usuarios abusivos.",
     "mustAgree": "Acepta los Términos para continuar"
   },
+  "auth": {
+    "continueWithApple": "Continuar con Apple",
+    "continueWithGoogle": "Continuar con Google",
+    "or": "o",
+    "socialFailed": "No se pudo iniciar sesión. Inténtalo de nuevo.",
+    "finishProfileTitle": "Completa tu perfil",
+    "finishProfileBody": "Unos datos para calcular tu objetivo diario de calorías.",
+    "signInMethods": "Métodos de inicio de sesión",
+    "signedInWithApple": "Sesión iniciada con Apple",
+    "signedInWithGoogle": "Sesión iniciada con Google",
+    "passwordSet": "También puedes iniciar sesión con correo y contraseña en {0}.",
+    "addPasswordHint": "Añade una contraseña para iniciar sesión también con {0} y tu contraseña.",
+    "addPassword": "Nueva contraseña",
+    "savePassword": "Añadir contraseña",
+    "passwordSaved": "Contraseña guardada"
+  },
   "profile": {
     "dailyCalorieTarget": "Objetivo diario de calorías",
     "age": "Edad",

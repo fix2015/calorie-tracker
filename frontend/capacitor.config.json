@@ -3,5 +3,10 @@
   "appName": "Calorize",
   "webDir": "dist",
   "server": { "androidScheme": "https" },
-  "ios": { "contentInset": "automatic" }
+  "ios": { "contentInset": "automatic" },
+  "plugins": {
+    "SocialLogin": {
+      "providers": { "apple": true, "google": true, "facebook": false, "twitter": false }
+    }
+  }
 }

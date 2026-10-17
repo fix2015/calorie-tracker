@@ -34,6 +34,13 @@
   --color-like: #EF4444;
   --color-like-bg: var(--color-danger-bg);
 
+  /* Colors — Sign in with Apple / Google (brand guidelines, not themeable) */
+  --color-apple-bg: #000000;
+  --color-apple-text: #FFFFFF;
+  --color-google-bg: #FFFFFF;
+  --color-google-text: #1F1F1F;
+  --color-google-border: #747775;
+
   /* Colors — Overlays */
   --overlay-dark: rgba(0, 0, 0, 0.5);
   --overlay-light: rgba(255, 255, 255, 0.92);
@@ -1618,6 +1625,49 @@ a:hover { text-decoration: underline; }
   display: flex;
   flex-direction: column;
   gap: var(--space-md);
+}
+
+.social-login {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-md);
+}
+
+.btn-social {
+  min-height: 44px;
+  font-weight: 500;
+  gap: var(--space-sm);
+}
+
+.btn-apple {
+  background: var(--color-apple-bg);
+  color: var(--color-apple-text);
+}
+
+.btn-google {
+  background: var(--color-google-bg);
+  color: var(--color-google-text);
+  border: 1px solid var(--color-google-border);
+  font-family: Roboto, var(--font-sans);
+}
+
+.btn-social:disabled { opacity: 0.6; }
+
+.auth-divider {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  margin-top: var(--space-xs);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.auth-divider::before,
+.auth-divider::after {
+  content: '';
+  flex: 1;
+  border-top: 1px solid var(--color-border);
 }
 
 .auth-switch {

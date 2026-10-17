@@ -106,6 +106,22 @@
     "zeroTolerance": "Nie tolerujemy nieodpowiednich treści ani obraźliwych użytkowników.",
     "mustAgree": "Zaakceptuj Regulamin, aby kontynuować"
   },
+  "auth": {
+    "continueWithApple": "Kontynuuj z Apple",
+    "continueWithGoogle": "Kontynuuj z Google",
+    "or": "lub",
+    "socialFailed": "Logowanie nie powiodło się. Spróbuj ponownie.",
+    "finishProfileTitle": "Uzupełnij profil",
+    "finishProfileBody": "Kilka danych, abyśmy mogli obliczyć Twój dzienny cel kaloryczny.",
+    "signInMethods": "Metody logowania",
+    "signedInWithApple": "Zalogowano przez Apple",
+    "signedInWithGoogle": "Zalogowano przez Google",
+    "passwordSet": "Logowanie e-mailem i hasłem jest też włączone dla {0}.",
+    "addPasswordHint": "Dodaj hasło, aby logować się także adresem {0} i hasłem.",
+    "addPassword": "Nowe hasło",
+    "savePassword": "Dodaj hasło",
+    "passwordSaved": "Hasło zapisane"
+  },
   "profile": {
     "dailyCalorieTarget": "Dzienny cel kaloryczny",
     "age": "Wiek",

@@ -106,6 +106,22 @@
     "zeroTolerance": "Неприйнятний вміст і образливу поведінку не толеруємо.",
     "mustAgree": "Щоб продовжити, погодьтеся з Умовами"
   },
+  "auth": {
+    "continueWithApple": "Продовжити з Apple",
+    "continueWithGoogle": "Продовжити з Google",
+    "or": "або",
+    "socialFailed": "Не вдалося увійти. Спробуйте ще раз.",
+    "finishProfileTitle": "Завершіть профіль",
+    "finishProfileBody": "Кілька даних, щоб розрахувати вашу денну норму калорій.",
+    "signInMethods": "Способи входу",
+    "signedInWithApple": "Вхід через Apple",
+    "signedInWithGoogle": "Вхід через Google",
+    "passwordSet": "Вхід за email і паролем також увімкнено для {0}.",
+    "addPasswordHint": "Додайте пароль, щоб також входити за {0} і паролем.",
+    "addPassword": "Новий пароль",
+    "savePassword": "Додати пароль",
+    "passwordSaved": "Пароль збережено"
+  },
   "profile": {
     "dailyCalorieTarget": "Денна норма калорій",
     "age": "Вік",

@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "build:cap": "CAPACITOR=1 vite build --mode capacitor",
+    "build:cap": "node scripts/native-social-config.mjs && CAPACITOR=1 vite build --mode capacitor",
     "cap:sync": "npm run build:cap && npx cap sync",
     "cap:ios": "npm run build:cap && npx cap sync ios && npx cap open ios",
     "cap:android": "npm run build:cap && npx cap sync android && npx cap open android",
@@ -19,6 +19,7 @@
     "@capacitor/core": "^8.3.1",
     "@capacitor/ios": "^8.3.1",
     "@capacitor/local-notifications": "^8.3.1",
+    "@capgo/capacitor-social-login": "8.5.12",
     "@ericblade/quagga2": "^1.12.1",
     "html5-qrcode": "^2.3.8",
     "react": "^19.2.5",

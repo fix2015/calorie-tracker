@@ -106,6 +106,22 @@
     "zeroTolerance": "Objectionable content and abusive users are not tolerated.",
     "mustAgree": "Please agree to the Terms to continue"
   },
+  "auth": {
+    "continueWithApple": "Continue with Apple",
+    "continueWithGoogle": "Continue with Google",
+    "or": "or",
+    "socialFailed": "Sign-in failed. Please try again.",
+    "finishProfileTitle": "Finish your profile",
+    "finishProfileBody": "A few details so we can calculate your daily calorie target.",
+    "signInMethods": "Sign-in methods",
+    "signedInWithApple": "Signed in with Apple",
+    "signedInWithGoogle": "Signed in with Google",
+    "passwordSet": "Email and password sign-in is also enabled for {0}.",
+    "addPasswordHint": "Add a password to also sign in with {0} and your password.",
+    "addPassword": "New password",
+    "savePassword": "Add password",
+    "passwordSaved": "Password saved"
+  },
   "profile": {
     "dailyCalorieTarget": "Daily Calorie Target",
     "age": "Age",

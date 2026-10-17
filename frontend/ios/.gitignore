@@ -14,3 +14,6 @@ App/App/config.xml
 
 # Local archives/exports
 build
+
+# Generated from .env.capacitor by scripts/native-social-config.mjs
+social-login.generated.xcconfig

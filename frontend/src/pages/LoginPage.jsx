@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../services/AuthContext';
 import { useTranslation } from '../i18n';
+import SocialLoginButtons from '../components/SocialLoginButtons';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -42,6 +43,8 @@ export default function LoginPage() {
         <p className="auth-subtitle">{t('login.subtitle')}</p>
 
         <p className={`error-text${error ? ' visible' : ''}`} style={{ marginBottom: error ? 'var(--space-md)' : 0 }}><span>{error}</span></p>
+
+        <SocialLoginButtons onError={setError} />
 
         <form onSubmit={handleSubmit} className="auth-form">
           <div className="form-group">

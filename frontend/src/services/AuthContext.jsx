@@ -32,6 +32,15 @@ export function AuthProvider({ children }) {
     return full;
   };
 
+  // Sign in with Apple / Google: `credential` comes from signInWithProvider(); same session as password login
+  const socialLogin = async (credential) => {
+    const res = await auth.social(credential);
+    setTokens(res.accessToken, res.refreshToken);
+    const full = await auth.me();
+    setUser(full);
+    return { user: full, isNewUser: res.isNewUser };
+  };
+
   const register = async (data) => {
     const res = await auth.register(data);
     setTokens(res.accessToken, res.refreshToken);
@@ -54,7 +63,7 @@ export function AuthProvider({ children }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout, deleteAccount, refreshUser }}>
+    <AuthContext.Provider value={{ user, loading, login, socialLogin, register, logout, deleteAccount, refreshUser }}>
       {children}
     </AuthContext.Provider>
   );

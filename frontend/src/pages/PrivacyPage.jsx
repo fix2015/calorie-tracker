@@ -10,13 +10,14 @@ export default function PrivacyPage() {
           Back
         </button>
         <h1 className="page-title">Privacy Policy</h1>
-        <p className="legal-updated">Last updated: October 6, 2026</p>
+        <p className="legal-updated">Last updated: October 17, 2026</p>
 
         <section>
           <h2>1. Information We Collect</h2>
           <p>When you use Calorize, we collect:</p>
           <ul>
             <li><strong>Account information:</strong> name, email address, and encrypted password</li>
+            <li><strong>Sign in with Apple or Google:</strong> you can sign in with Apple or Google instead of a password. We receive your name, email address (or Apple private relay address) and a unique identifier for your account; we do not receive your password or contacts. When you delete your account we also revoke Calorize's access at Apple.</li>
             <li><strong>Profile data:</strong> age, gender, height, weight, activity level, and fitness goals</li>
             <li><strong>Meal data:</strong> meal names, calorie and macronutrient values, timestamps, and uploaded food photos</li>
             <li><strong>Usage data:</strong> interactions with the Service for functionality purposes (e.g., session tokens)</li>

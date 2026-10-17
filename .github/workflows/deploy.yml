@@ -19,6 +19,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # BACKEND_ENV (base64 of infra/backend.env) also carries the social-login settings:
+      # GOOGLE_CLIENT_IDS, APPLE_AUDIENCES, APPLE_TEAM_ID, APPLE_SIWA_KEY_ID, APPLE_SIWA_PRIVATE_KEY,
+      # APPLE_REDIRECT_URI (see backend/.env.example). Without them social login is simply hidden.
       - name: Write env files
         run: |
           echo "${{ secrets.INFRA_ENV }}" | base64 -d > infra/.env

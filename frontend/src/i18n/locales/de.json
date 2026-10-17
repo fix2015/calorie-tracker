@@ -106,6 +106,22 @@
     "zeroTolerance": "Anstößige Inhalte und missbräuchliches Verhalten werden nicht toleriert.",
     "mustAgree": "Bitte stimme den Nutzungsbedingungen zu, um fortzufahren"
   },
+  "auth": {
+    "continueWithApple": "Weiter mit Apple",
+    "continueWithGoogle": "Weiter mit Google",
+    "or": "oder",
+    "socialFailed": "Anmeldung fehlgeschlagen. Bitte versuche es erneut.",
+    "finishProfileTitle": "Profil vervollständigen",
+    "finishProfileBody": "Ein paar Angaben, damit wir dein tägliches Kalorienziel berechnen können.",
+    "signInMethods": "Anmeldemethoden",
+    "signedInWithApple": "Angemeldet mit Apple",
+    "signedInWithGoogle": "Angemeldet mit Google",
+    "passwordSet": "Die Anmeldung mit E-Mail und Passwort ist für {0} ebenfalls aktiviert.",
+    "addPasswordHint": "Lege ein Passwort fest, um dich auch mit {0} und Passwort anzumelden.",
+    "addPassword": "Neues Passwort",
+    "savePassword": "Passwort hinzufügen",
+    "passwordSaved": "Passwort gespeichert"
+  },
   "profile": {
     "dailyCalorieTarget": "Tägliches Kalorienziel",
     "age": "Alter",

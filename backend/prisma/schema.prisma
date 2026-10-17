@@ -34,6 +34,11 @@ enum MealSource {
   barcode
 }
 
+enum AuthProvider {
+  apple
+  google
+}
+
 enum ReportTargetType {
   MEAL
   COMMENT
@@ -56,7 +61,7 @@ enum ReportStatus {
 model User {
   id                  String         @id @default(cuid())
   email               String         @unique
-  passwordHash        String         @map("password_hash")
+  passwordHash        String?        @map("password_hash") // null for accounts created with Apple / Google
   name                String
   age                 Int?
   gender              Gender?
@@ -75,6 +80,7 @@ model User {
   isPublic            Boolean        @default(false) @map("is_public")
   followersOnly       Boolean        @default(false) @map("followers_only")
   isDemo              Boolean        @default(false) @map("is_demo")
+  profileComplete     Boolean        @default(true) @map("profile_complete") // false until a social sign-up enters body stats
   voiceSecondsUsed    Int            @default(0) @map("voice_seconds_used")
   voiceSecondsResetAt DateTime?      @map("voice_seconds_reset_at")
   createdAt           DateTime       @default(now()) @map("created_at")
@@ -98,8 +104,27 @@ model User {
   notifications       Notification[]         @relation("notifications")
   actorNotifications  Notification[]         @relation("actorNotifications")
   contentReports      Report[]
+  identities          AuthIdentity[]
 
   @@map("users")
+}
+
+// Sign in with Apple / Google identities linked to a user
+model AuthIdentity {
+  id                String       @id @default(cuid())
+  userId            String       @map("user_id")
+  provider          AuthProvider
+  providerUserId    String       @map("provider_user_id") // the token's `sub`
+  email             String?
+  appleRefreshToken String?      @map("apple_refresh_token") // AES-256-GCM encrypted, used to revoke on account deletion
+  appleClientId     String?      @map("apple_client_id")     // audience the refresh token was issued to
+  createdAt         DateTime     @default(now()) @map("created_at")
+
+  user              User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerUserId])
+  @@index([userId])
+  @@map("auth_identities")
 }
 
 model Meal {

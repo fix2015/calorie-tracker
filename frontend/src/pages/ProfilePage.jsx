@@ -4,6 +4,7 @@ import { useAuth } from '../services/AuthContext';
 import { users, reports } from '../services/api';
 import AvatarUpload from '../components/AvatarUpload';
 import ReminderSettings from '../components/ReminderSettings';
+import SignInMethods from '../components/SignInMethods';
 import { useTranslation, LANGUAGES } from '../i18n';
 
 const ACTIVITY_LEVEL_KEYS = [
@@ -357,6 +358,13 @@ export default function ProfilePage() {
         {user && <ReminderSettings userId={user.id} />}
 
         <hr style={{ margin: 'var(--space-xl) 0', border: 'none', borderTop: '1px solid var(--color-border)' }} />
+
+        {user?.authProviders?.length > 0 && (
+          <>
+            <SignInMethods />
+            <hr style={{ margin: 'var(--space-xl) 0', border: 'none', borderTop: '1px solid var(--color-border)' }} />
+          </>
+        )}
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-sm)' }}>
           <button className="btn btn-secondary btn-block" onClick={logout}>

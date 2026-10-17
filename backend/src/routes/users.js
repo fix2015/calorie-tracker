@@ -5,6 +5,7 @@ const { updateProfileSchema } = require('../utils/validation');
 const { computeDailyCalorieTarget } = require('../utils/calories');
 const { upload } = require('../middleware/upload');
 const { uploadImage } = require('../services/s3');
+const { revokeAppleToken, decryptSecret } = require('../services/socialAuth');
 
 const router = Router();
 
@@ -32,7 +33,11 @@ router.patch('/me', authenticate, async (req, res, next) => {
     }
 
     const updateData = { ...data };
-    if (dailyCalorieTarget) updateData.dailyCalorieTarget = dailyCalorieTarget;
+    if (dailyCalorieTarget) {
+      updateData.dailyCalorieTarget = dailyCalorieTarget;
+      // Social sign-ups finish their profile once body stats + goal are known
+      if (!current.profileComplete) updateData.profileComplete = true;
+    }
     if (data.weightKg && data.weightKg !== current.weightKg) {
       updateData.weightUpdatedAt = new Date();
       // Log weight change
@@ -50,6 +55,7 @@ router.patch('/me', authenticate, async (req, res, next) => {
         heightCm: true, weightKg: true, targetWeightKg: true, weightUpdatedAt: true,
         activityLevel: true, goal: true, dailyCalorieTarget: true,
         username: true, bio: true, avatarUrl: true, linkUrl: true, isPublic: true, followersOnly: true,
+        profileComplete: true,
       },
     });
 
@@ -80,6 +86,18 @@ router.post('/avatar', authenticate, upload.single('avatar'), async (req, res, n
 
 router.delete('/me', authenticate, async (req, res, next) => {
   try {
+    // Sign in with Apple: revoke the user's token (guideline 5.1.1(v)); deletion proceeds even if it fails
+    const appleIdentities = await prisma.authIdentity.findMany({
+      where: { userId: req.userId, provider: 'apple', appleRefreshToken: { not: null } },
+    });
+    for (const identity of appleIdentities) {
+      try {
+        await revokeAppleToken(decryptSecret(identity.appleRefreshToken), identity.appleClientId);
+      } catch (err) {
+        console.error('[social-auth] Apple revoke on delete failed:', err.message);
+      }
+    }
+
     await prisma.user.delete({ where: { id: req.userId } });
     res.json({ message: 'Account deleted' });
   } catch (err) {

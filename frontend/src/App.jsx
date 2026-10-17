@@ -6,6 +6,7 @@ import Navbar from './components/Navbar';
 import TopBar from './components/TopBar';
 import ToastHost from './components/ToastHost';
 import OnboardingGate from './components/Onboarding';
+import FinishProfileGate from './components/FinishProfile';
 import OfflineSync from './components/OfflineSync';
 import ChunkErrorBoundary from './components/ChunkErrorBoundary';
 import LoginPage from './pages/LoginPage';
@@ -86,6 +87,7 @@ function ProtectedLayout() {
         </Suspense>
       </div>
       <OnboardingGate key={user.id} userId={user.id} />
+      <FinishProfileGate />
       <OfflineSync userId={user.id} />
     </div>
   );

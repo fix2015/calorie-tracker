@@ -4,6 +4,7 @@ import { useAuth } from '../services/AuthContext';
 import { users } from '../services/api';
 import { useTranslation } from '../i18n';
 import GoalFields from '../components/GoalFields';
+import SocialLoginButtons from '../components/SocialLoginButtons';
 import { ACTIVITY_LEVEL_KEYS, GOAL_KEYS } from '../services/goalOptions';
 
 export default function RegisterPage() {
@@ -134,6 +135,8 @@ export default function RegisterPage() {
         </div>
 
         <p className={`error-text${error ? ' visible' : ''}`} style={{ marginBottom: error ? 'var(--space-md)' : 0 }}><span>{error}</span></p>
+
+        {step === 1 && <SocialLoginButtons onError={setError} />}
 
         <form onSubmit={handleSubmit} className="auth-form">
           {step === 1 && (

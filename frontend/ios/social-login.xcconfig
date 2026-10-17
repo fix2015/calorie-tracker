@@ -1,0 +1,5 @@
+// Sign in with Google needs the reversed iOS client id as a URL scheme (Info.plist → CFBundleURLSchemes).
+// The real value is generated from VITE_GOOGLE_IOS_CLIENT_ID in frontend/.env.capacitor by
+// `npm run build:cap` (scripts/native-social-config.mjs) into the git-ignored file included below.
+GOOGLE_REVERSED_CLIENT_ID = app.probooking.calorize.google-not-configured
+#include? "social-login.generated.xcconfig"
