@@ -7,6 +7,7 @@ import { useInfiniteScroll } from '../services/useInfiniteScroll';
 import { useTranslation } from '../i18n';
 import PublicMealDetailModal from '../components/PublicMealDetailModal';
 import SampleBadge from '../components/SampleBadge';
+import SocialLoginButtons from '../components/SocialLoginButtons';
 
 const FILTER_KEYS = [
   { key: 'All', label: 'explore.filterAll' },
@@ -20,6 +21,7 @@ const FILTER_KEYS = [
 export default function ExplorePage() {
   const { t } = useTranslation();
   const { user } = useAuth();
+  const [authError, setAuthError] = useState('');
   const [query, setQuery] = useState('');
   const [results, setResults] = useState([]);
   const [searchLoading, setSearchLoading] = useState(false);
@@ -102,6 +104,8 @@ export default function ExplorePage() {
       {!user && (
         <div className="explore-auth-banner">
           <p>{t('explore.joinBanner')}</p>
+          <SocialLoginButtons onError={setAuthError} />
+          {authError && <p className="error-text visible" role="alert"><span>{authError}</span></p>}
           <div style={{ display: 'flex', gap: 'var(--space-sm)', justifyContent: 'center' }}>
             <Link to="/login" className="action-btn action-btn-follow">{t('common.logIn')}</Link>
             <Link to="/register" className="action-btn action-btn-message">{t('common.signUp')}</Link>
