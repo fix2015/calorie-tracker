@@ -97,14 +97,7 @@
     "startTracking": "Start Tracking",
     "alreadyHaveAccount": "Already have an account?",
     "signIn": "Sign in",
-    "agreeTerms": "By signing up, you agree to our",
-    "terms": "Terms",
-    "privacyPolicy": "Privacy Policy",
-    "failed": "Registration failed",
-    "iAgree": "I agree to the",
-    "and": "and",
-    "zeroTolerance": "Objectionable content and abusive users are not tolerated.",
-    "mustAgree": "Please agree to the Terms to continue"
+    "failed": "Registration failed"
   },
   "auth": {
     "continueWithApple": "Continue with Apple",
@@ -121,6 +114,18 @@
     "addPassword": "New password",
     "savePassword": "Add password",
     "passwordSaved": "Password saved"
+  },
+  "agreement": {
+    "checkbox": "I agree to the {terms} and {privacy}. I understand there is no tolerance for objectionable content or abusive users.",
+    "termsOfUse": "Terms of Use",
+    "privacyPolicy": "Privacy Policy",
+    "mustAgree": "Please tick the box to agree to the Terms of Use first.",
+    "signInNote": "By signing in you agree to our {terms} — no tolerance for objectionable content or abusive users.",
+    "sheetTitle": "Agree to Terms",
+    "sheetBodyNew": "Before we create your Calorize account, please review and accept our Terms of Use.",
+    "sheetBodyUpdated": "Please review and accept our Terms of Use to keep using Calorize.",
+    "agreeContinue": "Agree and continue",
+    "failed": "Could not save your agreement. Please try again."
   },
   "profile": {
     "dailyCalorieTarget": "Daily Calorie Target",
@@ -403,7 +408,8 @@
     "tapToChange": "Tap to change"
   },
   "terms": {
-    "title": "Terms of Service"
+    "title": "Terms of Use",
+    "summary": "Last updated {0}. By using Calorize you accept these terms, including our zero-tolerance policy for objectionable content and abusive behaviour. Reports are reviewed within 24 hours."
   },
   "privacy": {
     "title": "Privacy Policy"

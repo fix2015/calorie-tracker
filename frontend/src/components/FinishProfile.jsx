@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
 import { useAuth } from '../services/AuthContext';
 import { users } from '../services/api';
 import { useTranslation } from '../i18n';
@@ -17,7 +16,6 @@ function FinishProfile() {
   const [step, setStep] = useState(0);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
-  const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [form, setForm] = useState({
     name: user?.name || '',
     age: '',
@@ -44,10 +42,6 @@ function FinishProfile() {
     e.preventDefault();
     if (form.goal !== 'maintain' && !form.targetWeightKg) {
       setError(t('register.enterTargetWeight'));
-      return;
-    }
-    if (!agreedToTerms) {
-      setError(t('register.mustAgree'));
       return;
     }
     setSaving(true);
@@ -114,15 +108,6 @@ function FinishProfile() {
         <form className="onboarding-body auth-form" onSubmit={save} id="finish-profile-form">
           <h1 id="finish-profile-title">{t('onboarding.goalTitle')}</h1>
           <GoalFields form={form} set={set} idPrefix="fp-" />
-          <label className="terms-checkbox">
-            <input type="checkbox" checked={agreedToTerms} onChange={(e) => setAgreedToTerms(e.target.checked)} />
-            <span>
-              {t('register.iAgree')}{' '}
-              <Link to="/terms" target="_blank">{t('register.terms')}</Link> {t('register.and')}{' '}
-              <Link to="/privacy" target="_blank">{t('register.privacyPolicy')}</Link>.{' '}
-              {t('register.zeroTolerance')}
-            </span>
-          </label>
         </form>
       )}
 
@@ -135,7 +120,7 @@ function FinishProfile() {
         {step === 0 ? (
           <button type="submit" form="finish-profile-form" className="btn btn-primary">{t('common.next')}</button>
         ) : (
-          <button type="submit" form="finish-profile-form" className="btn btn-primary" disabled={saving || !agreedToTerms}>
+          <button type="submit" form="finish-profile-form" className="btn btn-primary" disabled={saving}>
             {saving ? t('common.saving') : t('register.startTracking')}
           </button>
         )}

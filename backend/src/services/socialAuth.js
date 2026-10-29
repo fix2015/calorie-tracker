@@ -21,9 +21,10 @@ const GOOGLE_ISSUERS = ['accounts.google.com', 'https://accounts.google.com'];
 const JWKS_TTL_MS = 24 * 60 * 60 * 1000;
 
 class SocialAuthError extends Error {
-  constructor(message, status = 401) {
+  constructor(message, status = 401, code) {
     super(message);
     this.status = status;
+    this.code = code;
   }
 }
 

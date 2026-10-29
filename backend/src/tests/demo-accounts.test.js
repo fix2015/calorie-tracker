@@ -53,7 +53,7 @@ before(async () => {
 
   const { data } = await api('/auth/register', {
     method: 'POST',
-    body: { email: VIEWER_EMAIL, password: 'TestPass123!', name: 'Viewer' },
+    body: { acceptedTerms: true, email: VIEWER_EMAIL, password: 'TestPass123!', name: 'Viewer' },
   });
   viewerToken = data.accessToken;
 });

@@ -72,6 +72,7 @@ export const auth = {
   providers: () => request('/auth/providers'),
   social: (data) => request('/auth/social', { method: 'POST', body: JSON.stringify(data) }),
   setPassword: (data) => request('/auth/password', { method: 'POST', body: JSON.stringify(data) }),
+  acceptTerms: () => request('/auth/terms', { method: 'POST', body: JSON.stringify({ acceptedTerms: true }) }),
 };
 
 export const users = {

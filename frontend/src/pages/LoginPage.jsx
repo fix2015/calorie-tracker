@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../services/AuthContext';
 import { useTranslation } from '../i18n';
 import SocialLoginButtons from '../components/SocialLoginButtons';
+import { TermsNote } from '../components/TermsAgreement';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -74,6 +75,7 @@ export default function LoginPage() {
           <button type="submit" className="btn btn-primary btn-block" disabled={loading}>
             {loading ? t('login.signingIn') : t('login.signIn')}
           </button>
+          <TermsNote />
         </form>
 
         <p className="auth-switch">

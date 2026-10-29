@@ -4,6 +4,8 @@ import { useAuth } from '../services/AuthContext';
 import { auth } from '../services/api';
 import { useTranslation } from '../i18n';
 import { clientConfigured, platform, signInWithProvider, isCancelled } from '../services/socialLogin';
+import { isTermsRequired } from '../services/terms';
+import { TermsSheet } from './TermsAgreement';
 
 // Server-side availability (GET /auth/providers), fetched once per page load
 let providersPromise = null;
@@ -35,13 +37,18 @@ const GoogleLogo = () => (
 /**
  * "Continue with Apple" / "Continue with Google" + "or" divider, shown above the email form on the
  * Login and Register screens. Renders nothing when neither provider is available.
+ *
+ * `terms` (Register): `{ accepted, onBlocked }` — the buttons stay inactive until the Terms checkbox above
+ * them is ticked, and the sign-in carries acceptedTerms. Without it (Login, Explore) a sign-in that would
+ * create an account is refused by the API and the "Agree to Terms" sheet opens before it is retried.
  */
-export default function SocialLoginButtons({ onError }) {
+export default function SocialLoginButtons({ onError, terms }) {
   const { t } = useTranslation();
   const { socialLogin } = useAuth();
   const navigate = useNavigate();
   const [server, setServer] = useState(null);
   const [busy, setBusy] = useState(null);
+  const [pending, setPending] = useState(null); // credential waiting for the Terms sheet
 
   useEffect(() => {
     let alive = true;
@@ -56,29 +63,41 @@ export default function SocialLoginButtons({ onError }) {
   };
   if (!show.apple && !show.google) return null;
 
+  const blocked = !!terms && !terms.accepted;
+
+  const finish = async (credential) => {
+    await socialLogin(credential);
+    navigate('/');
+  };
+
   const start = async (provider) => {
+    if (blocked) {
+      terms.onBlocked?.();
+      return;
+    }
     onError?.('');
     setBusy(provider);
+    let credential = null;
     try {
-      const credential = await signInWithProvider(provider);
+      credential = await signInWithProvider(provider);
       if (!credential.token) throw new Error(t('auth.socialFailed'));
-      await socialLogin(credential);
-      navigate('/');
+      await finish(terms ? { ...credential, acceptedTerms: true } : credential);
     } catch (err) {
-      if (!isCancelled(err)) onError?.(err.message || t('auth.socialFailed'));
+      if (isTermsRequired(err) && credential) setPending(credential);
+      else if (!isCancelled(err)) onError?.(err.message || t('auth.socialFailed'));
     } finally {
       setBusy(null);
     }
   };
 
   const apple = show.apple && (
-    <button key="apple" type="button" className="btn btn-block btn-social btn-apple" onClick={() => start('apple')} disabled={!!busy}>
+    <button key="apple" type="button" className="btn btn-block btn-social btn-apple" onClick={() => start('apple')} disabled={!!busy} aria-disabled={blocked || undefined}>
       <AppleLogo />
       <span>{t('auth.continueWithApple')}</span>
     </button>
   );
   const google = show.google && (
-    <button key="google" type="button" className="btn btn-block btn-social btn-google" onClick={() => start('google')} disabled={!!busy}>
+    <button key="google" type="button" className="btn btn-block btn-social btn-google" onClick={() => start('google')} disabled={!!busy} aria-disabled={blocked || undefined}>
       <GoogleLogo />
       <span>{t('auth.continueWithGoogle')}</span>
     </button>
@@ -89,6 +108,14 @@ export default function SocialLoginButtons({ onError }) {
       {/* Equal prominence (guideline 4.8); Apple leads everywhere except Android */}
       {platform === 'android' ? [google, apple] : [apple, google]}
       <div className="auth-divider" role="separator"><span>{t('auth.or')}</span></div>
+      {pending && (
+        <TermsSheet
+          body={t('agreement.sheetBodyNew')}
+          onAgree={() => finish({ ...pending, acceptedTerms: true })}
+          onCancel={() => setPending(null)}
+          cancelLabel={t('common.cancel')}
+        />
+      )}
     </div>
   );
 }

@@ -83,6 +83,7 @@ model User {
   profileComplete     Boolean        @default(true) @map("profile_complete") // false until a social sign-up enters body stats
   voiceSecondsUsed    Int            @default(0) @map("voice_seconds_used")
   voiceSecondsResetAt DateTime?      @map("voice_seconds_reset_at")
+  termsAcceptedAt     DateTime?      @map("terms_accepted_at") // last explicit Terms of Use agreement (see utils/terms.js)
   createdAt           DateTime       @default(now()) @map("created_at")
   updatedAt           DateTime       @updatedAt @map("updated_at")
 

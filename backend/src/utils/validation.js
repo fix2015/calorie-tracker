@@ -11,6 +11,7 @@ const registerSchema = z.object({
   targetWeightKg: z.number().min(20).max(500).optional(),
   activityLevel: z.enum(['sedentary', 'light', 'moderate', 'active', 'very_active']).optional(),
   goal: z.enum(['lose', 'maintain', 'gain']).optional(),
+  acceptedTerms: z.boolean().optional(), // must be true; checked in the route for a clear error
 });
 
 const loginSchema = z.object({
@@ -23,6 +24,11 @@ const socialLoginSchema = z.object({
   token: z.string().min(1).max(8192),
   name: z.string().trim().max(100).optional().nullable(),
   authorizationCode: z.string().max(2048).optional().nullable(),
+  acceptedTerms: z.boolean().optional(), // required (true) only when this sign-in creates the account
+});
+
+const acceptTermsSchema = z.object({
+  acceptedTerms: z.literal(true),
 });
 
 const setPasswordSchema = z.object({
@@ -59,4 +65,5 @@ const manualMealSchema = z.object({
   consumedAt: z.string().datetime().optional(),
 });
 
-module.exports = { registerSchema, loginSchema, socialLoginSchema, setPasswordSchema, updateProfileSchema, manualMealSchema, commentSchema };
+module.exports = { registerSchema, loginSchema, socialLoginSchema,
+  acceptTermsSchema, setPasswordSchema, updateProfileSchema, manualMealSchema, commentSchema };

@@ -117,7 +117,7 @@ describe('Social login', () => {
   test('Apple: first sign-in creates an incomplete-profile user and stores the refresh token encrypted', async () => {
     const { status, data } = await api('/auth/social', {
       method: 'POST',
-      body: { provider: 'apple', token: appleToken(), name: 'Ada Apple', authorizationCode: 'code-123' },
+      body: { provider: 'apple', token: appleToken(), name: 'Ada Apple', authorizationCode: 'code-123', acceptedTerms: true },
     });
     assert.strictEqual(status, 201);
     assert.strictEqual(data.isNewUser, true);
@@ -193,7 +193,7 @@ describe('Social login', () => {
 
   test('Google: verified email links to the existing password account', async () => {
     const reg = await api('/auth/register', {
-      method: 'POST', body: { email: PASSWORD_EMAIL, password: 'TestPass123!', name: 'Password Person' },
+      method: 'POST', body: { acceptedTerms: true, email: PASSWORD_EMAIL, password: 'TestPass123!', name: 'Password Person' },
     });
     assert.strictEqual(reg.status, 201);
     passwordUserId = reg.data.user.id;
@@ -267,7 +267,12 @@ describe('Social login', () => {
     assert.strictEqual(exchange.body.client_id, SERVICES_ID);
     assert.strictEqual(exchange.body.redirect_uri, 'https://calories.example/api/auth/apple/callback');
 
-    const { status, data } = await api('/auth/social', { method: 'POST', body: { provider: 'apple', token: idToken } });
+    // First attempt without the Terms agreement creates nothing; the retry after the sheet keeps the hand-off
+    const refused = await api('/auth/social', { method: 'POST', body: { provider: 'apple', token: idToken } });
+    assert.strictEqual(refused.status, 400);
+    assert.strictEqual(refused.data.code, 'TERMS_REQUIRED');
+
+    const { status, data } = await api('/auth/social', { method: 'POST', body: { provider: 'apple', token: idToken, acceptedTerms: true } });
     assert.strictEqual(status, 201);
     assert.strictEqual(data.user.name, 'Andy Droid');
     const identity = await prisma.authIdentity.findFirst({ where: { userId: data.user.id } });

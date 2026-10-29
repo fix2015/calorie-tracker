@@ -5,6 +5,7 @@ import { users } from '../services/api';
 import { useTranslation } from '../i18n';
 import GoalFields from '../components/GoalFields';
 import SocialLoginButtons from '../components/SocialLoginButtons';
+import { TermsCheckbox } from '../components/TermsAgreement';
 import { ACTIVITY_LEVEL_KEYS, GOAL_KEYS } from '../services/goalOptions';
 
 export default function RegisterPage() {
@@ -16,6 +17,7 @@ export default function RegisterPage() {
   const { t } = useTranslation();
 
   const [agreedToTerms, setAgreedToTerms] = useState(false);
+  const [termsError, setTermsError] = useState(false);
   const [avatarFile, setAvatarFile] = useState(null);
   const [avatarPreview, setAvatarPreview] = useState(null);
   const avatarRef = useRef(null);
@@ -35,9 +37,26 @@ export default function RegisterPage() {
 
   const set = (field) => (e) => setForm({ ...form, [field]: e.target.value });
 
+  // Next, Start Tracking and the Apple / Google buttons look disabled until the Terms box is ticked;
+  // tapping one anyway explains why
+  const requireTerms = () => {
+    if (agreedToTerms) return true;
+    setTermsError(true);
+    setError(t('agreement.mustAgree'));
+    return false;
+  };
+  const onTermsChange = (checked) => {
+    setAgreedToTerms(checked);
+    if (checked && termsError) {
+      setTermsError(false);
+      setError('');
+    }
+  };
+
   const next = () => {
     setError('');
     if (step === 1) {
+      if (!requireTerms()) return;
       if (!form.name || !form.email || !form.password) {
         setError(t('register.allFieldsRequired'));
         return;
@@ -82,10 +101,7 @@ export default function RegisterPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
-    if (!agreedToTerms) {
-      setError(t('register.mustAgree'));
-      return;
-    }
+    if (!requireTerms()) return;
     setLoading(true);
     try {
       await register({
@@ -99,6 +115,7 @@ export default function RegisterPage() {
         targetWeightKg: form.targetWeightKg ? Number(form.targetWeightKg) : Number(form.weightKg),
         activityLevel: form.activityLevel,
         goal: form.goal,
+        acceptedTerms: true,
       });
       // Upload avatar after registration (now authenticated)
       if (avatarFile) {
@@ -136,7 +153,12 @@ export default function RegisterPage() {
 
         <p className={`error-text${error ? ' visible' : ''}`} style={{ marginBottom: error ? 'var(--space-md)' : 0 }}><span>{error}</span></p>
 
-        {step === 1 && <SocialLoginButtons onError={setError} />}
+        {step === 1 && (
+          <>
+            <TermsCheckbox checked={agreedToTerms} onChange={onTermsChange} invalid={termsError} />
+            <SocialLoginButtons onError={setError} terms={{ accepted: agreedToTerms, onBlocked: requireTerms }} />
+          </>
+        )}
 
         <form onSubmit={handleSubmit} className="auth-form">
           {step === 1 && (
@@ -173,7 +195,7 @@ export default function RegisterPage() {
                 <label htmlFor="reg-password">{t('common.password')}</label>
                 <input id="reg-password" type="password" value={form.password} onChange={set('password')} required placeholder={t('register.minChars')} />
               </div>
-              <button type="button" className="btn btn-primary btn-block" onClick={next}>{t('common.next')}</button>
+              <button type="button" className="btn btn-primary btn-block" onClick={next} aria-disabled={!agreedToTerms || undefined}>{t('common.next')}</button>
             </>
           )}
 
@@ -238,19 +260,9 @@ export default function RegisterPage() {
                 </p>
               </div>
 
-              <label className="terms-checkbox">
-                <input type="checkbox" checked={agreedToTerms} onChange={(e) => setAgreedToTerms(e.target.checked)} required />
-                <span>
-                  {t('register.iAgree')}{' '}
-                  <Link to="/terms" target="_blank">{t('register.terms')}</Link> {t('register.and')}{' '}
-                  <Link to="/privacy" target="_blank">{t('register.privacyPolicy')}</Link>.{' '}
-                  {t('register.zeroTolerance')}
-                </span>
-              </label>
-
               <div style={{ display: 'flex', gap: 'var(--space-sm)' }}>
                 <button type="button" className="btn btn-secondary" style={{ flex: 1 }} onClick={back}>{t('common.back')}</button>
-                <button type="submit" className="btn btn-primary" style={{ flex: 1 }} disabled={loading || !agreedToTerms}>
+                <button type="submit" className="btn btn-primary" style={{ flex: 1 }} disabled={loading} aria-disabled={!agreedToTerms || undefined}>
                   {loading ? t('register.creating') : t('register.startTracking')}
                 </button>
               </div>
@@ -260,11 +272,6 @@ export default function RegisterPage() {
 
         <p className="auth-switch">
           {t('register.alreadyHaveAccount')} <Link to="/login">{t('register.signIn')}</Link>
-        </p>
-
-        <p className="legal-links">
-          {t('register.agreeTerms')}{' '}
-          <Link to="/terms">{t('register.terms')}</Link> and <Link to="/privacy">{t('register.privacyPolicy')}</Link>
         </p>
       </div>
     </div>

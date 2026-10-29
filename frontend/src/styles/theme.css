@@ -3785,6 +3785,45 @@ a:hover { text-decoration: underline; }
   line-height: 1.45;
 }
 .terms-checkbox input { width: 20px; height: 20px; margin: 1px 0 0; flex-shrink: 0; accent-color: var(--color-primary); }
+.terms-checkbox.invalid { color: var(--color-danger); }
+.terms-checkbox.invalid input { outline: 2px solid var(--color-danger); outline-offset: 2px; }
+.terms-link {
+  background: none;
+  border: 0;
+  padding: 0;
+  font: inherit;
+  color: var(--color-primary);
+  font-weight: 600;
+  text-decoration: underline;
+  cursor: pointer;
+}
+.terms-note {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  text-align: center;
+  line-height: 1.45;
+  margin: var(--space-sm) 0 0;
+}
+.terms-sheet .terms-checkbox { margin: 0 0 var(--space-md); }
+/* Looks disabled but still takes the tap, so it can say why (Terms not ticked yet) */
+.btn[aria-disabled="true"] { opacity: 0.5; }
+/* Terms / Privacy opened from the Register / Login links without leaving the screen */
+.legal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: calc(var(--z-modal) + 20);
+  background: var(--color-bg);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding-top: env(safe-area-inset-top, 0px);
+}
+.legal-page .legal-summary {
+  color: var(--color-text);
+  background: var(--color-bg);
+  border-left: 3px solid var(--color-primary);
+  border-radius: var(--radius-md);
+  padding: var(--space-sm) var(--space-md);
+}
 
 /* Admin moderation list */
 .admin-report-row {

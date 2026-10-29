@@ -8,6 +8,7 @@ import { useTranslation } from '../i18n';
 import PublicMealDetailModal from '../components/PublicMealDetailModal';
 import SampleBadge from '../components/SampleBadge';
 import SocialLoginButtons from '../components/SocialLoginButtons';
+import { TermsNote } from '../components/TermsAgreement';
 
 const FILTER_KEYS = [
   { key: 'All', label: 'explore.filterAll' },
@@ -110,6 +111,7 @@ export default function ExplorePage() {
             <Link to="/login" className="action-btn action-btn-follow">{t('common.logIn')}</Link>
             <Link to="/register" className="action-btn action-btn-message">{t('common.signUp')}</Link>
           </div>
+          <TermsNote />
         </div>
       )}
 

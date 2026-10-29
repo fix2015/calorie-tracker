@@ -97,14 +97,7 @@
     "startTracking": "Empezar a registrar",
     "alreadyHaveAccount": "¿Ya tienes una cuenta?",
     "signIn": "Inicia sesión",
-    "agreeTerms": "Al registrarte, aceptas nuestros",
-    "terms": "Términos",
-    "privacyPolicy": "Política de privacidad",
-    "failed": "Error en el registro",
-    "iAgree": "Acepto los",
-    "and": "y la",
-    "zeroTolerance": "No se tolera contenido inapropiado ni usuarios abusivos.",
-    "mustAgree": "Acepta los Términos para continuar"
+    "failed": "Error en el registro"
   },
   "auth": {
     "continueWithApple": "Continuar con Apple",
@@ -121,6 +114,18 @@
     "addPassword": "Nueva contraseña",
     "savePassword": "Añadir contraseña",
     "passwordSaved": "Contraseña guardada"
+  },
+  "agreement": {
+    "checkbox": "Acepto los {terms} y la {privacy}. Entiendo que no se tolera el contenido inapropiado ni a los usuarios abusivos.",
+    "termsOfUse": "Términos de uso",
+    "privacyPolicy": "Política de privacidad",
+    "mustAgree": "Marca la casilla para aceptar primero los Términos de uso.",
+    "signInNote": "Al iniciar sesión aceptas nuestros {terms}: tolerancia cero con el contenido inapropiado y los usuarios abusivos.",
+    "sheetTitle": "Aceptar los Términos",
+    "sheetBodyNew": "Antes de crear tu cuenta de Calorize, revisa y acepta nuestros Términos de uso.",
+    "sheetBodyUpdated": "Revisa y acepta nuestros Términos de uso para seguir usando Calorize.",
+    "agreeContinue": "Aceptar y continuar",
+    "failed": "No se pudo guardar tu aceptación. Inténtalo de nuevo."
   },
   "profile": {
     "dailyCalorieTarget": "Objetivo diario de calorías",
@@ -403,7 +408,8 @@
     "tapToChange": "Toca para cambiar"
   },
   "terms": {
-    "title": "Términos de servicio"
+    "title": "Términos de servicio",
+    "summary": "Última actualización: {0}. Al usar Calorize aceptas estos términos, incluida nuestra política de tolerancia cero con el contenido inapropiado y el comportamiento abusivo. Las denuncias se revisan en un plazo de 24 horas."
   },
   "privacy": {
     "title": "Política de privacidad"

@@ -97,14 +97,7 @@
     "startTracking": "Tracking starten",
     "alreadyHaveAccount": "Bereits ein Konto?",
     "signIn": "Anmelden",
-    "agreeTerms": "Mit der Registrierung stimmst du unseren",
-    "terms": "Nutzungsbedingungen",
-    "privacyPolicy": "Datenschutzrichtlinie",
-    "failed": "Registrierung fehlgeschlagen",
-    "iAgree": "Ich akzeptiere die",
-    "and": "und die",
-    "zeroTolerance": "Anstößige Inhalte und missbräuchliches Verhalten werden nicht toleriert.",
-    "mustAgree": "Bitte stimme den Nutzungsbedingungen zu, um fortzufahren"
+    "failed": "Registrierung fehlgeschlagen"
   },
   "auth": {
     "continueWithApple": "Weiter mit Apple",
@@ -121,6 +114,18 @@
     "addPassword": "Neues Passwort",
     "savePassword": "Passwort hinzufügen",
     "passwordSaved": "Passwort gespeichert"
+  },
+  "agreement": {
+    "checkbox": "Ich stimme den {terms} und der {privacy} zu. Mir ist bewusst, dass anstößige Inhalte und missbräuchliche Nutzer nicht toleriert werden.",
+    "termsOfUse": "Nutzungsbedingungen",
+    "privacyPolicy": "Datenschutzerklärung",
+    "mustAgree": "Bitte setze zuerst das Häkchen, um den Nutzungsbedingungen zuzustimmen.",
+    "signInNote": "Mit der Anmeldung stimmst du unseren {terms} zu – null Toleranz für anstößige Inhalte und missbräuchliche Nutzer.",
+    "sheetTitle": "Bedingungen zustimmen",
+    "sheetBodyNew": "Bevor wir dein Calorize-Konto erstellen, lies bitte unsere Nutzungsbedingungen und stimme ihnen zu.",
+    "sheetBodyUpdated": "Bitte lies unsere Nutzungsbedingungen und stimme ihnen zu, um Calorize weiter zu nutzen.",
+    "agreeContinue": "Zustimmen und weiter",
+    "failed": "Deine Zustimmung konnte nicht gespeichert werden. Bitte versuche es erneut."
   },
   "profile": {
     "dailyCalorieTarget": "Tägliches Kalorienziel",
@@ -403,7 +408,8 @@
     "tapToChange": "Zum Ändern tippen"
   },
   "terms": {
-    "title": "Nutzungsbedingungen"
+    "title": "Nutzungsbedingungen",
+    "summary": "Zuletzt aktualisiert: {0}. Mit der Nutzung von Calorize akzeptierst du diese Bedingungen, einschließlich unserer Null-Toleranz-Richtlinie für anstößige Inhalte und missbräuchliches Verhalten. Meldungen werden innerhalb von 24 Stunden geprüft."
   },
   "privacy": {
     "title": "Datenschutzrichtlinie"

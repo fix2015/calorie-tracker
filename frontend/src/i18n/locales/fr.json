@@ -97,14 +97,7 @@
     "startTracking": "Commencer le suivi",
     "alreadyHaveAccount": "Vous avez déjà un compte ?",
     "signIn": "Se connecter",
-    "agreeTerms": "En vous inscrivant, vous acceptez nos",
-    "terms": "Conditions d'utilisation",
-    "privacyPolicy": "Politique de confidentialité",
-    "failed": "Échec de l'inscription",
-    "iAgree": "J'accepte les",
-    "and": "et la",
-    "zeroTolerance": "Aucun contenu répréhensible ni comportement abusif n'est toléré.",
-    "mustAgree": "Veuillez accepter les Conditions pour continuer"
+    "failed": "Échec de l'inscription"
   },
   "auth": {
     "continueWithApple": "Continuer avec Apple",
@@ -121,6 +114,18 @@
     "addPassword": "Nouveau mot de passe",
     "savePassword": "Ajouter un mot de passe",
     "passwordSaved": "Mot de passe enregistré"
+  },
+  "agreement": {
+    "checkbox": "J’accepte les {terms} et la {privacy}. Je comprends qu’aucun contenu choquant ni utilisateur abusif n’est toléré.",
+    "termsOfUse": "Conditions d’utilisation",
+    "privacyPolicy": "Politique de confidentialité",
+    "mustAgree": "Cochez d’abord la case pour accepter les Conditions d’utilisation.",
+    "signInNote": "En vous connectant, vous acceptez nos {terms} — tolérance zéro pour les contenus choquants et les utilisateurs abusifs.",
+    "sheetTitle": "Accepter les Conditions",
+    "sheetBodyNew": "Avant de créer votre compte Calorize, veuillez lire et accepter nos Conditions d’utilisation.",
+    "sheetBodyUpdated": "Veuillez lire et accepter nos Conditions d’utilisation pour continuer à utiliser Calorize.",
+    "agreeContinue": "Accepter et continuer",
+    "failed": "Impossible d’enregistrer votre accord. Veuillez réessayer."
   },
   "profile": {
     "dailyCalorieTarget": "Objectif calorique quotidien",
@@ -403,7 +408,8 @@
     "tapToChange": "Appuyez pour modifier"
   },
   "terms": {
-    "title": "Conditions d'utilisation"
+    "title": "Conditions d'utilisation",
+    "summary": "Dernière mise à jour : {0}. En utilisant Calorize, vous acceptez ces conditions, y compris notre politique de tolérance zéro envers les contenus choquants et les comportements abusifs. Les signalements sont examinés sous 24 heures."
   },
   "privacy": {
     "title": "Politique de confidentialité"

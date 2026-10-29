@@ -5,7 +5,8 @@ const crypto = require('crypto');
 const rateLimit = require('express-rate-limit');
 const prisma = require('../utils/prisma');
 const { signAccessToken, signRefreshToken, verifyRefreshToken } = require('../utils/jwt');
-const { registerSchema, loginSchema, socialLoginSchema, setPasswordSchema } = require('../utils/validation');
+const { registerSchema, loginSchema, socialLoginSchema, acceptTermsSchema, setPasswordSchema } = require('../utils/validation');
+const { TERMS_VERSION, TERMS_REQUIRED, needsTermsAcceptance } = require('../utils/terms');
 const { computeDailyCalorieTarget } = require('../utils/calories');
 const { authenticate } = require('../middleware/auth');
 const social = require('../services/socialAuth');
@@ -47,6 +48,7 @@ async function generateUsername(name) {
 router.post('/register', authLimiter, async (req, res, next) => {
   try {
     const data = registerSchema.parse(req.body);
+    if (data.acceptedTerms !== true) return res.status(400).json({ error: TERMS_REQUIRED, code: 'TERMS_REQUIRED' });
     const existing = await prisma.user.findUnique({ where: { email: data.email } });
     if (existing) return res.status(409).json({ error: 'Email already registered' });
 
@@ -71,6 +73,7 @@ router.post('/register', authLimiter, async (req, res, next) => {
         activityLevel: data.activityLevel,
         goal: data.goal,
         dailyCalorieTarget,
+        termsAcceptedAt: new Date(),
       },
       select: { id: true, email: true, name: true, dailyCalorieTarget: true },
     });
@@ -144,7 +147,7 @@ router.get('/me', authenticate, async (req, res, next) => {
         heightCm: true, weightKg: true, targetWeightKg: true, weightUpdatedAt: true,
         activityLevel: true, goal: true, dailyCalorieTarget: true,
         username: true, bio: true, avatarUrl: true, linkUrl: true, isPublic: true, followersOnly: true,
-        profileComplete: true, passwordHash: true, identities: { select: { provider: true } },
+        profileComplete: true, termsAcceptedAt: true, passwordHash: true, identities: { select: { provider: true } },
       },
     });
     if (!user) return res.status(404).json({ error: 'User not found' });
@@ -153,6 +156,8 @@ router.get('/me', authenticate, async (req, res, next) => {
       ...profile,
       hasPassword: !!passwordHash,
       authProviders: [...new Set(identities.map((i) => i.provider))],
+      needsTerms: needsTermsAcceptance(user.termsAcceptedAt),
+      termsVersion: TERMS_VERSION,
     });
   } catch (err) {
     next(err);
@@ -160,6 +165,21 @@ router.get('/me', authenticate, async (req, res, next) => {
 });
 
 // ─── Sign in with Apple / Google ───
+
+/** Explicit agreement to the current Terms of Use (the sheet shown to accounts that never accepted them). */
+router.post('/terms', authenticate, async (req, res, next) => {
+  try {
+    acceptTermsSchema.parse(req.body);
+    const { termsAcceptedAt } = await prisma.user.update({
+      where: { id: req.userId },
+      data: { termsAcceptedAt: new Date() },
+      select: { termsAcceptedAt: true },
+    });
+    res.json({ termsAcceptedAt, termsVersion: TERMS_VERSION });
+  } catch (err) {
+    next(err);
+  }
+});
 
 router.get('/providers', (req, res) => {
   res.json(social.providerStatus());
@@ -180,9 +200,10 @@ async function saveAppleRefreshToken(identityId, refreshToken, clientId) {
 
 /**
  * Resolves the verified identity to a user: known identity → that user; verified email of an existing
- * account → link it; otherwise create a new account (profile incomplete until body stats are entered).
+ * account → link it; otherwise create a new account (profile incomplete until body stats are entered),
+ * which needs `acceptedTerms` — without it nothing is created and the app shows the agreement sheet.
  */
-async function resolveSocialUser(identity, displayName) {
+async function resolveSocialUser(identity, displayName, acceptedTerms) {
   const where = { provider_providerUserId: { provider: identity.provider, providerUserId: identity.sub } };
   const existingIdentity = await prisma.authIdentity.findUnique({ where, include: { user: true } });
   if (existingIdentity) return { user: existingIdentity.user, identityId: existingIdentity.id, isNewUser: false };
@@ -200,6 +221,8 @@ async function resolveSocialUser(identity, displayName) {
     return { user: byEmail, identityId: created.id, isNewUser: false };
   }
 
+  if (acceptedTerms !== true) throw new social.SocialAuthError(TERMS_REQUIRED, 400, 'TERMS_REQUIRED');
+
   const name = (displayName || identity.name || identity.email.split('@')[0]).trim().slice(0, 100) || 'Calorize user';
   const user = await prisma.user.create({
     data: {
@@ -209,6 +232,7 @@ async function resolveSocialUser(identity, displayName) {
       username: await generateUsername(name),
       isPublic: true,
       profileComplete: false,
+      termsAcceptedAt: new Date(),
       identities: {
         create: { provider: identity.provider, providerUserId: identity.sub, email: identity.email },
       },
@@ -220,7 +244,7 @@ async function resolveSocialUser(identity, displayName) {
 
 router.post('/social', authLimiter, async (req, res, next) => {
   try {
-    const { provider, token, name, authorizationCode } = socialLoginSchema.parse(req.body);
+    const { provider, token, name, authorizationCode, acceptedTerms } = socialLoginSchema.parse(req.body);
     if (!social.providerStatus()[provider]) {
       return res.status(503).json({ error: `${provider === 'apple' ? 'Apple' : 'Google'} sign-in is not configured` });
     }
@@ -230,7 +254,19 @@ router.post('/social', authLimiter, async (req, res, next) => {
     // Android hand-off: the callback already redeemed the code and kept the refresh token + name for us
     const handoff = provider === 'apple' ? social.takeAppleSignIn(token) : null;
 
-    const { user, identityId, isNewUser } = await resolveSocialUser(identity, name || handoff?.name);
+    let resolved;
+    try {
+      resolved = await resolveSocialUser(identity, name || handoff?.name, acceptedTerms);
+    } catch (err) {
+      // The app retries with acceptedTerms after the agreement sheet: keep the Android hand-off for it
+      if (handoff && err.code === 'TERMS_REQUIRED') social.stashAppleSignIn(token, handoff);
+      throw err;
+    }
+    const { user, identityId, isNewUser } = resolved;
+    // An existing account that ticked the agreement (Register screen) records it too
+    if (!isNewUser && acceptedTerms === true && needsTermsAcceptance(user.termsAcceptedAt)) {
+      await prisma.user.update({ where: { id: user.id }, data: { termsAcceptedAt: new Date() } });
+    }
 
     if (provider === 'apple') {
       try {
@@ -249,7 +285,9 @@ router.post('/social', authLimiter, async (req, res, next) => {
     const tokens = await createTokens(user.id);
     res.status(isNewUser ? 201 : 200).json({ user: loginUserPayload(user), ...tokens, isNewUser });
   } catch (err) {
-    if (err instanceof social.SocialAuthError) return res.status(err.status).json({ error: err.message });
+    if (err instanceof social.SocialAuthError) {
+      return res.status(err.status).json({ error: err.message, ...(err.code && { code: err.code }) });
+    }
     next(err);
   }
 });

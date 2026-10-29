@@ -50,7 +50,7 @@ before(async () => {
   for (const [i, who] of ['owner', 'r1', 'r2', 'r3'].entries()) {
     const { status, data } = await api('/auth/register', {
       method: 'POST',
-      body: { email: emails[i], password: 'TestPass123!', name: `Report ${who}` },
+      body: { acceptedTerms: true, email: emails[i], password: 'TestPass123!', name: `Report ${who}` },
     });
     assert.strictEqual(status, 201, `register ${who}`);
     tokens[who] = data.accessToken;

@@ -71,6 +71,7 @@ describe('Auth', () => {
     const { status, data } = await api('/auth/register', {
       method: 'POST',
       body: {
+        acceptedTerms: true,
         email: TEST_EMAIL,
         password: TEST_PASSWORD,
         name: 'Test User',
@@ -97,7 +98,7 @@ describe('Auth', () => {
   test('POST /auth/register rejects duplicate email', async () => {
     const { status } = await api('/auth/register', {
       method: 'POST',
-      body: { email: TEST_EMAIL, password: TEST_PASSWORD, name: 'Dup' },
+      body: { acceptedTerms: true, email: TEST_EMAIL, password: TEST_PASSWORD, name: 'Dup' },
     });
     assert.strictEqual(status, 409);
   });
@@ -105,7 +106,7 @@ describe('Auth', () => {
   test('POST /auth/register rejects invalid data', async () => {
     const { status } = await api('/auth/register', {
       method: 'POST',
-      body: { email: 'not-an-email', password: '123', name: '' },
+      body: { acceptedTerms: true, email: 'not-an-email', password: '123', name: '' },
     });
     assert.strictEqual(status, 400);
   });
@@ -275,6 +276,7 @@ describe('Social', () => {
     const { status, data } = await api('/auth/register', {
       method: 'POST',
       body: {
+        acceptedTerms: true,
         email: TEST_EMAIL_2,
         password: TEST_PASSWORD,
         name: 'Test User Two',
