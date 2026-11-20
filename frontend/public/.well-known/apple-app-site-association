@@ -1,0 +1,7 @@
+{
+  "applinks": {
+    "details": [
+      { "appIDs": ["46L2523L2V.app.probooking.calorize"], "components": [{ "/": "/u/*", "comment": "Shared profiles and meals" }] }
+    ]
+  }
+}

@@ -517,5 +517,14 @@
     "save": "Zapisz",
     "unsave": "Usuń z zapisanych",
     "help": "Pomoc"
+  },
+  "appPrompt": {
+    "title": "Calorize działa lepiej w aplikacji",
+    "body": "Zapisuj posiłki w kilka sekund prosto z ekranu głównego.",
+    "pointScan": "Skanuj posiłki aparatem",
+    "pointReminders": "Przypomnienia, by nie pominąć posiłku",
+    "pointFast": "Szybciej, także offline",
+    "get": "Pobierz aplikację",
+    "notNow": "Nie teraz"
   }
 }

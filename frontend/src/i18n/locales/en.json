@@ -517,5 +517,14 @@
     "save": "Save",
     "unsave": "Remove from saved",
     "help": "Help"
+  },
+  "appPrompt": {
+    "title": "Calorize is better in the app",
+    "body": "Log meals in seconds, right from your home screen.",
+    "pointScan": "Scan a meal with your camera",
+    "pointReminders": "Reminders so you never miss a meal",
+    "pointFast": "Faster, and works offline",
+    "get": "Get the app",
+    "notNow": "Not now"
   }
 }

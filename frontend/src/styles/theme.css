@@ -4111,3 +4111,92 @@ a:hover { text-decoration: underline; }
   height: max(100%, 44px);
   transform: translate(-50%, -50%);
 }
+
+/* "Get the app" bottom sheet (mobile browser only) */
+.app-prompt-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-modal);
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  animation: fadeIn 0.2s ease;
+}
+.app-prompt {
+  width: 100%;
+  max-width: 480px;
+  background: var(--color-surface);
+  border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+  padding: var(--space-sm) var(--space-lg) calc(var(--space-lg) + env(safe-area-inset-bottom, 0px));
+  text-align: center;
+  box-shadow: var(--shadow-lg);
+  animation: appPromptUp 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+@keyframes appPromptUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .app-prompt-overlay, .app-prompt { animation: none; }
+}
+.app-prompt-handle {
+  width: 36px;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--color-border);
+  margin: 0 auto var(--space-md);
+}
+.app-prompt-icon {
+  width: 72px;
+  height: 72px;
+  border-radius: 18px;
+  box-shadow: var(--shadow-md);
+  margin: 0 auto var(--space-md);
+  display: block;
+}
+.app-prompt h2 {
+  font-size: var(--font-size-xl);
+  margin: 0 0 var(--space-xs);
+}
+.app-prompt-body {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  margin: 0 0 var(--space-md);
+}
+.app-prompt-points {
+  list-style: none;
+  padding: var(--space-sm) var(--space-md);
+  margin: 0 0 var(--space-lg);
+  background: var(--color-bg);
+  border-radius: var(--radius-lg);
+  text-align: left;
+}
+.app-prompt-points li {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: 6px 0;
+  font-size: var(--font-size-sm);
+}
+.app-prompt-get {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 50px;
+  border-radius: var(--radius-full);
+  font-size: var(--font-size-base);
+  font-weight: 700;
+  text-decoration: none;
+}
+.app-prompt-later {
+  margin-top: var(--space-xs);
+  width: 100%;
+  min-height: 44px;
+  background: none;
+  border: none;
+  font: inherit;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+}

@@ -517,5 +517,14 @@
     "save": "Speichern",
     "unsave": "Aus Gespeicherten entfernen",
     "help": "Hilfe"
+  },
+  "appPrompt": {
+    "title": "Calorize ist in der App besser",
+    "body": "Mahlzeiten in Sekunden erfassen, direkt vom Homescreen.",
+    "pointScan": "Mahlzeiten mit der Kamera scannen",
+    "pointReminders": "Erinnerungen, damit du keine Mahlzeit vergisst",
+    "pointFast": "Schneller und auch offline",
+    "get": "App holen",
+    "notNow": "Nicht jetzt"
   }
 }

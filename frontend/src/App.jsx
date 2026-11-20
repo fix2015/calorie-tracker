@@ -10,6 +10,7 @@ import FinishProfileGate from './components/FinishProfile';
 import { TermsGate } from './components/TermsAgreement';
 import OfflineSync from './components/OfflineSync';
 import ChunkErrorBoundary from './components/ChunkErrorBoundary';
+import { DeepLinkListener, AppDownloadPrompt } from './components/AppLinks';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import DashboardPage from './pages/DashboardPage';
@@ -173,6 +174,8 @@ function App() {
           </Suspense>
           </ChunkErrorBoundary>
           <ToastHost />
+          <DeepLinkListener />
+          <AppDownloadPrompt />
         </AuthProvider>
       </LanguageProvider>
     </BrowserRouter>

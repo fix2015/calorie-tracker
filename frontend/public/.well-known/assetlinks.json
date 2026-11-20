@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "app.probooking.calorize",
+      "sha256_cert_fingerprints": [
+        "C5:7D:37:EC:FE:23:4F:4F:E5:40:0C:DE:C8:93:99:35:B2:F2:23:9E:71:DD:5E:16:1E:3C:AF:E8:E4:B5:AD:4C"
+      ]
+    }
+  }
+]

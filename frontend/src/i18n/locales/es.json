@@ -517,5 +517,14 @@
     "save": "Guardar",
     "unsave": "Quitar de guardados",
     "help": "Ayuda"
+  },
+  "appPrompt": {
+    "title": "Calorize es mejor en la app",
+    "body": "Registra tus comidas en segundos desde la pantalla de inicio.",
+    "pointScan": "Escanea comidas con la cámara",
+    "pointReminders": "Recordatorios para no saltarte ninguna comida",
+    "pointFast": "Más rápida y funciona sin conexión",
+    "get": "Descargar la app",
+    "notNow": "Ahora no"
   }
 }

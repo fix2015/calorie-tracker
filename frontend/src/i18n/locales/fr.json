@@ -517,5 +517,14 @@
     "save": "Enregistrer",
     "unsave": "Retirer des enregistrements",
     "help": "Aide"
+  },
+  "appPrompt": {
+    "title": "Calorize, c'est mieux dans l'app",
+    "body": "Enregistrez vos repas en quelques secondes depuis l'écran d'accueil.",
+    "pointScan": "Scannez un repas avec l'appareil photo",
+    "pointReminders": "Des rappels pour ne manquer aucun repas",
+    "pointFast": "Plus rapide et fonctionne hors ligne",
+    "get": "Télécharger l'app",
+    "notNow": "Pas maintenant"
   }
 }
