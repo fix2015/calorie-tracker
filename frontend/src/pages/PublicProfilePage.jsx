@@ -3,7 +3,7 @@ import { useParams, Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { publicApi, messagesApi } from '../services/api';
 import { useAuth } from '../services/AuthContext';
 import { useInfiniteScroll } from '../services/useInfiniteScroll';
-import { shareText } from '../services/share';
+import { publicUrl, shareText } from '../services/share';
 import { photoSrc } from '../services/photoUrl';
 import { useTranslation } from '../i18n';
 import PublicMealDetailModal from '../components/PublicMealDetailModal';
@@ -102,7 +102,7 @@ function PublicProfileView({ username }) {
       `Check out ${profile.name}'s nutrition log`,
       profile.bio || '',
       '',
-      `${window.location.origin}/u/${profile.username}`,
+      publicUrl(`/u/${profile.username}`),
     ].filter(Boolean).join('\n');
     const result = await shareText(text, `${profile.name}'s Profile`);
     if (result === 'copied') {

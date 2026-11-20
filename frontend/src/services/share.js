@@ -1,3 +1,6 @@
+import { Capacitor } from '@capacitor/core';
+import { Share } from '@capacitor/share';
+
 function formatTime(dateStr) {
   return new Date(dateStr).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 }
@@ -20,7 +23,14 @@ export function buildMealShareText(meal) {
 }
 
 function getAppUrl() {
-  return window.location.origin + (import.meta.env.VITE_BASE_PATH || '/');
+  return publicUrl('/');
+}
+
+// The native app runs at capacitor://localhost, so links point at the public site instead.
+export function publicUrl(path) {
+  const origin = Capacitor.isNativePlatform() ? (import.meta.env.VITE_API_BASE || 'https://calories.probooking.app') : window.location.origin;
+  const base = (import.meta.env.VITE_BASE_PATH || '/').replace(/\/$/, '');
+  return origin + base + path;
 }
 
 export function buildDailySummaryShareText(totals, mealsList, target) {
@@ -56,6 +66,10 @@ export function buildDailySummaryShareText(totals, mealsList, target) {
   return lines.join('\n');
 }
 
+// The photo is fetched ahead (when a meal opens): awaiting a download inside the tap handler uses up the
+// user gesture, and the browser then refuses navigator.share.
+const imageFiles = new Map();
+
 async function fetchImageFile(imageUrl) {
   try {
     const res = await fetch(imageUrl);
@@ -68,21 +82,30 @@ async function fetchImageFile(imageUrl) {
   }
 }
 
-export async function shareText(text, title, imageUrl) {
-  if (navigator.share) {
-    const url = getAppUrl();
+export function prepareShareImage(imageUrl) {
+  if (!imageUrl || Capacitor.isNativePlatform() || !navigator.share || imageFiles.has(imageUrl)) return;
+  imageFiles.set(imageUrl, null);
+  fetchImageFile(imageUrl).then((file) => imageFiles.set(imageUrl, file));
+}
 
-    if (imageUrl) {
-      const file = await fetchImageFile(imageUrl);
-      if (file && navigator.canShare && navigator.canShare({ files: [file] })) {
-        // Share image + text together — include text in body so Telegram/WhatsApp show it as caption
-        const shareData = { files: [file], text: text + '\n' + url };
-        try {
-          await navigator.share(shareData);
-          return true;
-        } catch (e) {
-          if (e.name === 'AbortError') return false;
-        }
+export async function shareText(text, title, imageUrl) {
+  const url = getAppUrl();
+  if (Capacitor.isNativePlatform()) {
+    try {
+      await Share.share({ title: title || 'Calorize', text, dialogTitle: title });
+      return true;
+    } catch (e) {
+      if (/cancel/i.test(e?.message || '')) return false;
+    }
+  } else if (navigator.share) {
+    const file = imageUrl ? imageFiles.get(imageUrl) : null;
+    if (file && navigator.canShare && navigator.canShare({ files: [file] })) {
+      // Share image + text together — include text in body so Telegram/WhatsApp show it as caption
+      try {
+        await navigator.share({ files: [file], text: text + '\n' + url });
+        return true;
+      } catch (e) {
+        if (e.name === 'AbortError') return false;
       }
     }
 

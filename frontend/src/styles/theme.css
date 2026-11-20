@@ -422,9 +422,11 @@ a:hover { text-decoration: underline; }
 /* Mobile body padding for bottom nav */
 @media (max-width: 767px) {
   .main-content {
-    padding: 0 var(--space-md) 80px;
+    /* room for the bottom nav: 44 pt links + the raised scan button + the home indicator */
+    padding: 0 var(--space-md) calc(96px + env(safe-area-inset-bottom, 0px));
     background: var(--color-surface);
     height: 100vh;
+    height: 100dvh;
     overflow-y: auto;
   }
 }
@@ -448,11 +450,16 @@ a:hover { text-decoration: underline; }
 }
 
 .calorie-ring-center {
+  /* the whole ring box, so the text is not squeezed into the right half and wrapped */
   position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   text-align: center;
+  line-height: 1.25;
+  white-space: nowrap;
 }
 
 .calorie-ring-center .amount {
@@ -505,7 +512,7 @@ a:hover { text-decoration: underline; }
   align-items: center;
   justify-content: center;
   z-index: var(--z-modal);
-  padding: var(--space-md);
+  padding: calc(var(--space-md) + env(safe-area-inset-top, 0px)) var(--space-md) calc(var(--space-md) + env(safe-area-inset-bottom, 0px));
 }
 
 .modal {
@@ -514,12 +521,50 @@ a:hover { text-decoration: underline; }
   padding: var(--space-md);
   width: 100%;
   max-width: 480px;
+  max-height: calc(100dvh - 2 * var(--space-md) - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
+  overflow-y: auto;
+  overscroll-behavior: contain;
   box-shadow: var(--shadow-lg);
   position: relative;
 }
 
 .modal h2 {
   margin-bottom: var(--space-md);
+}
+
+/* Photo across the top of a modal: bleeds over the modal padding and follows its rounded corners */
+.modal-hero {
+  display: block;
+  width: calc(100% + 2 * var(--space-md));
+  max-width: none;
+  height: 260px;
+  margin: calc(-1 * var(--space-md)) calc(-1 * var(--space-md)) var(--space-md);
+  object-fit: cover;
+  border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+}
+
+.meal-actions-row {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  margin-bottom: var(--space-md);
+  padding: var(--space-xs) 0;
+  border-top: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--color-border);
+}
+.meal-actions-count {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  margin-right: var(--space-md);
+}
+.meal-actions-comments {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  white-space: nowrap;
 }
 
 .modal-close {
@@ -2490,10 +2535,29 @@ a:hover { text-decoration: underline; }
 .profile-stats {
   display: flex;
   justify-content: center;
+  align-items: flex-start;
   gap: var(--space-lg);
   margin: var(--space-md) 0;
   font-size: var(--font-size-sm);
+  line-height: 1.3;
   color: var(--color-text-secondary);
+}
+
+/* each stat: the number above its label */
+.profile-stats > * {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 2px;
+  min-width: 64px;
+  min-height: 44px;
+  margin: 0;
+  padding: 0;
+}
+
+.profile-stats strong {
+  font-size: var(--font-size-lg);
 }
 
 .profile-stats strong {
@@ -2504,6 +2568,7 @@ a:hover { text-decoration: underline; }
   background: none;
   border: none;
   cursor: pointer;
+  font: inherit;
   font-size: var(--font-size-sm);
   color: var(--color-text-secondary);
   padding: 0;

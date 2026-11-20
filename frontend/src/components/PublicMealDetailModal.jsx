@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { publicApi, meals } from '../services/api';
 import { useAuth } from '../services/AuthContext';
 import { photoSrc } from '../services/photoUrl';
-import { shareText } from '../services/share';
+import { prepareShareImage, publicUrl, shareText } from '../services/share';
 import { useTranslation } from '../i18n';
 import SampleBadge from './SampleBadge';
 import { ReportButton } from './ReportSheet';
@@ -99,6 +99,7 @@ export default function PublicMealDetailModal({ mealId, username, onClose, onDel
       setLikesCount(data._count.likes);
       setMealSaved(data.isSaved || false);
       setComments(data.comments || []);
+      if (data.photoUrl) prepareShareImage(photoSrc(data.photoUrl));
       setLoading(false);
     }).catch(() => setLoading(false));
   }, [mealId]);
@@ -130,7 +131,7 @@ export default function PublicMealDetailModal({ mealId, username, onClose, onDel
       `${meal.name} \u2014 ${meal.calories} kcal`,
       `P: ${Math.round(meal.proteinG)}g \u00B7 C: ${Math.round(meal.carbsG)}g \u00B7 F: ${Math.round(meal.fatG)}g`,
       '',
-      `${window.location.origin}/u/${username}?meal=${mealId}`,
+      publicUrl(`/u/${username}?meal=${mealId}`),
     ].join('\n');
     const result = await shareText(text, meal.name, meal.photoUrl ? photoSrc(meal.photoUrl) : null);
     if (result === 'copied') {
@@ -143,7 +144,7 @@ export default function PublicMealDetailModal({ mealId, username, onClose, onDel
 
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div className="modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: 500, maxHeight: '90vh', overflow: 'auto' }}>
+      <div className="modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: 500 }}>
         <button aria-label={t('a11y.close')} className="modal-close" onClick={onClose}>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
         </button>
@@ -154,18 +155,7 @@ export default function PublicMealDetailModal({ mealId, username, onClose, onDel
         ) : (
           <>
             {meal.photoUrl && (
-              <img
-                src={photoSrc(meal.photoUrl)}
-                alt={meal.name}
-                style={{
-                  width: 'calc(100% + calc(var(--space-lg) * 2))',
-                  margin: `calc(-1 * var(--space-lg)) calc(-1 * var(--space-lg)) var(--space-md)`,
-                  maxHeight: 280,
-                  objectFit: 'cover',
-                  borderRadius: 'var(--radius-lg) var(--radius-lg) 0 0',
-                  display: 'block',
-                }}
-              />
+              <img className="modal-hero" src={photoSrc(meal.photoUrl)} alt={meal.name} />
             )}
 
             {meal.owner && (
@@ -211,7 +201,7 @@ export default function PublicMealDetailModal({ mealId, username, onClose, onDel
               </div>
             )}
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-sm)', marginBottom: 'var(--space-md)', borderTop: '1px solid var(--color-border)', borderBottom: '1px solid var(--color-border)', padding: 'var(--space-sm) 0' }}>
+            <div className="meal-actions-row">
               <button aria-label={liked ? t('publicMeal.unlike') : t('publicMeal.likeAction')} aria-pressed={liked}
                 className={`feed-action-btn feed-action-like${liked ? ' liked' : ''}`}
                 onClick={handleLike}
@@ -220,10 +210,12 @@ export default function PublicMealDetailModal({ mealId, username, onClose, onDel
               >
                 <svg width="22" height="22" viewBox="0 0 24 24" fill={liked ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
               </button>
-              <span style={{ fontSize: 'var(--font-size-sm)', fontWeight: 600 }}>{likesCount}</span>
-              <span style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-text-secondary)', marginLeft: 'auto' }}>
-                {meal._count.comments !== 1 ? t('feedCard.comments', meal._count.comments) : t('feedCard.comment', meal._count.comments)}
+              <span className="meal-actions-count">{likesCount}</span>
+              <span className="meal-actions-comments" aria-label={meal._count.comments !== 1 ? t('feedCard.comments', meal._count.comments) : t('feedCard.comment', meal._count.comments)}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                {meal._count.comments}
               </span>
+              <span style={{ flex: 1 }} />
               {user && (
                 <button aria-label={mealSaved ? t('a11y.unsave') : t('a11y.save')} aria-pressed={mealSaved}
                   className={`feed-action-btn feed-action-save${mealSaved ? ' saved' : ''}`}
@@ -234,8 +226,8 @@ export default function PublicMealDetailModal({ mealId, username, onClose, onDel
                   <svg width="20" height="20" viewBox="0 0 24 24" fill={mealSaved ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
                 </button>
               )}
-              <button className="action-btn action-btn-share" style={{ padding: 'var(--space-xs) var(--space-md)' }} onClick={handleShare}>
-                {t('common.share')}
+              <button aria-label={t('common.share')} title={t('common.share')} className="feed-action-btn" onClick={handleShare}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
               </button>
               {user && meal.owner?.id !== user.id && (
                 <ReportButton targetType="MEAL" targetId={meal.id} variant="icon" className="feed-action-btn" />
@@ -243,7 +235,7 @@ export default function PublicMealDetailModal({ mealId, username, onClose, onDel
               {user && meal.owner?.id === user.id && (
                 <button
                   className="action-btn"
-                  style={{ padding: 'var(--space-xs) var(--space-md)', background: 'var(--color-danger-bg)', color: 'var(--color-danger)', marginLeft: 'auto' }}
+                  style={{ padding: 'var(--space-xs) var(--space-md)', background: 'var(--color-danger-bg)', color: 'var(--color-danger)', whiteSpace: 'nowrap' }}
                   onClick={async () => {
                     if (!confirm(t('publicMeal.deleteMealConfirm'))) return;
                     try {

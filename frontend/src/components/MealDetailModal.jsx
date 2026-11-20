@@ -1,11 +1,12 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { meals } from '../services/api';
-import { buildMealShareText, shareText } from '../services/share';
+import { buildMealShareText, prepareShareImage, shareText } from '../services/share';
 import { photoSrc } from '../services/photoUrl';
 import { useTranslation } from '../i18n';
 
 export default function MealDetailModal({ meal, onClose, onUpdated }) {
   const { t } = useTranslation();
+  useEffect(() => { if (meal.photoUrl) prepareShareImage(photoSrc(meal.photoUrl)); }, [meal.photoUrl]);
   const [editing, setEditing] = useState(false);
   const [form, setForm] = useState({
     name: meal.name,
@@ -67,25 +68,14 @@ export default function MealDetailModal({ meal, onClose, onUpdated }) {
 
         {/* Photo */}
         {meal.photoUrl && (
-          <div style={{
-            margin: 'calc(-1 * var(--space-xl)) calc(-1 * var(--space-xl)) var(--space-md)',
-            borderRadius: 'var(--radius-lg) var(--radius-lg) 0 0',
-            overflow: 'hidden',
-            maxHeight: 260,
-          }}>
-            <img
-              src={photoSrc(meal.photoUrl)}
-              alt={meal.name}
-              style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-            />
-          </div>
+          <img className="modal-hero" src={photoSrc(meal.photoUrl)} alt={meal.name} />
         )}
 
         {!editing ? (
           <>
             {/* Detail view */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 'var(--space-sm)' }}>
-              <div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 'var(--space-sm)', marginBottom: 'var(--space-sm)' }}>
+              <div style={{ minWidth: 0 }}>
                 <h2 style={{ marginBottom: 2 }}>{meal.name}</h2>
                 <p style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-text-secondary)' }}>
                   {date} at {time}
@@ -94,7 +84,7 @@ export default function MealDetailModal({ meal, onClose, onUpdated }) {
                   )}
                 </p>
               </div>
-              <span style={{ fontSize: 'var(--font-size-xl)', fontWeight: 700, color: 'var(--color-primary)' }}>
+              <span style={{ fontSize: 'var(--font-size-xl)', fontWeight: 700, color: 'var(--color-primary)', whiteSpace: 'nowrap' }}>
                 {meal.calories} {t('common.kcal')}
               </span>
             </div>
@@ -158,12 +148,12 @@ export default function MealDetailModal({ meal, onClose, onUpdated }) {
               </label>
             </div>
 
-            <div style={{ display: 'flex', gap: 'var(--space-sm)' }}>
-              <button className="action-btn action-btn-follow" style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }} onClick={() => setEditing(true)}>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--space-sm)' }}>
+              <button className="action-btn action-btn-follow" style={{ flex: '1 1 auto', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }} onClick={() => setEditing(true)}>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
                 {t('common.edit')}
               </button>
-              <button className="action-btn action-btn-message" style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }} onClick={async () => {
+              <button className="action-btn action-btn-message" style={{ flex: '1 1 auto', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }} onClick={async () => {
                 const text = buildMealShareText(meal);
                 const imgUrl = meal.photoUrl ? photoSrc(meal.photoUrl) : null;
                 const result = await shareText(text, meal.name, imgUrl);
@@ -172,7 +162,7 @@ export default function MealDetailModal({ meal, onClose, onUpdated }) {
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
                 {t('common.share')}
               </button>
-              <button className="action-btn" style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, background: '#FEE2E2', color: '#DC2626' }} onClick={handleDelete} disabled={loading}>
+              <button className="action-btn" style={{ flex: '1 1 auto', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, background: '#FEE2E2', color: '#DC2626' }} onClick={handleDelete} disabled={loading}>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
                 {t('common.delete')}
               </button>

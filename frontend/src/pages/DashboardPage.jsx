@@ -231,9 +231,11 @@ export default function DashboardPage() {
             <div className="calorie-ring" style={{ width: 130, height: 130 }}>
               <svg viewBox="0 0 160 160">
                 <circle cx="80" cy="80" r={radius} fill="none" stroke="var(--color-bg)" strokeWidth="10" />
-                <circle cx="80" cy="80" r={radius} fill="none" stroke={ringColor} strokeWidth="10"
-                  strokeLinecap="round" strokeDasharray={circumference} strokeDashoffset={offset}
-                />
+                {consumed > 0 && (
+                  <circle cx="80" cy="80" r={radius} fill="none" stroke={ringColor} strokeWidth="10"
+                    strokeLinecap="round" strokeDasharray={circumference} strokeDashoffset={offset}
+                  />
+                )}
               </svg>
               <div className="calorie-ring-center">
                 <div className="amount">{consumed}</div>

@@ -1,8 +1,8 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { publicApi } from '../services/api';
 import { photoSrc } from '../services/photoUrl';
-import { shareText } from '../services/share';
+import { prepareShareImage, publicUrl, shareText } from '../services/share';
 import { useTranslation } from '../i18n';
 import SampleBadge from './SampleBadge';
 
@@ -30,6 +30,7 @@ function getHealthTagKeys(meal) {
 
 export default function FeedCard({ meal, onOpenDetail }) {
   const { t } = useTranslation();
+  useEffect(() => { if (meal.photoUrl) prepareShareImage(photoSrc(meal.photoUrl)); }, [meal.photoUrl]);
   const [liked, setLiked] = useState(meal.isLiked || false);
   const [likesCount, setLikesCount] = useState(meal._count?.likes || 0);
   const [saved, setSaved] = useState(meal.isSaved || false);
@@ -43,7 +44,7 @@ export default function FeedCard({ meal, onOpenDetail }) {
   }, [meal.id]);
 
   const handleShare = useCallback(async () => {
-    const mealUrl = `${window.location.origin}/u/${meal.user?.username}?meal=${meal.id}`;
+    const mealUrl = publicUrl(`/u/${meal.user?.username}?meal=${meal.id}`);
     const text = `${meal.name} — ${meal.calories} kcal\nP: ${Math.round(meal.proteinG)}g · C: ${Math.round(meal.carbsG)}g · F: ${Math.round(meal.fatG)}g\n\n${mealUrl}`;
     await shareText(text, meal.name, meal.photoUrl ? photoSrc(meal.photoUrl) : null);
   }, [meal]);
