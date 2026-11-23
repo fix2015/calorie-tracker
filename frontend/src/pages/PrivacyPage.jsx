@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from '../i18n';
+import { COMPANY } from '../config/company';
 
 // `onClose`: opened as an in-app overlay (Register / Login links) instead of a route
 export default function PrivacyPage({ onClose }) {
@@ -13,7 +14,16 @@ export default function PrivacyPage({ onClose }) {
           {t('common.back')}
         </button>
         <h1 className="page-title">Privacy Policy</h1>
-        <p className="legal-updated">Last updated: October 17, 2026</p>
+        <p className="legal-updated">Last updated: November 23, 2026</p>
+
+        <section>
+          <h2>Who we are</h2>
+          <p>
+            Calorize is run by {COMPANY.name}, the data controller for your personal data: a company
+            registered in England and Wales, company number {COMPANY.number}, registered office{' '}
+            {COMPANY.address}. Email: <a href={`mailto:${COMPANY.email}`}>{COMPANY.email}</a>
+          </p>
+        </section>
 
         <section>
           <h2>1. Information We Collect</h2>
@@ -44,14 +54,16 @@ export default function PrivacyPage({ onClose }) {
           <p>
             Food photos may be sent to OpenAI's API for nutritional analysis. Photos are processed in real-time
             and are subject to <a href="https://openai.com/policies/privacy-policy" target="_blank" rel="noopener noreferrer">OpenAI's Privacy Policy</a>.
-            We do not sell your personal data to third parties.
+            We do not sell your personal data to third parties. Sign in with Apple and Google are handled by Apple and
+            Google. Our servers and storage are provided by Amazon Web Services.
           </p>
         </section>
 
         <section>
           <h2>4. Data Storage and Security</h2>
           <p>
-            Your data is stored in a secured PostgreSQL database. Passwords are hashed using bcrypt.
+            Your account and meal data are stored in a PostgreSQL database on Amazon Web Services servers in the USA
+            (us-east-1), and meal photos on Amazon S3 in the EU (Frankfurt). Passwords are hashed using bcrypt.
             Authentication tokens are stored securely and expire automatically. We implement reasonable
             security measures, but no system is completely secure.
           </p>
@@ -73,7 +85,16 @@ export default function PrivacyPage({ onClose }) {
             <li>Access and update your personal information via the Profile page</li>
             <li>Delete your account and all associated data</li>
             <li>Export your meal data through the Reports feature</li>
+            <li>Ask us for a copy of your data, or to correct, restrict or stop using it, by emailing{' '}
+              <a href={`mailto:${COMPANY.email}`}>{COMPANY.email}</a></li>
           </ul>
+          <p>
+            Your profile includes health-related information (weight, height, goals). We use it only to calculate your
+            targets and never share it for advertising. Some providers (Amazon Web Services, OpenAI) process data in
+            the USA; these transfers are covered by the UK Extension to the EU–US Data Privacy Framework or the UK
+            International Data Transfer Addendum. You can complain to the Information Commissioner’s Office
+            (ico.org.uk, 0303 123 1113).
+          </p>
         </section>
 
         <section>

@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from '../i18n';
 import { termsDate } from '../services/terms';
+import { COMPANY } from '../config/company';
 
 // `onClose`: opened as an in-app overlay (Register / Login links) instead of a route
 export default function TermsPage({ onClose }) {
@@ -102,6 +103,14 @@ export default function TermsPage({ onClose }) {
           <p>
             We reserve the right to suspend or terminate accounts that violate these Terms. You may stop using
             the Service and delete your account at any time.
+          </p>
+        </section>
+
+        <section>
+          <h2>10. Who We Are</h2>
+          <p>
+            Calorize is provided by {COMPANY.name}, registered in England and Wales, company number {COMPANY.number},
+            registered office {COMPANY.address}. Contact: <a href={`mailto:${COMPANY.email}`}>{COMPANY.email}</a>
           </p>
         </section>
       </div>
