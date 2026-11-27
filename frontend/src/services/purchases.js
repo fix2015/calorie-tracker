@@ -16,7 +16,13 @@ const KEY = platform === 'ios'
   ? import.meta.env.VITE_REVENUECAT_IOS_API_KEY
   : platform === 'android' ? import.meta.env.VITE_REVENUECAT_ANDROID_API_KEY : '';
 
-export const storeAvailable = Capacitor.isNativePlatform() && !!KEY;
+// Development only: VITE_STORE_MOCK=1 fakes the store with the real UK prices (screenshots, UI work).
+const MOCK = import.meta.env.DEV && import.meta.env.VITE_STORE_MOCK === '1';
+export const storeAvailable = MOCK || (Capacitor.isNativePlatform() && !!KEY);
+const MOCK_PLANS = [
+  { id: '$rc_annual', period: 'yearly', priceString: '£29.99', price: 29.99, currencyCode: 'GBP', trialDays: 7 },
+  { id: '$rc_monthly', period: 'monthly', priceString: '£4.99', price: 4.99, currencyCode: 'GBP', trialDays: 0 },
+];
 
 let configuredFor = null;
 async function configure(userId) {
@@ -33,6 +39,7 @@ async function configure(userId) {
 
 /** Monthly and yearly packages of the current offering, with the store's localised prices and trial. */
 export async function loadPlans(userId) {
+  if (MOCK) return MOCK_PLANS;
   await configure(userId);
   const { current } = await Purchases.getOfferings();
   if (!current) return [];
@@ -59,6 +66,7 @@ function asResult(e) {
 }
 
 export async function subscribe(userId, plan) {
+  if (MOCK) return { ok: false, cancelled: false, message: 'Store mock: no purchases' };
   try {
     await configure(userId);
     await Purchases.purchasePackage({ aPackage: plan.pkg });

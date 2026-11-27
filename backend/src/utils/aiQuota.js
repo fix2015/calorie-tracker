@@ -41,6 +41,12 @@ function limitsFor(user) {
   return LIMITS[tierFor(user)];
 }
 
+// Today's row, created race-free: Prisma's upsert is not atomic, so two parallel first requests of the
+// day could both try to INSERT and one would hit the unique constraint. This is INSERT … ON CONFLICT DO NOTHING.
+async function ensureRow(userId, day) {
+  await prisma.aiUsage.createMany({ data: [{ userId, day }], skipDuplicates: true });
+}
+
 async function getUsage(userId) {
   const row = await prisma.aiUsage.findUnique({ where: { userId_day: { userId, day: today() } } });
   return Object.fromEntries(KINDS.map((k) => [k, row ? row[k] : 0]));
@@ -57,11 +63,7 @@ async function reserve(user, kind, amount = 1) {
   const day = today();
   const userId = user.id;
 
-  await prisma.aiUsage.upsert({
-    where: { userId_day: { userId, day } },
-    create: { userId, day },
-    update: {},
-  });
+  await ensureRow(userId, day);
 
   const { count } = await prisma.aiUsage.updateMany({
     where: { userId, day, [kind]: { lte: limit - amount } },
@@ -76,11 +78,9 @@ async function reserve(user, kind, amount = 1) {
 /** Add usage without checking the cap (e.g. when the real cost turned out higher than reserved). */
 async function charge(user, kind, amount) {
   if (amount <= 0) return;
-  await prisma.aiUsage.upsert({
-    where: { userId_day: { userId: user.id, day: today() } },
-    create: { userId: user.id, day: today(), [kind]: amount },
-    update: { [kind]: { increment: amount } },
-  });
+  const day = today();
+  await ensureRow(user.id, day);
+  await prisma.aiUsage.updateMany({ where: { userId: user.id, day }, data: { [kind]: { increment: amount } } });
 }
 
 /** Give back a reservation when the AI call failed on our side and the user got nothing. */
