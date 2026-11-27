@@ -31,7 +31,8 @@ describe('aiQuota', () => {
     assert.strictEqual(aiQuota.tierFor(user), 'pro');
     process.env.AI_PAYWALL_ENABLED = 'true';
     assert.strictEqual(aiQuota.tierFor(user), 'free');
-    assert.strictEqual(aiQuota.tierFor({ ...user, isPro: true }), 'pro');
+    assert.strictEqual(aiQuota.tierFor({ ...user, proUntil: new Date(Date.now() + 86400000) }), 'pro');
+    assert.strictEqual(aiQuota.tierFor({ ...user, proUntil: new Date(Date.now() - 1000) }), 'free');
   });
 
   test('photo scans stop at the daily cap', async () => {
@@ -60,10 +61,13 @@ describe('aiQuota', () => {
     assert.strictEqual((await aiQuota.summary(user)).used.photoScans, 0);
   });
 
-  test('free tier: 1 scan a day', async () => {
+  test('free tier: 1 scan a day, no voice', async () => {
     process.env.AI_PAYWALL_ENABLED = 'true';
     assert.strictEqual((await aiQuota.reserve(user, 'photoScans')).ok, true);
     assert.strictEqual((await aiQuota.reserve(user, 'photoScans')).ok, false);
+    const voice = await aiQuota.reserve(user, 'voiceSeconds', 5);
+    assert.strictEqual(voice.ok, false);
+    assert.strictEqual(voice.limit, 0);
   });
 
   test('voice: reservation over the remaining seconds is refused, charge adds the real length', async () => {

@@ -114,6 +114,12 @@ export const reports = {
   weightHistory: () => withCache('weightHistory', () => request('/reports/weight-history')),
 };
 
+// Calorize Pro: tier, daily AI usage and limits (backend/src/routes/billing.js)
+export const billing = {
+  status: () => request('/billing/status'),
+  sync: () => request('/billing/sync', { method: 'POST' }),
+};
+
 // Content reports (App Store guideline 1.2) — targetType: MEAL | COMMENT | USER | MESSAGE
 export const reportsApi = {
   create: (data) => request('/reports', { method: 'POST', body: JSON.stringify(data) }),

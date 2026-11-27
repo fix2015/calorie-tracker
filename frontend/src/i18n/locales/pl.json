@@ -526,5 +526,44 @@
     "pointFast": "Szybciej, także offline",
     "get": "Pobierz aplikację",
     "notNow": "Nie teraz"
+  },
+  "pro": {
+    "title": "Calorize Pro",
+    "reason": {
+      "photoScans": "Dzisiejszy darmowy skan zdjęcia został już wykorzystany.",
+      "voiceSeconds": "Dodawanie posiłków głosem jest częścią Calorize Pro.",
+      "analyses": "Dzisiejsza darmowa analiza AI została już wykorzystana."
+    },
+    "benefitScans": "{0} skanów zdjęć dziennie",
+    "benefitVoice": "Dodawanie posiłków głosem",
+    "benefitAnalysis": "{0} analiz żywieniowych AI dziennie",
+    "freeHas": "Za darmo: {0}",
+    "proOnly": "Tylko Pro",
+    "choosePlan": "Wybierz plan",
+    "yearly": "Rocznie",
+    "monthly": "Miesięcznie",
+    "trialBadge": "{0} dni za darmo",
+    "per": {
+      "yearly": "/rok",
+      "monthly": "/mies."
+    },
+    "perMonthEquiv": "{0}/mies.",
+    "startTrial": "Zacznij {0}-dniowy darmowy okres próbny",
+    "subscribe": "Subskrybuj",
+    "termsTrial": "{0} dni za darmo, potem {1}{2}. Płatność zostanie pobrana z Twojego konta {3} po zakończeniu okresu próbnego. Subskrypcja odnawia się automatycznie, chyba że anulujesz ją co najmniej 24 godziny przed końcem bieżącego okresu. Możesz anulować w każdej chwili w ustawieniach konta.",
+    "terms": "{0}{1}, płatne z Twojego konta {2} po potwierdzeniu. Subskrypcja odnawia się automatycznie, chyba że anulujesz ją co najmniej 24 godziny przed końcem bieżącego okresu. Możesz anulować w każdej chwili w ustawieniach konta.",
+    "restore": "Przywróć zakupy",
+    "inAppOnly": "Wykup Calorize Pro w aplikacji Calorize na iPhone'a lub Androida. Twój plan Pro będzie wtedy działać także tutaj.",
+    "active": "Masz Calorize Pro. Dziękujemy!",
+    "welcome": "Witamy w Calorize Pro!",
+    "nothingToRestore": "Nie znaleziono aktywnej subskrypcji dla tego konta.",
+    "purchaseFailed": "Zakup się nie powiódł. Spróbuj ponownie.",
+    "loadFailed": "Nie udało się wczytać planów. Sprawdź połączenie i spróbuj ponownie.",
+    "termsLink": "Warunki korzystania",
+    "privacyLink": "Polityka prywatności",
+    "profileUpgrade": "Ulepsz",
+    "profileActiveUntil": "Aktywna do {0}",
+    "profileManage": "Zarządzaj subskrypcją",
+    "profileFree": "Plan darmowy: {0} skan zdjęcia dziennie"
   }
 }

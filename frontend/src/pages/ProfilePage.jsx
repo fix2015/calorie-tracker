@@ -5,6 +5,7 @@ import { users, reports } from '../services/api';
 import AvatarUpload from '../components/AvatarUpload';
 import ReminderSettings from '../components/ReminderSettings';
 import SignInMethods from '../components/SignInMethods';
+import ProPlanCard from '../components/ProPlanCard';
 import { useTranslation, LANGUAGES } from '../i18n';
 
 const ACTIVITY_LEVEL_KEYS = [
@@ -354,6 +355,8 @@ export default function ProfilePage() {
         </form>
 
         <hr style={{ margin: 'var(--space-xl) 0', border: 'none', borderTop: '1px solid var(--color-border)' }} />
+
+        {user && <ProPlanCard userId={user.id} />}
 
         {user && <ReminderSettings userId={user.id} />}
 

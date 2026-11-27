@@ -82,7 +82,25 @@ export default function TermsPage({ onClose }) {
         </section>
 
         <section>
-          <h2>7. Limitation of Liability</h2>
+          <h2>7. Calorize Pro Subscriptions</h2>
+          <p>
+            Calorize is free to use. Calorize Pro is an optional auto-renewing subscription, sold through the
+            App Store or Google Play, that raises the daily limits on AI features (photo scans and nutrition
+            analyses) and adds voice logging. The current plans, prices and any free trial are shown in the app
+            before you buy.
+          </p>
+          <ul>
+            <li>Payment is charged to your App Store or Google Play account when you confirm the purchase or, if you start a free trial, when the trial ends.</li>
+            <li>The subscription renews automatically for the same period and price unless you cancel at least 24 hours before the end of the current period. Your account is charged for the renewal within 24 hours before the end of the current period.</li>
+            <li>You can manage or cancel the subscription at any time in your App Store or Google Play account settings. Cancelling stops future renewals; Pro stays active until the end of the period you have paid for.</li>
+            <li>If you cancel during a free trial, you are not charged. Any unused part of a free trial ends when you buy a subscription.</li>
+            <li>Refunds are handled by Apple or Google under their own policies.</li>
+            <li>Daily AI limits keep the service affordable for everyone and may change; we will tell you in the app before a change reduces what your plan includes.</li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>8. Limitation of Liability</h2>
           <p>
             The Service is provided "as is" without warranties of any kind. We are not liable for any damages
             arising from your use of the Service, including but not limited to health outcomes based on nutritional
@@ -91,7 +109,7 @@ export default function TermsPage({ onClose }) {
         </section>
 
         <section>
-          <h2>8. Changes to Terms</h2>
+          <h2>9. Changes to Terms</h2>
           <p>
             We may update these Terms at any time. Continued use of the Service after changes constitutes
             acceptance of the updated Terms.
@@ -99,7 +117,7 @@ export default function TermsPage({ onClose }) {
         </section>
 
         <section>
-          <h2>9. Termination</h2>
+          <h2>10. Termination</h2>
           <p>
             We reserve the right to suspend or terminate accounts that violate these Terms. You may stop using
             the Service and delete your account at any time.
@@ -107,7 +125,7 @@ export default function TermsPage({ onClose }) {
         </section>
 
         <section>
-          <h2>10. Who We Are</h2>
+          <h2>11. Who We Are</h2>
           <p>
             Calorize is provided by {COMPANY.name}, registered in England and Wales, company number {COMPANY.number},
             registered office {COMPANY.address}. Contact: <a href={`mailto:${COMPANY.email}`}>{COMPANY.email}</a>

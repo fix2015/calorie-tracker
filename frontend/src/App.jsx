@@ -5,6 +5,7 @@ import { LanguageProvider, useTranslation } from './i18n';
 import Navbar from './components/Navbar';
 import TopBar from './components/TopBar';
 import ToastHost from './components/ToastHost';
+import Paywall from './components/Paywall';
 import OnboardingGate from './components/Onboarding';
 import FinishProfileGate from './components/FinishProfile';
 import { TermsGate } from './components/TermsAgreement';
@@ -174,6 +175,7 @@ function App() {
           </Suspense>
           </ChunkErrorBoundary>
           <ToastHost />
+          <Paywall />
           <DeepLinkListener />
           <AppDownloadPrompt />
         </AuthProvider>

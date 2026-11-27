@@ -526,5 +526,44 @@
     "pointFast": "Más rápida y funciona sin conexión",
     "get": "Descargar la app",
     "notNow": "Ahora no"
+  },
+  "pro": {
+    "title": "Calorize Pro",
+    "reason": {
+      "photoScans": "Ya has usado el escaneo de foto gratuito de hoy.",
+      "voiceSeconds": "El registro por voz forma parte de Calorize Pro.",
+      "analyses": "Ya has usado el análisis con IA gratuito de hoy."
+    },
+    "benefitScans": "{0} escaneos de fotos al día",
+    "benefitVoice": "Registra comidas por voz",
+    "benefitAnalysis": "{0} análisis nutricionales con IA al día",
+    "freeHas": "Gratis: {0}",
+    "proOnly": "Solo Pro",
+    "choosePlan": "Elige un plan",
+    "yearly": "Anual",
+    "monthly": "Mensual",
+    "trialBadge": "{0} días gratis",
+    "per": {
+      "yearly": "/año",
+      "monthly": "/mes"
+    },
+    "perMonthEquiv": "{0}/mes",
+    "startTrial": "Empezar prueba gratis de {0} días",
+    "subscribe": "Suscribirse",
+    "termsTrial": "{0} días gratis y después {1}{2}. El pago se carga a tu cuenta de {3} al terminar la prueba. La suscripción se renueva automáticamente salvo que la canceles al menos 24 horas antes del final del periodo actual. Puedes cancelarla cuando quieras en los ajustes de tu cuenta.",
+    "terms": "{0}{1}, cargado a tu cuenta de {2} al confirmar. La suscripción se renueva automáticamente salvo que la canceles al menos 24 horas antes del final del periodo actual. Puedes cancelarla cuando quieras en los ajustes de tu cuenta.",
+    "restore": "Restaurar compras",
+    "inAppOnly": "Suscríbete a Calorize Pro en la app de Calorize para iPhone o Android. Después, tu plan Pro también funcionará aquí.",
+    "active": "Tienes Calorize Pro. ¡Gracias!",
+    "welcome": "¡Bienvenido a Calorize Pro!",
+    "nothingToRestore": "No se ha encontrado ninguna suscripción activa para esta cuenta.",
+    "purchaseFailed": "La compra no se ha completado. Inténtalo de nuevo.",
+    "loadFailed": "No se han podido cargar los planes. Comprueba tu conexión e inténtalo de nuevo.",
+    "termsLink": "Términos de uso",
+    "privacyLink": "Política de privacidad",
+    "profileUpgrade": "Mejorar",
+    "profileActiveUntil": "Activa hasta el {0}",
+    "profileManage": "Gestionar suscripción",
+    "profileFree": "Plan gratuito: {0} escaneo de foto al día"
   }
 }

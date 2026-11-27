@@ -526,5 +526,44 @@
     "pointFast": "Faster, and works offline",
     "get": "Get the app",
     "notNow": "Not now"
+  },
+  "pro": {
+    "title": "Calorize Pro",
+    "reason": {
+      "photoScans": "You've used today's free photo scan.",
+      "voiceSeconds": "Voice logging is part of Calorize Pro.",
+      "analyses": "You've used today's free AI analysis."
+    },
+    "benefitScans": "{0} photo scans a day",
+    "benefitVoice": "Log meals by voice",
+    "benefitAnalysis": "{0} AI nutrition analyses a day",
+    "freeHas": "Free: {0}",
+    "proOnly": "Pro only",
+    "choosePlan": "Choose a plan",
+    "yearly": "Yearly",
+    "monthly": "Monthly",
+    "trialBadge": "{0} days free",
+    "per": {
+      "yearly": "/year",
+      "monthly": "/month"
+    },
+    "perMonthEquiv": "{0}/month",
+    "startTrial": "Start {0}-day free trial",
+    "subscribe": "Subscribe",
+    "termsTrial": "{0} days free, then {1}{2}. Payment is charged to your {3} account when the trial ends. The subscription renews automatically unless you cancel at least 24 hours before the end of the current period. You can cancel any time in your account settings.",
+    "terms": "{0}{1}, charged to your {2} account when you confirm. The subscription renews automatically unless you cancel at least 24 hours before the end of the current period. You can cancel any time in your account settings.",
+    "restore": "Restore purchases",
+    "inAppOnly": "Subscribe to Calorize Pro in the Calorize app for iPhone or Android. Your Pro plan then works here too.",
+    "active": "You're on Calorize Pro. Thank you!",
+    "welcome": "Welcome to Calorize Pro!",
+    "nothingToRestore": "No active subscription was found for this account.",
+    "purchaseFailed": "The purchase didn't go through. Please try again.",
+    "loadFailed": "Couldn't load the plans. Check your connection and try again.",
+    "termsLink": "Terms of Use",
+    "privacyLink": "Privacy Policy",
+    "profileUpgrade": "Upgrade",
+    "profileActiveUntil": "Active until {0}",
+    "profileManage": "Manage subscription",
+    "profileFree": "Free plan: {0} photo scan a day"
   }
 }

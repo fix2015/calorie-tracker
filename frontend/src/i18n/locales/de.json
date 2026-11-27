@@ -526,5 +526,44 @@
     "pointFast": "Schneller und auch offline",
     "get": "App holen",
     "notNow": "Nicht jetzt"
+  },
+  "pro": {
+    "title": "Calorize Pro",
+    "reason": {
+      "photoScans": "Du hast den kostenlosen Foto-Scan für heute schon genutzt.",
+      "voiceSeconds": "Spracheingabe ist Teil von Calorize Pro.",
+      "analyses": "Du hast die kostenlose KI-Analyse für heute schon genutzt."
+    },
+    "benefitScans": "{0} Foto-Scans pro Tag",
+    "benefitVoice": "Mahlzeiten per Sprache erfassen",
+    "benefitAnalysis": "{0} KI-Ernährungsanalysen pro Tag",
+    "freeHas": "Kostenlos: {0}",
+    "proOnly": "Nur Pro",
+    "choosePlan": "Wähle einen Plan",
+    "yearly": "Jährlich",
+    "monthly": "Monatlich",
+    "trialBadge": "{0} Tage gratis",
+    "per": {
+      "yearly": "/Jahr",
+      "monthly": "/Monat"
+    },
+    "perMonthEquiv": "{0}/Monat",
+    "startTrial": "{0} Tage gratis testen",
+    "subscribe": "Abonnieren",
+    "termsTrial": "{0} Tage gratis, danach {1}{2}. Die Zahlung wird nach Ende des Testzeitraums über dein {3}-Konto abgerechnet. Das Abo verlängert sich automatisch, wenn du es nicht mindestens 24 Stunden vor Ende des laufenden Zeitraums kündigst. Du kannst jederzeit in deinen Kontoeinstellungen kündigen.",
+    "terms": "{0}{1}, abgerechnet über dein {2}-Konto bei Bestätigung. Das Abo verlängert sich automatisch, wenn du es nicht mindestens 24 Stunden vor Ende des laufenden Zeitraums kündigst. Du kannst jederzeit in deinen Kontoeinstellungen kündigen.",
+    "restore": "Käufe wiederherstellen",
+    "inAppOnly": "Schließe Calorize Pro in der Calorize-App für iPhone oder Android ab. Dein Pro-Plan funktioniert dann auch hier.",
+    "active": "Du hast Calorize Pro. Danke!",
+    "welcome": "Willkommen bei Calorize Pro!",
+    "nothingToRestore": "Für dieses Konto wurde kein aktives Abo gefunden.",
+    "purchaseFailed": "Der Kauf hat nicht geklappt. Bitte versuche es erneut.",
+    "loadFailed": "Die Pläne konnten nicht geladen werden. Prüfe deine Verbindung und versuche es erneut.",
+    "termsLink": "Nutzungsbedingungen",
+    "privacyLink": "Datenschutzerklärung",
+    "profileUpgrade": "Upgrade",
+    "profileActiveUntil": "Aktiv bis {0}",
+    "profileManage": "Abo verwalten",
+    "profileFree": "Kostenloser Plan: {0} Foto-Scan pro Tag"
   }
 }

@@ -526,5 +526,44 @@
     "pointFast": "Plus rapide et fonctionne hors ligne",
     "get": "Télécharger l'app",
     "notNow": "Pas maintenant"
+  },
+  "pro": {
+    "title": "Calorize Pro",
+    "reason": {
+      "photoScans": "Vous avez utilisé le scan photo gratuit du jour.",
+      "voiceSeconds": "La saisie vocale fait partie de Calorize Pro.",
+      "analyses": "Vous avez utilisé l'analyse IA gratuite du jour."
+    },
+    "benefitScans": "{0} scans photo par jour",
+    "benefitVoice": "Ajoutez vos repas à la voix",
+    "benefitAnalysis": "{0} analyses nutritionnelles IA par jour",
+    "freeHas": "Gratuit : {0}",
+    "proOnly": "Pro uniquement",
+    "choosePlan": "Choisissez une formule",
+    "yearly": "Annuel",
+    "monthly": "Mensuel",
+    "trialBadge": "{0} jours gratuits",
+    "per": {
+      "yearly": "/an",
+      "monthly": "/mois"
+    },
+    "perMonthEquiv": "{0}/mois",
+    "startTrial": "Commencer l'essai gratuit de {0} jours",
+    "subscribe": "S'abonner",
+    "termsTrial": "{0} jours gratuits, puis {1}{2}. Le paiement est débité de votre compte {3} à la fin de l'essai. L'abonnement se renouvelle automatiquement sauf résiliation au moins 24 heures avant la fin de la période en cours. Vous pouvez résilier à tout moment dans les réglages de votre compte.",
+    "terms": "{0}{1}, débité de votre compte {2} à la confirmation. L'abonnement se renouvelle automatiquement sauf résiliation au moins 24 heures avant la fin de la période en cours. Vous pouvez résilier à tout moment dans les réglages de votre compte.",
+    "restore": "Restaurer les achats",
+    "inAppOnly": "Abonnez-vous à Calorize Pro dans l'app Calorize pour iPhone ou Android. Votre formule Pro fonctionnera ensuite ici aussi.",
+    "active": "Vous avez Calorize Pro. Merci !",
+    "welcome": "Bienvenue dans Calorize Pro !",
+    "nothingToRestore": "Aucun abonnement actif n'a été trouvé pour ce compte.",
+    "purchaseFailed": "L'achat n'a pas abouti. Veuillez réessayer.",
+    "loadFailed": "Impossible de charger les formules. Vérifiez votre connexion et réessayez.",
+    "termsLink": "Conditions d'utilisation",
+    "privacyLink": "Politique de confidentialité",
+    "profileUpgrade": "Passer à Pro",
+    "profileActiveUntil": "Actif jusqu'au {0}",
+    "profileManage": "Gérer l'abonnement",
+    "profileFree": "Formule gratuite : {0} scan photo par jour"
   }
 }

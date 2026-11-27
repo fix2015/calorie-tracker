@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import Quagga from '@ericblade/quagga2';
 import { meals, productsApi } from '../services/api';
 import { resizeImage } from '../services/imageResize';
+import { openPaywall, isLimitError } from '../services/paywall';
 import { photoSrc } from '../services/photoUrl';
 import { useTranslation } from '../i18n';
 import PhotoFilterEditor from '../components/PhotoFilterEditor';
@@ -62,6 +63,7 @@ export default function ScanPage() {
   const [audioBlob, setAudioBlob] = useState(null);
   const [transcript, setTranscript] = useState('');
   const [remainingSeconds, setRemainingSeconds] = useState(null);
+  const [voiceProOnly, setVoiceProOnly] = useState(false); // free plan: voice logging is Pro-only
 
   // Barcode state
   const [barcodeActive, setBarcodeActive] = useState(false);
@@ -96,7 +98,10 @@ export default function ScanPage() {
   // Fetch voice limit when switching to voice mode
   useEffect(() => {
     if (mode === 'voice') {
-      meals.voiceLimit().then((data) => setRemainingSeconds(data.remainingSeconds)).catch(() => {});
+      meals.voiceLimit().then((data) => {
+        setRemainingSeconds(data.remainingSeconds);
+        setVoiceProOnly(data.dailyLimitSeconds === 0);
+      }).catch(() => {});
     }
   }, [mode]);
 
@@ -169,6 +174,7 @@ export default function ScanPage() {
         await queueForLater(blob);
         return;
       }
+      if (isLimitError(err)) openPaywall('photoScans');
       setNotFood(!!err.data?.not_food);
       setError(err.data?.not_food ? t('scan.notFoodError') : (err.message || 'Scan failed'));
     } finally {
@@ -245,6 +251,10 @@ export default function ScanPage() {
     setTranscript('');
     setRecordingTime(0);
 
+    if (voiceProOnly) {
+      openPaywall('voiceSeconds');
+      return;
+    }
     if (remainingSeconds !== null && remainingSeconds <= 0) {
       setError(t('scan.voiceLimitReached'));
       return;
@@ -284,7 +294,7 @@ export default function ScanPage() {
     } catch {
       setError(t('scan.voiceError'));
     }
-  }, [remainingSeconds, maxRecordingTime, t]);
+  }, [remainingSeconds, maxRecordingTime, voiceProOnly, t]);
 
   const stopRecording = useCallback(() => {
     if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
@@ -321,6 +331,10 @@ export default function ScanPage() {
       });
       if (res.low_confidence) setEditing(true);
     } catch (err) {
+      if (isLimitError(err) && err.data.limit === 0) {
+        setVoiceProOnly(true);
+        openPaywall('voiceSeconds');
+      }
       setError(err.message || 'Analysis failed');
     } finally {
       setLoading(false);
@@ -700,7 +714,7 @@ export default function ScanPage() {
               {t('scan.voiceDescription')}
             </p>
 
-            {remainingSeconds !== null && (
+            {remainingSeconds !== null && !voiceProOnly && (
               <p style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)', marginBottom: 'var(--space-md)' }}>
                 {t('scan.voiceRemaining', formatTime(remainingSeconds))}
               </p>
@@ -709,10 +723,11 @@ export default function ScanPage() {
             <button
               className={`voice-record-btn${isRecording ? ' recording' : ''}`}
               onClick={isRecording ? stopRecording : startRecording}
-              disabled={loading || (remainingSeconds !== null && remainingSeconds <= 0 && !isRecording)}
+              disabled={loading || (!voiceProOnly && remainingSeconds !== null && remainingSeconds <= 0 && !isRecording)}
             >
               <span className="voice-record-icon">{isRecording ? '⬛' : '🎤'}</span>
               <span>{isRecording ? formatTime(recordingTime) : t('scan.startRecording')}</span>
+              {voiceProOnly && <span className="voice-pro-badge">PRO</span>}
             </button>
 
             {isRecording && (

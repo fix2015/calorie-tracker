@@ -187,6 +187,7 @@ router.post('/voice', authenticate, aiLimiter, uploadAudio.single('audio'), asyn
     const quota = await aiQuota.reserve(user, 'voiceSeconds', claimed);
     if (!quota.ok) {
       fs.unlink(req.file.path, () => {});
+      if (quota.limit === 0) return limitReached(res, 'voiceSeconds', quota, 'Voice logging is part of Calorize Pro');
       const minutes = Math.round(quota.limit / 60);
       return limitReached(res, 'voiceSeconds', quota, `Daily voice limit reached (${minutes} min/day)`);
     }

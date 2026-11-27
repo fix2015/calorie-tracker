@@ -3,15 +3,16 @@
  *
  * The caps are sized so a user can never cost more in OpenAI fees than a subscription pays us:
  * the yearly plan nets ~£1.46–1.77 a month after VAT and Apple's cut, and a maxed-out Pro user
- * (10 scans + 3 min voice every day) costs ~£1.20–1.65 a month depending on scan cost.
+ * (10 scans + 3 min voice + 10 analyses every day) costs ~£1.30 a month.
+ * Free users get 1 scan and 1 analysis a day; voice logging is Pro-only.
  *
- * Until the paywall ships (AI_PAYWALL_ENABLED=true and a Pro flag on the user), everyone gets
- * the Pro limits, so current users lose nothing but the unlimited worst case is gone.
+ * Until the paywall ships (AI_PAYWALL_ENABLED=true), everyone gets the Pro limits.
+ * Pro = users.pro_until in the future, kept in sync with RevenueCat by routes/billing.js.
  */
 const prisma = require('./prisma');
 
 const LIMITS = {
-  free: { photoScans: 1, voiceSeconds: 60, analyses: 1 },
+  free: { photoScans: 1, voiceSeconds: 0, analyses: 1 },
   pro: { photoScans: 10, voiceSeconds: 180, analyses: 10 },
 };
 
@@ -27,11 +28,13 @@ function nextResetAt() {
   return d;
 }
 
-// eslint-disable-next-line no-unused-vars
+function isPro(user) {
+  return !!(user && user.proUntil && new Date(user.proUntil) > new Date());
+}
+
 function tierFor(user) {
   if (process.env.AI_PAYWALL_ENABLED !== 'true') return 'pro';
-  // The Pro flag arrives with the RevenueCat integration; until then nobody is Pro once the paywall is on.
-  return user && user.isPro ? 'pro' : 'free';
+  return isPro(user) ? 'pro' : 'free';
 }
 
 function limitsFor(user) {
@@ -91,7 +94,7 @@ async function release(user, kind, amount = 1) {
 async function summary(user) {
   const used = await getUsage(user.id);
   const limits = limitsFor(user);
-  return { tier: tierFor(user), used, limits, resetsAt: nextResetAt() };
+  return { tier: tierFor(user), isPro: isPro(user), proUntil: user.proUntil || null, paywall: process.env.AI_PAYWALL_ENABLED === 'true', used, limits, resetsAt: nextResetAt() };
 }
 
-module.exports = { LIMITS, reserve, release, charge, summary, limitsFor, tierFor };
+module.exports = { LIMITS, reserve, release, charge, summary, limitsFor, tierFor, isPro };

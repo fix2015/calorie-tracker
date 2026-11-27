@@ -13,6 +13,7 @@ const messageRoutes = require('./routes/messages');
 const adminRoutes = require('./routes/admin');
 const storyRoutes = require('./routes/stories');
 const productRoutes = require('./routes/products');
+const billingRoutes = require('./routes/billing');
 const { errorHandler } = require('./middleware/errorHandler');
 
 const app = express();
@@ -41,6 +42,7 @@ app.use('/api/messages', messageRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/stories', storyRoutes);
 app.use('/api/products', productRoutes);
+app.use('/api/billing', billingRoutes);
 
 app.use(errorHandler);
 

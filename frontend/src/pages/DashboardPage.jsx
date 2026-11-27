@@ -8,6 +8,7 @@ import { useTranslation } from '../i18n';
 import AddMealModal from '../components/AddMealModal';
 import MealDetailModal from '../components/MealDetailModal';
 import { readCache } from '../services/offlineCache';
+import { openPaywall, isLimitError } from '../services/paywall';
 
 export default function DashboardPage() {
   const { t } = useTranslation();
@@ -305,6 +306,7 @@ export default function DashboardPage() {
                 const res = await reports.analyze();
                 setAiAnalysis(res.analysis);
               } catch (err) {
+                if (isLimitError(err)) openPaywall('analyses');
                 setAiAnalysis(err.message || 'Analysis failed.');
               } finally {
                 setAiLoading(false);

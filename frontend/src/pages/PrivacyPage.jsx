@@ -57,6 +57,12 @@ export default function PrivacyPage({ onClose }) {
             We do not sell your personal data to third parties. Sign in with Apple and Google are handled by Apple and
             Google. Our servers and storage are provided by Amazon Web Services.
           </p>
+          <p>
+            Calorize Pro subscriptions are paid through the App Store or Google Play; we never see your card details.
+            We use <a href="https://www.revenuecat.com/privacy" target="_blank" rel="noopener noreferrer">RevenueCat</a> to
+            check your subscription status. It receives your Calorize account ID and your store purchase records
+            (product, dates and status) and processes them in the USA.
+          </p>
         </section>
 
         <section>
@@ -90,7 +96,7 @@ export default function PrivacyPage({ onClose }) {
           </ul>
           <p>
             Your profile includes health-related information (weight, height, goals). We use it only to calculate your
-            targets and never share it for advertising. Some providers (Amazon Web Services, OpenAI) process data in
+            targets and never share it for advertising. Some providers (Amazon Web Services, OpenAI, RevenueCat) process data in
             the USA; these transfers are covered by the UK Extension to the EU–US Data Privacy Framework or the UK
             International Data Transfer Addendum. You can complain to the Information Commissioner’s Office
             (ico.org.uk, 0303 123 1113).
