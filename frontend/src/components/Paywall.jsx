@@ -26,6 +26,12 @@ export default function Paywall() {
   const [error, setError] = useState('');
   const [status, setStatus] = useState(null);
 
+  // Once per app start in the native app, re-read the subscription from RevenueCat, so renewals,
+  // cancellations and expiry are picked up even if a webhook delivery was missed.
+  useEffect(() => {
+    if (storeAvailable && user?.id) billing.sync().catch(() => {});
+  }, [user?.id]);
+
   useEffect(() => subscribePaywall((r) => {
     if (!user) return;
     setReason(r);
