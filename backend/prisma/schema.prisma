@@ -97,6 +97,7 @@ model User {
   commentLikes        CommentLike[]
   weightLogs          WeightLog[]
   dailyStats          DailyStat[]
+  aiUsage             AiUsage[]
   savedMeals          SavedMeal[]
   blockedUsers        BlockedUser[]           @relation("blocker")
   blockedBy           BlockedUser[]           @relation("blocked")
@@ -301,6 +302,23 @@ model WeightLog {
 
   @@index([userId, createdAt])
   @@map("weight_logs")
+}
+
+// Per-user, per-day (UTC) count of paid AI calls. Enforces the daily caps in src/utils/aiQuota.js
+// so no single user can cost more in OpenAI fees than a subscription pays.
+model AiUsage {
+  id           String   @id @default(cuid())
+  userId       String   @map("user_id")
+  day          String   // YYYY-MM-DD, UTC
+  photoScans   Int      @default(0) @map("photo_scans")
+  voiceSeconds Int      @default(0) @map("voice_seconds")
+  analyses     Int      @default(0)
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, day])
+  @@map("ai_usage")
 }
 
 model DailyStat {

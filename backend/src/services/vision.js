@@ -66,7 +66,19 @@ function normalizeVisionResult(result) {
   };
 }
 
-async function analyzePhoto(imagePath, weightKg, context, language = 'en') {
+// gpt-4o list prices (USD per token), for the per-scan cost log line.
+const GPT4O_PRICE = { input: 2.5 / 1e6, output: 10 / 1e6 };
+
+// 'low' sends a 512px preview (85 image tokens); 'high' tiles the full image (~765 tokens at 1024px).
+// On 10 real meal photos (scripts/scan-cost-eval.js, Nov 2026) 'low' named the same dishes with
+// calorie estimates inside high's own run-to-run spread, at $0.0034 vs $0.0054 a scan.
+// AI_SCAN_IMAGE_DETAIL=high switches back if accuracy complaints come in.
+function scanImageDetail() {
+  const d = process.env.AI_SCAN_IMAGE_DETAIL;
+  return d === 'high' || d === 'auto' ? d : 'low';
+}
+
+async function analyzePhoto(imagePath, weightKg, context, language = 'en', { detail = scanImageDetail(), onUsage } = {}) {
   const client = getProvider();
   const imageData = fs.readFileSync(imagePath);
   const base64 = imageData.toString('base64');
@@ -88,11 +100,16 @@ async function analyzePhoto(imagePath, weightKg, context, language = 'en') {
       {
         role: 'user',
         content: [
-          { type: 'image_url', image_url: { url: `data:${mimeType};base64,${base64}` } },
+          { type: 'image_url', image_url: { url: `data:${mimeType};base64,${base64}`, detail } },
         ],
       },
     ],
   });
+
+  const usage = response.usage || {};
+  const costUsd = (usage.prompt_tokens || 0) * GPT4O_PRICE.input + (usage.completion_tokens || 0) * GPT4O_PRICE.output;
+  console.log(JSON.stringify({ evt: 'ai_scan_cost', detail, in: usage.prompt_tokens, out: usage.completion_tokens, usd: +costUsd.toFixed(5) }));
+  if (onUsage) onUsage({ ...usage, costUsd });
 
   const text = response.choices[0].message.content.trim();
   const jsonMatch = text.match(/\{[\s\S]*\}/);
@@ -115,8 +132,9 @@ async function transcribeAudio(filePath) {
   const response = await client.audio.transcriptions.create({
     model: 'whisper-1',
     file: fs.createReadStream(filePath),
+    response_format: 'verbose_json', // includes the audio duration Whisper bills for
   });
-  return response.text;
+  return { text: response.text, duration: Math.ceil(Number(response.duration) || 0) };
 }
 
 async function getSuggestion({ goal, target, eaten, protein, carbs, fat, language = 'en' }) {

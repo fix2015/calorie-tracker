@@ -8,6 +8,7 @@ const { manualMealSchema } = require('../utils/validation');
 const { analyzePhoto, analyzeVoiceText, transcribeAudio } = require('../services/vision');
 const { uploadImage } = require('../services/s3');
 const { refreshDailyStat } = require('../utils/dailyStats');
+const aiQuota = require('../utils/aiQuota');
 
 function autoTags(meal) {
   const tags = [];
@@ -22,6 +23,18 @@ function autoTags(meal) {
 }
 
 const router = Router();
+
+// 429 body shared by every daily AI cap, so the app can show one "limit reached" sheet (and later the paywall).
+function limitReached(res, kind, quota, message) {
+  return res.status(429).json({
+    error: message,
+    limit_reached: true,
+    kind,
+    limit: quota.limit,
+    used: quota.used,
+    resetsAt: quota.resetsAt,
+  });
+}
 
 const aiLimiter = rateLimit({
   windowMs: 60 * 60 * 1000,
@@ -81,6 +94,12 @@ router.post('/photo', authenticate, aiLimiter, upload.single('photo'), async (re
       });
     }
 
+    const quota = await aiQuota.reserve(user, 'photoScans');
+    if (!quota.ok) {
+      fs.promises.unlink(req.file.path).catch(() => {});
+      return limitReached(res, 'photoScans', quota, `Daily photo scan limit reached (${quota.limit}/day). Try again tomorrow or log it manually.`);
+    }
+
     // Analyze photo with AI first (needs original file)
     const context = req.body.context || '';
     let result;
@@ -93,6 +112,9 @@ router.post('/photo', authenticate, aiLimiter, upload.single('photo'), async (re
         fs.promises.unlink(req.file.path).catch(() => {});
         return res.status(422).json({ error: aiErr.message, not_food: true });
       }
+      // The scan failed on our side, so it doesn't count against the user's daily cap.
+      // (A not-food answer still counts: the model call was paid for, and it stops free retries.)
+      await aiQuota.release(user, 'photoScans').catch(() => {});
       // Still upload the photo to S3 even if AI fails
       const s3Url = await uploadImage(req.file.path);
       return res.status(422).json({
@@ -134,20 +156,17 @@ router.post('/photo', authenticate, aiLimiter, upload.single('photo'), async (re
   }
 });
 
-const VOICE_DAILY_LIMIT_SECONDS = 180; // 3 minutes per day
-
-async function getVoiceSecondsRemaining(userId) {
-  const user = await prisma.user.findUnique({ where: { id: userId }, select: { voiceSecondsUsed: true, voiceSecondsResetAt: true } });
-  const today = new Date().toDateString();
-  const resetDay = user.voiceSecondsResetAt ? user.voiceSecondsResetAt.toDateString() : null;
-  if (resetDay !== today) return VOICE_DAILY_LIMIT_SECONDS;
-  return Math.max(0, VOICE_DAILY_LIMIT_SECONDS - user.voiceSecondsUsed);
+async function voiceRemaining(user) {
+  const { used, limits } = await aiQuota.summary(user);
+  return { remaining: Math.max(0, limits.voiceSeconds - used.voiceSeconds), limit: limits.voiceSeconds };
 }
 
 router.get('/voice/limit', authenticate, async (req, res, next) => {
   try {
-    const remaining = await getVoiceSecondsRemaining(req.userId);
-    res.json({ remainingSeconds: remaining, dailyLimitSeconds: VOICE_DAILY_LIMIT_SECONDS });
+    const user = await prisma.user.findUnique({ where: { id: req.userId } });
+    if (!user) return res.status(404).json({ error: 'User not found' });
+    const { remaining, limit } = await voiceRemaining(user);
+    res.json({ remainingSeconds: remaining, dailyLimitSeconds: limit });
   } catch (err) {
     next(err);
   }
@@ -158,51 +177,40 @@ router.post('/voice', authenticate, aiLimiter, uploadAudio.single('audio'), asyn
     if (!req.file) return res.status(400).json({ error: 'Audio file is required' });
 
     const user = await prisma.user.findUnique({ where: { id: req.userId } });
-    if (!user) return res.status(404).json({ error: 'User not found' });
-
-    // Parse duration from client (seconds)
-    const duration = Math.ceil(parseFloat(req.body.duration) || 0);
-
-    // Check daily voice limit
-    const today = new Date().toDateString();
-    const resetDay = user.voiceSecondsResetAt ? user.voiceSecondsResetAt.toDateString() : null;
-    const usedToday = resetDay === today ? user.voiceSecondsUsed : 0;
-
-    if (usedToday + duration > VOICE_DAILY_LIMIT_SECONDS) {
-      const fs = require('fs');
+    if (!user) {
       fs.unlink(req.file.path, () => {});
-      return res.status(429).json({
-        error: 'Daily voice limit reached (3 min/day)',
-        remainingSeconds: Math.max(0, VOICE_DAILY_LIMIT_SECONDS - usedToday),
-      });
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    // Reserve the length the app reports (at least 1s); corrected to Whisper's real length below.
+    const claimed = Math.max(1, Math.ceil(parseFloat(req.body.duration) || 0));
+    const quota = await aiQuota.reserve(user, 'voiceSeconds', claimed);
+    if (!quota.ok) {
+      fs.unlink(req.file.path, () => {});
+      const minutes = Math.round(quota.limit / 60);
+      return limitReached(res, 'voiceSeconds', quota, `Daily voice limit reached (${minutes} min/day)`);
     }
 
     // Transcribe with Whisper
-    let transcript;
+    let transcription;
     try {
-      transcript = await transcribeAudio(req.file.path);
+      transcription = await transcribeAudio(req.file.path);
     } catch (err) {
-      const fs = require('fs');
       fs.unlink(req.file.path, () => {});
+      await aiQuota.release(user, 'voiceSeconds', claimed).catch(() => {});
       return res.status(422).json({ error: 'Could not transcribe audio. Please try again.' });
     }
-
-    // Clean up audio file
-    const fs = require('fs');
     fs.unlink(req.file.path, () => {});
 
+    // Whisper bills by real audio length, so charge that rather than trusting the app's figure.
+    if (transcription.duration > claimed) {
+      await aiQuota.charge(user, 'voiceSeconds', transcription.duration - claimed);
+    }
+
+    const transcript = transcription.text;
     if (!transcript || !transcript.trim()) {
       return res.status(422).json({ error: 'No speech detected. Please try again.' });
     }
-
-    // Update voice usage
-    await prisma.user.update({
-      where: { id: req.userId },
-      data: {
-        voiceSecondsUsed: usedToday + duration,
-        voiceSecondsResetAt: new Date(),
-      },
-    });
 
     // Analyze text with GPT
     const weightKg = user.weightKg || 70;
@@ -240,7 +248,7 @@ router.post('/voice', authenticate, aiLimiter, uploadAudio.single('audio'), asyn
       meal,
       transcript,
       low_confidence: lowConfidence,
-      remainingSeconds: Math.max(0, VOICE_DAILY_LIMIT_SECONDS - usedToday - duration),
+      remainingSeconds: (await voiceRemaining(user)).remaining,
     });
   } catch (err) {
     next(err);

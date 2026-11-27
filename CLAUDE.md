@@ -73,7 +73,8 @@ Uses Node.js built-in test runner (no framework). Test directory: `backend/src/t
   - `admin.js` — admin endpoints
 - **Services:** `src/services/vision.js` (OpenAI GPT-4o photo scanning, configurable via `AI_PROVIDER`), `s3.js` (image resize via sharp + S3 upload with local fallback), `microservices.js` (HTTP client for external microservices)
 - **Middleware:** `auth.js` (JWT verify with `authenticate()` and `optionalAuth()` variants), `upload.js` (multer — images 10MB, videos 50MB), `errorHandler.js` (catches ZodError → 400)
-- **Rate limiting:** `express-rate-limit` on auth routes and AI endpoints (photo scan 20/hr, suggestions 20/hr, nutrition analysis 10/day)
+- **Rate limiting:** `express-rate-limit` (in-memory, resets on restart) for bursts: auth routes, and 20 AI calls/hr per user.
+- **Daily AI caps:** `src/utils/aiQuota.js` + the `ai_usage` table (per user per UTC day) cap photo scans, voice seconds and nutrition analyses so no user costs more in OpenAI fees than a subscription pays. `LIMITS.free` / `LIMITS.pro`; everyone gets Pro limits until `AI_PAYWALL_ENABLED=true`. Over the cap → 429 with `limit_reached: true, kind, limit, used, resetsAt`. Voice is charged by Whisper's measured duration, not the app's. Photo scans use `detail: 'low'` by default (`AI_SCAN_IMAGE_DETAIL`); each scan logs an `ai_scan_cost` JSON line. `node scripts/scan-cost-eval.js <photos…>` compares cost/accuracy across detail levels.
 - **Validation:** Zod schemas in `src/utils/validation.js`, validated in route handlers
 - **Utils:** `src/utils/` — `jwt.js` (sign/verify access+refresh tokens), `calories.js` (Mifflin-St Jeor formula), `dailyStats.js` (meal aggregation), `languageName.js` (language codes → native names for GPT)
 

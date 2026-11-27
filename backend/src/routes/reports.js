@@ -5,6 +5,7 @@ const { authenticate } = require('../middleware/auth');
 const { getSuggestion } = require('../services/vision');
 const { getDailyStats } = require('../utils/dailyStats');
 const { getLanguageName } = require('../utils/languageName');
+const aiQuota = require('../utils/aiQuota');
 
 const router = Router();
 
@@ -97,14 +98,7 @@ router.post('/backfill-stats', authenticate, async (req, res, next) => {
   }
 });
 
-const analysisLimiter = rateLimit({
-  windowMs: 24 * 60 * 60 * 1000,
-  max: 10,
-  message: { error: 'Daily analysis limit reached (10/day). Try again tomorrow!' },
-  keyGenerator: (req) => req.userId,
-});
-
-router.get('/analyze', authenticate, analysisLimiter, async (req, res, next) => {
+router.get('/analyze', authenticate, async (req, res, next) => {
   try {
     const user = await prisma.user.findUnique({ where: { id: req.userId } });
     if (!user) return res.status(404).json({ error: 'User not found' });
@@ -119,6 +113,18 @@ router.get('/analyze', authenticate, analysisLimiter, async (req, res, next) => 
 
     if (meals.length === 0) {
       return res.json({ analysis: "Log some meals first — I need data to give you a meaningful analysis!" });
+    }
+
+    const quota = await aiQuota.reserve(user, 'analyses');
+    if (!quota.ok) {
+      return res.status(429).json({
+        error: `Daily analysis limit reached (${quota.limit}/day). Try again tomorrow!`,
+        limit_reached: true,
+        kind: 'analyses',
+        limit: quota.limit,
+        used: quota.used,
+        resetsAt: quota.resetsAt,
+      });
     }
 
     const totals = meals.reduce(
